@@ -1,188 +1,191 @@
+// Глобальная переменная для данных
 let housesData = [];
 
-// Элементы DOM
-const addressInput = document.getElementById('addressInput');
-const suggestionsDiv = document.getElementById('suggestions');
-const houseContent = document.getElementById('houseContent');
-const homeButton = document.getElementById('homeButton');
-
-// Загрузка данных
-async function loadData() {
-    try {
-        const response = await fetch('data.json');
-        if (!response.ok) throw new Error('Ошибка загрузки data.json');
-        housesData = await response.json();
-        console.log('Данные загружены:', housesData);
-    } catch (error) {
-        console.error(error);
-        document.getElementById('resultCard').innerHTML = '<div style="color: red; padding: 20px;">❌ Ошибка загрузки данных. Проверьте файл data.json</div>';
-    }
-}
-
-// Показ подсказок
-function showSuggestions() {
-    const query = addressInput.value.trim().toLowerCase();
-    if (query.length === 0) {
-        suggestionsDiv.classList.add('hidden');
-        return;
-    }
+// Ждем полной загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Страница загружена, начинаем работу');
     
-    const filtered = housesData.filter(house => 
-        house.address.toLowerCase().includes(query)
-    );
+    // Получаем элементы
+    const addressInput = document.getElementById('addressInput');
+    const suggestionsDiv = document.getElementById('suggestions');
+    const houseContent = document.getElementById('houseContent');
+    const homeButton = document.getElementById('homeButton');
     
-    if (filtered.length === 0) {
-        suggestionsDiv.classList.add('hidden');
-        return;
-    }
+    // Загружаем данные
+    fetch('data.json')
+        .then(function(response) {
+            console.log('Ответ от сервера:', response.status);
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            housesData = data;
+            console.log('Данные загружены! Количество домов:', housesData.length);
+            console.log('Первый дом:', housesData[0]);
+        })
+        .catch(function(error) {
+            console.error('Ошибка:', error);
+            alert('Не удалось загрузить data.json. Проверьте консоль F12');
+        });
     
-    suggestionsDiv.innerHTML = '';
-    filtered.forEach(house => {
-        const div = document.createElement('div');
-        div.textContent = house.address;
-        div.addEventListener('click', () => {
-            addressInput.value = house.address;
+    // Поиск при вводе
+    addressInput.addEventListener('input', function() {
+        const query = addressInput.value.trim().toLowerCase();
+        
+        if (query.length === 0 || housesData.length === 0) {
             suggestionsDiv.classList.add('hidden');
-            showFullHouseInfo(house);
+            return;
+        }
+        
+        const filtered = housesData.filter(function(house) {
+            return house.address.toLowerCase().includes(query);
         });
-        suggestionsDiv.appendChild(div);
+        
+        if (filtered.length === 0) {
+            suggestionsDiv.classList.add('hidden');
+            return;
+        }
+        
+        suggestionsDiv.innerHTML = '';
+        filtered.forEach(function(house) {
+            const div = document.createElement('div');
+            div.textContent = house.address;
+            div.style.padding = '12px 18px';
+            div.style.cursor = 'pointer';
+            div.style.borderBottom = '1px solid #eef2f6';
+            div.onmouseover = function() { this.style.backgroundColor = '#e6f4fa'; };
+            div.onmouseout = function() { this.style.backgroundColor = 'white'; };
+            div.onclick = function() {
+                addressInput.value = house.address;
+                suggestionsDiv.classList.add('hidden');
+                showHouseInfo(house);
+            };
+            suggestionsDiv.appendChild(div);
+        });
+        suggestionsDiv.classList.remove('hidden');
     });
-    suggestionsDiv.classList.remove('hidden');
-}
-
-// Отображение полной информации о доме
-function showFullHouseInfo(house) {
-    console.log('Показываем дом:', house);
     
-    // Показываем контейнер
-    houseContent.classList.remove('hidden');
-    
-    // Адрес и район
-    document.getElementById('fullAddress').textContent = house.address;
-    document.getElementById('district').textContent = house.district;
-    
-    // Информация о здании
-    document.getElementById('buildingType').textContent = house.buildingType || 'Многоквартирный дом';
-    document.getElementById('buildYear').textContent = house.buildYear || '—';
-    document.getElementById('constructionYear').textContent = house.constructionYear || house.buildYear || '—';
-    document.getElementById('floors').textContent = house.floors || '—';
-    document.getElementById('series').textContent = house.series || '—';
-    
-    // Кнопки подъездов
-    const entranceButtonsDiv = document.getElementById('entranceButtons');
-    entranceButtonsDiv.innerHTML = '';
-    
-    if (house.entrances && house.entrances.length > 0) {
-        house.entrances.forEach((entrance, idx) => {
-            const btn = document.createElement('button');
-            btn.textContent = entrance.name || `Подъезд ${idx + 1}`;
-            btn.classList.add('entrance-btn');
-            if (idx === 0) btn.classList.add('active');
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.entrance-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                showLiftInfo(house, idx);
+    // Функция отображения информации о доме
+    function showHouseInfo(house) {
+        console.log('Отображаем дом:', house.address);
+        
+        // Показываем контейнер
+        houseContent.classList.remove('hidden');
+        
+        // Заполняем адрес и район
+        document.getElementById('fullAddress').textContent = house.address;
+        document.getElementById('district').textContent = house.district || '—';
+        document.getElementById('buildingType').textContent = house.buildingType || 'Многоквартирный дом';
+        document.getElementById('buildYear').textContent = house.buildYear || '—';
+        document.getElementById('constructionYear').textContent = house.constructionYear || house.buildYear || '—';
+        document.getElementById('floors').textContent = house.floors || '—';
+        document.getElementById('series').textContent = house.series || '—';
+        
+        // Кнопки подъездов
+        const entranceButtons = document.getElementById('entranceButtons');
+        entranceButtons.innerHTML = '';
+        
+        if (house.entrances && house.entrances.length > 0) {
+            house.entrances.forEach(function(entrance, idx) {
+                const btn = document.createElement('button');
+                btn.textContent = entrance.name || 'Подъезд ' + (idx + 1);
+                btn.className = 'entrance-btn';
+                if (idx === 0) btn.classList.add('active');
+                btn.onclick = function() {
+                    document.querySelectorAll('.entrance-btn').forEach(function(b) {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    showLiftInfo(house, idx);
+                };
+                entranceButtons.appendChild(btn);
             });
-            entranceButtonsDiv.appendChild(btn);
-        });
-        // Показываем информацию по первому подъезду
-        if (house.entrances.length > 0) {
+            showLiftInfo(house, 0);
+        } else {
+            entranceButtons.innerHTML = '<button class="entrance-btn active">Лифт №1</button>';
             showLiftInfo(house, 0);
         }
-    } else {
-        entranceButtonsDiv.innerHTML = '<button class="entrance-btn active">Лифт №1</button>';
-        showLiftInfo(house, 0);
-    }
-    
-    // Виды работ по программе
-    const programTbody = document.querySelector('#programWorks tbody');
-    programTbody.innerHTML = '';
-    if (house.programWorks && house.programWorks.length) {
-        house.programWorks.forEach(work => {
-            const row = programTbody.insertRow();
-            row.insertCell(0).textContent = work.year;
-            row.insertCell(1).textContent = work.description;
-        });
-    } else {
-        const row = programTbody.insertRow();
-        row.insertCell(0).textContent = '—';
-        row.insertCell(1).textContent = 'Нет данных';
-    }
-    
-    // Виды работ по краткосрочному плану
-    const shortTbody = document.querySelector('#shortTermWorks tbody');
-    shortTbody.innerHTML = '';
-    if (house.shortTermWorks && house.shortTermWorks.length) {
-        house.shortTermWorks.forEach(work => {
-            const row = shortTbody.insertRow();
-            row.insertCell(0).textContent = work.type;
-            row.insertCell(1).textContent = work.contractor;
-            row.insertCell(2).textContent = work.period;
-        });
-    } else {
-        const row = shortTbody.insertRow();
-        row.insertCell(0).textContent = '—';
-        row.insertCell(1).textContent = '—';
-        row.insertCell(2).textContent = '—';
-    }
-}
-
-// Показать информацию о лифте для выбранного подъезда
-function showLiftInfo(house, entranceIndex) {
-    console.log('Показываем лифт для подъезда:', entranceIndex);
-    
-    const liftInfoDiv = document.getElementById('liftInfo');
-    
-    // Получаем данные о лифте
-    let lift = {};
-    if (house.entrances && house.entrances[entranceIndex] && house.entrances[entranceIndex].lift) {
-        lift = house.entrances[entranceIndex].lift;
-    }
-    
-    console.log('Данные лифта:', lift);
-    
-    // Рассчитываем срок эксплуатации
-    let yearsInService = lift.yearsInService || '—';
-    if ((yearsInService === '—' || !yearsInService) && lift.yearOper && lift.yearOper !== '—') {
-        const currentYear = new Date().getFullYear();
-        const operYear = parseInt(lift.yearOper);
-        if (!isNaN(operYear)) {
-            yearsInService = currentYear - operYear;
+        
+        // Программа работ
+        const programTbody = document.querySelector('#programWorks tbody');
+        programTbody.innerHTML = '';
+        if (house.programWorks && house.programWorks.length > 0) {
+            house.programWorks.forEach(function(work) {
+                const row = programTbody.insertRow();
+                row.insertCell(0).textContent = work.year || '—';
+                row.insertCell(1).textContent = work.description || '—';
+            });
+        } else {
+            programTbody.innerHTML = '<tr><td colspan="2">Нет данных</td></tr>';
+        }
+        
+        // Краткосрочный план
+        const shortTbody = document.querySelector('#shortTermWorks tbody');
+        shortTbody.innerHTML = '';
+        if (house.shortTermWorks && house.shortTermWorks.length > 0) {
+            house.shortTermWorks.forEach(function(work) {
+                const row = shortTbody.insertRow();
+                row.insertCell(0).textContent = work.type || '—';
+                row.insertCell(1).textContent = work.contractor || '—';
+                row.insertCell(2).textContent = work.period || '—';
+            });
+        } else {
+            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных</td></tr>';
         }
     }
     
-    // Формируем HTML с данными
-    liftInfoDiv.innerHTML = `
-        <div class="info-row"><span class="info-label">Модель</span><span class="info-value">${lift.model || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Год изготовления</span><span class="info-value">${lift.yearMade || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${lift.yearOper || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Срок эксплуатации</span><span class="info-value">${yearsInService !== '—' ? yearsInService + ' лет' : '—'}</span></div>
-        <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${lift.loadCapacity || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${lift.type || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${lift.stops || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Текущее состояние</span><span class="info-value">${lift.condition || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${lift.engine || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${lift.note || '—'}</span></div>
-    `;
-}
-
-// Сброс к началу (кнопка Главная)
-function resetToHome() {
-    addressInput.value = '';
-    houseContent.classList.add('hidden');
-    suggestionsDiv.classList.add('hidden');
-    addressInput.focus();
-}
-
-// Обработчики
-addressInput.addEventListener('input', showSuggestions);
-homeButton.addEventListener('click', resetToHome);
-
-document.addEventListener('click', (e) => {
-    if (e.target !== addressInput && !suggestionsDiv.contains(e.target)) {
-        suggestionsDiv.classList.add('hidden');
+    // Функция отображения информации о лифте
+    function showLiftInfo(house, entranceIndex) {
+        console.log('Показываем лифт, индекс:', entranceIndex);
+        
+        const liftInfo = document.getElementById('liftInfo');
+        const entrance = house.entrances[entranceIndex];
+        
+        if (!entrance || !entrance.lift) {
+            liftInfo.innerHTML = '<div class="info-row">Нет данных о лифте</div>';
+            return;
+        }
+        
+        const lift = entrance.lift;
+        
+        // Рассчитываем срок эксплуатации
+        let yearsInService = '—';
+        if (lift.yearOper && lift.yearOper !== '—') {
+            const currentYear = new Date().getFullYear();
+            const operYear = parseInt(lift.yearOper);
+            if (!isNaN(operYear)) {
+                yearsInService = (currentYear - operYear) + ' лет';
+            }
+        }
+        
+        liftInfo.innerHTML = `
+            <div class="info-row"><span class="info-label">Модель</span><span class="info-value">${lift.model || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Год изготовления</span><span class="info-value">${lift.yearMade || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${lift.yearOper || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Срок эксплуатации</span><span class="info-value">${yearsInService}</span></div>
+            <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${lift.loadCapacity || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${lift.type || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${lift.stops || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Текущее состояние</span><span class="info-value">${lift.condition || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${lift.engine || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${lift.note || '—'}</span></div>
+        `;
     }
+    
+    // Кнопка Главная
+    homeButton.addEventListener('click', function() {
+        addressInput.value = '';
+        houseContent.classList.add('hidden');
+        suggestionsDiv.classList.add('hidden');
+        addressInput.focus();
+    });
+    
+    // Скрываем подсказки при клике вне
+    document.addEventListener('click', function(e) {
+        if (e.target !== addressInput && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.classList.add('hidden');
+        }
+    });
 });
-
-// Загружаем данные
-loadData();

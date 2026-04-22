@@ -17,7 +17,6 @@ body {
     flex-direction: column;
 }
 
-/* Синяя шапка */
 .header {
     background: #0b3b5f;
     color: white;
@@ -56,10 +55,8 @@ body {
 .header-title {
     font-size: 1.2rem;
     font-weight: 500;
-    letter-spacing: 0.3px;
 }
 
-/* Контейнер */
 .container {
     max-width: 1200px;
     width: 100%;
@@ -68,7 +65,6 @@ body {
     flex: 1;
 }
 
-/* Поиск - умеренная ширина */
 .search-header h2 {
     font-size: 1.6rem;
     font-weight: 500;
@@ -133,7 +129,6 @@ body {
     display: none;
 }
 
-/* Адрес и район */
 .address-block {
     background: white;
     border-radius: 20px;
@@ -155,7 +150,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Карточки */
 .info-card {
     background: white;
     border-radius: 20px;
@@ -174,7 +168,6 @@ body {
     color: #0b3b5f;
 }
 
-/* Сетка для информации */
 .info-grid {
     display: grid;
     gap: 14px;
@@ -202,7 +195,6 @@ body {
     color: #1a2a3a;
 }
 
-/* Кнопки подъездов */
 .entrance-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -232,7 +224,6 @@ body {
     background: #dce5ec;
 }
 
-/* Таблицы */
 .table-wrapper {
     overflow-x: auto;
 }
@@ -258,34 +249,27 @@ body {
     vertical-align: top;
 }
 
-/* Адаптив для телефонов */
 @media (max-width: 700px) {
     .container {
         padding: 0 16px;
     }
-    
     .two-columns {
         grid-template-columns: 1fr;
     }
-    
     .info-label {
         width: 140px;
     }
-    
     .header-title {
         font-size: 0.9rem;
     }
-    
     .home-button {
         padding: 6px 14px;
         font-size: 0.85rem;
     }
-    
     #addressInput {
         padding: 12px 16px;
         font-size: 0.95rem;
     }
-    
     .search-section {
         max-width: 100%;
     }

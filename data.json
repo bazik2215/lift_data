@@ -20,7 +20,6 @@
                     "condition": "Эксплуатируется",
                     "engine": "4АН180",
                     "loadCapacity": "320 кг",
-                    "yearsInService": 37,
                     "note": "В кабине отсутствуют алюминиевые решетки вентиляции"
                 }
             },
@@ -35,7 +34,6 @@
                     "condition": "Работает с перебоями",
                     "engine": "Асинхронный",
                     "loadCapacity": "320 кг",
-                    "yearsInService": 38,
                     "note": "Требуется замена дверей"
                 }
             },
@@ -50,7 +48,6 @@
                     "condition": "Не работает",
                     "engine": "Асинхронный",
                     "loadCapacity": "500 кг",
-                    "yearsInService": 38,
                     "note": "Отключен с 2022 года"
                 }
             }
