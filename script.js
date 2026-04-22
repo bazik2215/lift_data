@@ -12,10 +12,10 @@ async function loadData() {
         const response = await fetch('data.json');
         if (!response.ok) throw new Error('Ошибка загрузки data.json');
         housesData = await response.json();
-        console.log('Данные загружены:', housesData.length, 'домов');
+        console.log('Данные загружены:', housesData);
     } catch (error) {
         console.error(error);
-        alert('Не удалось загрузить данные. Проверьте файл data.json');
+        document.getElementById('resultCard').innerHTML = '<div style="color: red; padding: 20px;">❌ Ошибка загрузки данных. Проверьте файл data.json</div>';
     }
 }
 
@@ -52,6 +52,8 @@ function showSuggestions() {
 
 // Отображение полной информации о доме
 function showFullHouseInfo(house) {
+    console.log('Показываем дом:', house);
+    
     // Показываем контейнер
     houseContent.classList.remove('hidden');
     
@@ -83,7 +85,10 @@ function showFullHouseInfo(house) {
             });
             entranceButtonsDiv.appendChild(btn);
         });
-        if (house.entrances.length > 0) showLiftInfo(house, 0);
+        // Показываем информацию по первому подъезду
+        if (house.entrances.length > 0) {
+            showLiftInfo(house, 0);
+        }
     } else {
         entranceButtonsDiv.innerHTML = '<button class="entrance-btn active">Лифт №1</button>';
         showLiftInfo(house, 0);
@@ -124,25 +129,19 @@ function showFullHouseInfo(house) {
 
 // Показать информацию о лифте для выбранного подъезда
 function showLiftInfo(house, entranceIndex) {
+    console.log('Показываем лифт для подъезда:', entranceIndex);
+    
     const liftInfoDiv = document.getElementById('liftInfo');
-    const entrance = house.entrances?.[entranceIndex] || { 
-        lift: { 
-            model: '—', 
-            yearMade: '—', 
-            yearOper: '—', 
-            type: '—',
-            stops: '—',
-            condition: '—',
-            engine: '—',
-            note: '—',
-            loadCapacity: '—',
-            yearsInService: '—'
-        } 
-    };
     
-    const lift = entrance.lift || {};
+    // Получаем данные о лифте
+    let lift = {};
+    if (house.entrances && house.entrances[entranceIndex] && house.entrances[entranceIndex].lift) {
+        lift = house.entrances[entranceIndex].lift;
+    }
     
-    // Рассчитываем срок эксплуатации, если есть год ввода
+    console.log('Данные лифта:', lift);
+    
+    // Рассчитываем срок эксплуатации
     let yearsInService = lift.yearsInService || '—';
     if ((yearsInService === '—' || !yearsInService) && lift.yearOper && lift.yearOper !== '—') {
         const currentYear = new Date().getFullYear();
@@ -152,28 +151,19 @@ function showLiftInfo(house, entranceIndex) {
         }
     }
     
+    // Формируем HTML с данными
     liftInfoDiv.innerHTML = `
-        <div class="info-row"><span class="info-label">Модель</span><span class="info-value">${escapeHtml(lift.model || '—')}</span></div>
-        <div class="info-row"><span class="info-label">Год изготовления</span><span class="info-value">${escapeHtml(lift.yearMade || '—')}</span></div>
-        <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${escapeHtml(lift.yearOper || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Модель</span><span class="info-value">${lift.model || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Год изготовления</span><span class="info-value">${lift.yearMade || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${lift.yearOper || '—'}</span></div>
         <div class="info-row"><span class="info-label">Срок эксплуатации</span><span class="info-value">${yearsInService !== '—' ? yearsInService + ' лет' : '—'}</span></div>
-        <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${escapeHtml(lift.loadCapacity || '—')}</span></div>
-        <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${escapeHtml(lift.type || '—')}</span></div>
-        <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${escapeHtml(lift.stops || '—')}</span></div>
-        <div class="info-row"><span class="info-label">Текущее состояние</span><span class="info-value">${escapeHtml(lift.condition || '—')}</span></div>
-        <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${escapeHtml(lift.engine || '—')}</span></div>
-        <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${escapeHtml(lift.note || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${lift.loadCapacity || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${lift.type || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${lift.stops || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Текущее состояние</span><span class="info-value">${lift.condition || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${lift.engine || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${lift.note || '—'}</span></div>
     `;
-}
-
-// Простая защита от XSS
-function escapeHtml(str) {
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
 }
 
 // Сброс к началу (кнопка Главная)
