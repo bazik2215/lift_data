@@ -134,22 +134,46 @@ function showLiftInfo(house, entranceIndex) {
             stops: '—',
             condition: '—',
             engine: '—',
-            note: '—'
+            note: '—',
+            loadCapacity: '—',
+            yearsInService: '—'
         } 
     };
     
     const lift = entrance.lift || {};
     
+    // Рассчитываем срок эксплуатации, если есть год ввода
+    let yearsInService = lift.yearsInService || '—';
+    if ((yearsInService === '—' || !yearsInService) && lift.yearOper && lift.yearOper !== '—') {
+        const currentYear = new Date().getFullYear();
+        const operYear = parseInt(lift.yearOper);
+        if (!isNaN(operYear)) {
+            yearsInService = currentYear - operYear;
+        }
+    }
+    
     liftInfoDiv.innerHTML = `
-        <div class="info-row"><span class="info-label">Модель</span><span class="info-value">${lift.model || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Год изготовления</span><span class="info-value">${lift.yearMade || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${lift.yearOper || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${lift.type || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${lift.stops || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Текущее состояние</span><span class="info-value">${lift.condition || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${lift.engine || '—'}</span></div>
-        <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${lift.note || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Модель</span><span class="info-value">${escapeHtml(lift.model || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Год изготовления</span><span class="info-value">${escapeHtml(lift.yearMade || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${escapeHtml(lift.yearOper || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Срок эксплуатации</span><span class="info-value">${yearsInService !== '—' ? yearsInService + ' лет' : '—'}</span></div>
+        <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${escapeHtml(lift.loadCapacity || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${escapeHtml(lift.type || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${escapeHtml(lift.stops || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Текущее состояние</span><span class="info-value">${escapeHtml(lift.condition || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${escapeHtml(lift.engine || '—')}</span></div>
+        <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${escapeHtml(lift.note || '—')}</span></div>
     `;
+}
+
+// Простая защита от XSS
+function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
 }
 
 // Сброс к началу (кнопка Главная)
