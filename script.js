@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${lift.yearOper || '—'}</span></div>
             <div class="info-row"><span class="info-label">Срок эксплуатации</span><span class="info-value">${yearsInService}</span></div>
             <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${lift.loadCapacity || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Скорость</span><span class="info-value">${lift.speed || '—'}</span></div>
             <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${lift.type || '—'}</span></div>
             <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${lift.stops || '—'}</span></div>
             <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${lift.engine || '—'}</span></div>
@@ -196,18 +197,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Рассчитываем срок эксплуатации предыдущего лифта
         let yearsInService = '—';
         if (previousLift.yearOper && previousLift.yearOper !== '—') {
-            const currentYear = new Date().getFullYear();
+            let endYear = previousLift.yearRemoved || new Date().getFullYear();
+            if (typeof endYear === 'string') {
+                endYear = parseInt(endYear);
+            }
             const operYear = parseInt(previousLift.yearOper);
-            if (!isNaN(operYear)) {
-                let endYear = previousLift.yearRemoved || currentYear;
-                if (typeof endYear === 'string' && endYear !== '—') {
-                    endYear = parseInt(endYear);
-                }
-                if (!isNaN(endYear)) {
-                    yearsInService = (endYear - operYear) + ' лет';
-                } else {
-                    yearsInService = (currentYear - operYear) + ' лет (в эксплуатации)';
-                }
+            if (!isNaN(operYear) && !isNaN(endYear)) {
+                yearsInService = (endYear - operYear) + ' лет';
             }
         }
         
@@ -218,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="info-row"><span class="info-label">Год вывода из эксплуатации</span><span class="info-value">${previousLift.yearRemoved || '—'}</span></div>
             <div class="info-row"><span class="info-label">Срок эксплуатации</span><span class="info-value">${yearsInService}</span></div>
             <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${previousLift.loadCapacity || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Скорость</span><span class="info-value">${previousLift.speed || '—'}</span></div>
             <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${previousLift.type || '—'}</span></div>
             <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${previousLift.stops || '—'}</span></div>
             <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${previousLift.engine || '—'}</span></div>
