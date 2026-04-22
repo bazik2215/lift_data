@@ -12,6 +12,7 @@ async function loadData() {
         const response = await fetch('data.json');
         if (!response.ok) throw new Error('Ошибка загрузки data.json');
         housesData = await response.json();
+        console.log('Данные загружены:', housesData.length, 'домов');
     } catch (error) {
         console.error(error);
         alert('Не удалось загрузить данные. Проверьте файл data.json');
@@ -62,6 +63,8 @@ function showFullHouseInfo(house) {
     document.getElementById('buildingType').textContent = house.buildingType || 'Многоквартирный дом';
     document.getElementById('buildYear').textContent = house.buildYear || '—';
     document.getElementById('constructionYear').textContent = house.constructionYear || house.buildYear || '—';
+    document.getElementById('floors').textContent = house.floors || '—';
+    document.getElementById('series').textContent = house.series || '—';
     
     // Кнопки подъездов
     const entranceButtonsDiv = document.getElementById('entranceButtons');
@@ -74,17 +77,14 @@ function showFullHouseInfo(house) {
             btn.classList.add('entrance-btn');
             if (idx === 0) btn.classList.add('active');
             btn.addEventListener('click', () => {
-                // Убираем active у всех
                 document.querySelectorAll('.entrance-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 showLiftInfo(house, idx);
             });
             entranceButtonsDiv.appendChild(btn);
         });
-        // Показываем информацию по первому подъезду
         if (house.entrances.length > 0) showLiftInfo(house, 0);
     } else {
-        // Если подъездов нет, создаем виртуальный
         entranceButtonsDiv.innerHTML = '<button class="entrance-btn active">Лифт №1</button>';
         showLiftInfo(house, 0);
     }

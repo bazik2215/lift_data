@@ -6,6 +6,8 @@
         "buildingType": "Многоквартирный дом",
         "buildYear": 1973,
         "constructionYear": 1972,
+        "floors": 9,
+        "series": "1-ЛГ602Д",
         "entrances": [
             {
                 "name": "Подъезд 1 (Лифт №0208-Б)",
