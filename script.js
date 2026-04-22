@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const houseContent = document.getElementById('houseContent');
     const homeButton = document.getElementById('homeButton');
     
-    // Загружаем данные
-    fetch('data.json')
+    // Загружаем данные (с убийцей кэша)
+    fetch('data.json?t=' + Date.now())
         .then(function(response) {
             console.log('Ответ от сервера:', response.status);
             if (!response.ok) {
@@ -99,13 +99,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     btn.classList.add('active');
                     showLiftInfo(house, idx);
+                    showPreviousLift(house, idx);
                 };
                 entranceButtons.appendChild(btn);
             });
             showLiftInfo(house, 0);
+            showPreviousLift(house, 0);
         } else {
             entranceButtons.innerHTML = '<button class="entrance-btn active">Лифт №1</button>';
             showLiftInfo(house, 0);
+            showPreviousLift(house, 0);
         }
         
         // Программа работ
@@ -136,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Функция отображения информации о лифте
+    // Функция отображения информации о текущем лифте
     function showLiftInfo(house, entranceIndex) {
         console.log('Показываем лифт, индекс:', entranceIndex);
         
@@ -168,9 +171,57 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${lift.loadCapacity || '—'}</span></div>
             <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${lift.type || '—'}</span></div>
             <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${lift.stops || '—'}</span></div>
-            <div class="info-row"><span class="info-label">Текущее состояние</span><span class="info-value">${lift.condition || '—'}</span></div>
             <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${lift.engine || '—'}</span></div>
             <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${lift.note || '—'}</span></div>
+        `;
+    }
+    
+    // Функция отображения информации о предыдущем лифте
+    function showPreviousLift(house, entranceIndex) {
+        const previousLiftCard = document.getElementById('previousLiftCard');
+        const previousLiftInfo = document.getElementById('previousLiftInfo');
+        
+        const entrance = house.entrances[entranceIndex];
+        const previousLift = entrance ? entrance.previousLift : null;
+        
+        // Если нет данных о предыдущем лифте — скрываем блок
+        if (!previousLift) {
+            previousLiftCard.style.display = 'none';
+            return;
+        }
+        
+        // Показываем блок
+        previousLiftCard.style.display = 'block';
+        
+        // Рассчитываем срок эксплуатации предыдущего лифта
+        let yearsInService = '—';
+        if (previousLift.yearOper && previousLift.yearOper !== '—') {
+            const currentYear = new Date().getFullYear();
+            const operYear = parseInt(previousLift.yearOper);
+            if (!isNaN(operYear)) {
+                let endYear = previousLift.yearRemoved || currentYear;
+                if (typeof endYear === 'string' && endYear !== '—') {
+                    endYear = parseInt(endYear);
+                }
+                if (!isNaN(endYear)) {
+                    yearsInService = (endYear - operYear) + ' лет';
+                } else {
+                    yearsInService = (currentYear - operYear) + ' лет (в эксплуатации)';
+                }
+            }
+        }
+        
+        previousLiftInfo.innerHTML = `
+            <div class="info-row"><span class="info-label">Модель</span><span class="info-value">${previousLift.model || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Год изготовления</span><span class="info-value">${previousLift.yearMade || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${previousLift.yearOper || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Год вывода из эксплуатации</span><span class="info-value">${previousLift.yearRemoved || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Срок эксплуатации</span><span class="info-value">${yearsInService}</span></div>
+            <div class="info-row"><span class="info-label">Грузоподъемность</span><span class="info-value">${previousLift.loadCapacity || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${previousLift.type || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${previousLift.stops || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${previousLift.engine || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${previousLift.note || '—'}</span></div>
         `;
     }
     
