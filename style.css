@@ -29,7 +29,7 @@ body {
 }
 
 .header-content {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -59,16 +59,16 @@ body {
     letter-spacing: 0.3px;
 }
 
-/* Контейнер - теперь шире */
+/* Контейнер */
 .container {
-    max-width: 1400px;
+    max-width: 1200px;
     width: 100%;
     margin: 30px auto;
     padding: 0 24px;
     flex: 1;
 }
 
-/* Поиск - растягиваем на всю ширину */
+/* Поиск - умеренная ширина */
 .search-header h2 {
     font-size: 1.6rem;
     font-weight: 500;
@@ -78,13 +78,13 @@ body {
 
 .search-section {
     position: relative;
-    width: 100%;
+    max-width: 700px;
     margin-bottom: 30px;
 }
 
 #addressInput {
     width: 100%;
-    padding: 16px 22px;
+    padding: 14px 20px;
     font-size: 1rem;
     border: 2px solid #cbdbe0;
     border-radius: 14px;
@@ -101,7 +101,7 @@ body {
 }
 
 #addressInput::placeholder {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: #8aa0b5;
 }
 
@@ -282,19 +282,11 @@ body {
     }
     
     #addressInput {
-        padding: 14px 18px;
+        padding: 12px 16px;
         font-size: 0.95rem;
     }
-}
-
-/* Для больших экранов делаем поле еще шире */
-@media (min-width: 1200px) {
-    .container {
-        max-width: 1600px;
-    }
     
-    #addressInput {
-        padding: 18px 24px;
-        font-size: 1.1rem;
+    .search-section {
+        max-width: 100%;
     }
 }
