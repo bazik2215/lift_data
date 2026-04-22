@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Капитальный ремонт лифтов — информация по адресам</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏢 Замена лифтов в рамках капремонта</h1>
+            <p>Введите адрес дома, чтобы узнать сроки, подрядчика и детали замены</p>
+        </header>
+
+        <div class="search-section">
+            <input type="text" id="addressInput" placeholder="Например: Ленина 10 или Ветеранов 25" autocomplete="off">
+            <div id="suggestions" class="suggestions hidden"></div>
+        </div>
+
+        <div id="resultCard" class="result-card hidden">
+            <!-- Сюда будет подставляться информация о доме -->
+        </div>
+
+        <footer>
+            <p>Данные актуальны на апрель 2026 г. | Информация о плановых и фактических работах</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
