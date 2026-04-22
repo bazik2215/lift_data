@@ -2,29 +2,99 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Капитальный ремонт лифтов — информация по адресам</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лифты — капитальный ремонт в Санкт-Петербурге</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🏢 Замена лифтов в рамках капремонта</h1>
-            <p>Введите адрес дома, чтобы узнать сроки, подрядчика и детали замены</p>
-        </header>
-
-        <div class="search-section">
-            <input type="text" id="addressInput" placeholder="Например: Ленина 10 или Ветеранов 25" autocomplete="off">
-            <div id="suggestions" class="suggestions hidden"></div>
+    <div class="page">
+        <!-- Синяя шапка с кнопкой Главная -->
+        <div class="header">
+            <div class="header-content">
+                <button id="homeButton" class="home-button">🏠 Главная</button>
+                <div class="header-title">Информация о замене лифтов</div>
+            </div>
         </div>
 
-        <div id="resultCard" class="result-card hidden">
-            <!-- Сюда будет подставляться информация о доме -->
-        </div>
+        <div class="container">
+            <!-- Поиск дома -->
+            <div class="search-header">
+                <h2>Поиск дома</h2>
+            </div>
+            
+            <div class="search-section">
+                <input type="text" id="addressInput" placeholder="Введите адрес, например: Богатырский проспект, д. 3 корп. 1" autocomplete="off">
+                <div id="suggestions" class="suggestions hidden"></div>
+            </div>
 
-        <footer>
-            <p>Данные актуальны на апрель 2026 г. | Информация о плановых и фактических работах</p>
-        </footer>
+            <!-- Контент, который появляется после выбора дома -->
+            <div id="houseContent" class="hidden">
+                <!-- Адрес и район -->
+                <div class="address-block">
+                    <div class="full-address" id="fullAddress"></div>
+                    <div class="district" id="district"></div>
+                </div>
+
+                <!-- Табличка с информацией о здании -->
+                <div class="info-card">
+                    <div class="card-title">📋 Информация о здании</div>
+                    <div class="info-grid two-columns">
+                        <div class="info-row">
+                            <span class="info-label">Тип</span>
+                            <span class="info-value" id="buildingType">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Год ввода в эксплуатацию</span>
+                            <span class="info-value" id="buildYear">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Год постройки</span>
+                            <span class="info-value" id="constructionYear">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кнопки подъездов -->
+                <div class="entrances-section" id="entrancesSection">
+                    <div class="card-title">🚪 Выберите подъезд / лифт</div>
+                    <div class="entrance-buttons" id="entranceButtons"></div>
+                </div>
+
+                <!-- Таблица с состоянием лифта (меняется при нажатии на подъезд) -->
+                <div class="info-card">
+                    <div class="card-title">🔧 Состояние лифта</div>
+                    <div class="info-grid two-columns" id="liftInfo">
+                        <!-- Заполняется динамически -->
+                    </div>
+                </div>
+
+                <!-- Виды работ по программе -->
+                <div class="info-card">
+                    <div class="card-title">📅 Виды работ в соответствии с программой</div>
+                    <div class="table-wrapper">
+                        <table class="info-table" id="programWorks">
+                            <thead>
+                                <tr><th>Год</th><th>Тип ремонта</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Виды работ по краткосрочному плану -->
+                <div class="info-card">
+                    <div class="card-title">⚡ Виды работ в соответствии с краткосрочным планом</div>
+                    <div class="table-wrapper">
+                        <table class="info-table" id="shortTermWorks">
+                            <thead>
+                                <tr><th>Тип ремонта</th><th>Подрядчик</th><th>Срок выполнения (реальный)</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>

@@ -5,33 +5,74 @@
 }
 
 body {
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    background: #f0f4f8;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #f0f7fc;  /* спокойный голубоватый оттенок */
     color: #1a2a3a;
-    line-height: 1.5;
-    padding: 20px;
+    line-height: 1.45;
+}
+
+.page {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-.container {
-    max-width: 900px;
+/* Синяя шапка */
+.header {
+    background: #0b3b5f;
+    color: white;
+    padding: 16px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    max-width: 1200px;
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 24px;
 }
 
-header {
-    text-align: center;
-    margin-bottom: 30px;
+.home-button {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
-h1 {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
+.home-button:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(0.98);
+}
+
+.header-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Контейнер */
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 24px;
+    flex: 1;
+}
+
+/* Поиск */
+.search-header h2 {
+    font-size: 1.6rem;
+    font-weight: 500;
+    margin-bottom: 20px;
     color: #0b3b5f;
-}
-
-header p {
-    color: #2c5282;
-    font-size: 1rem;
 }
 
 .search-section {
@@ -43,17 +84,17 @@ header p {
     width: 100%;
     padding: 14px 18px;
     font-size: 1rem;
-    border: 2px solid #cbd5e0;
-    border-radius: 16px;
-    outline: none;
-    transition: 0.2s;
+    border: 2px solid #cbdbe0;
+    border-radius: 14px;
     background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: 0.2s;
+    font-family: inherit;
 }
 
 #addressInput:focus {
-    border-color: #2c7a4d;
-    box-shadow: 0 0 0 3px rgba(44,122,77,0.2);
+    border-color: #0b5e7e;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(11,94,126,0.15);
 }
 
 .suggestions {
@@ -62,113 +103,173 @@ header p {
     left: 0;
     right: 0;
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     max-height: 260px;
     overflow-y: auto;
-    z-index: 100;
+    z-index: 50;
     margin-top: 6px;
 }
 
 .suggestions div {
     padding: 12px 18px;
     cursor: pointer;
-    border-bottom: 1px solid #edf2f7;
-    transition: background 0.1s;
+    border-bottom: 1px solid #eef2f6;
 }
 
 .suggestions div:hover {
-    background-color: #e6fffa;
+    background: #e6f4fa;
 }
 
 .hidden {
     display: none;
 }
 
-.result-card {
+/* Адрес и район */
+.address-block {
     background: white;
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    margin-top: 20px;
+    border-radius: 20px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e2edf2;
 }
 
-.result-card h2 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
+.full-address {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #0b3b5f;
+    margin-bottom: 8px;
+}
+
+.district {
+    color: #4a627a;
+    font-size: 0.9rem;
+}
+
+/* Карточки */
+.info-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e2edf2;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 18px;
     padding-bottom: 10px;
-    border-bottom: 3px solid #2c7a4d;
+    border-bottom: 2px solid #cbdbe0;
     color: #0b3b5f;
 }
 
+/* Сетка для информации */
 .info-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    display: grid;
+    gap: 14px;
+}
+
+.two-columns {
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .info-row {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    padding: 8px 0;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 6px 0;
 }
 
 .info-label {
-    font-weight: 700;
+    font-weight: 600;
     width: 170px;
-    color: #2d3748;
+    color: #2c3e4e;
 }
 
 .info-value {
     flex: 1;
-    color: #1a202c;
+    color: #1a2a3a;
 }
 
-.status-badge {
-    display: inline-block;
-    background: #edf2f7;
-    padding: 4px 12px;
-    border-radius: 30px;
-    font-size: 0.85rem;
+/* Кнопки подъездов */
+.entrance-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.entrance-btn {
+    background: #eef2f6;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 40px;
+    font-size: 0.9rem;
     font-weight: 500;
+    cursor: pointer;
+    transition: 0.15s;
+    color: #1a2a3a;
 }
 
-.actual-date {
-    background: #c6f6d5;
-    color: #22543d;
+.entrance-btn.active {
+    background: #0b5e7e;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.planned-date {
-    background: #feebc8;
-    color: #7b341e;
+.entrance-btn:hover:not(.active) {
+    background: #dce5ec;
 }
 
-footer {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 0.8rem;
-    color: #718096;
-    border-top: 1px solid #cbd5e0;
-    padding-top: 20px;
+/* Таблицы */
+.table-wrapper {
+    overflow-x: auto;
 }
 
-@media (max-width: 600px) {
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.info-table th {
+    text-align: left;
+    padding: 12px 10px;
+    background: #eef2f6;
+    font-weight: 600;
+    color: #0b3b5f;
+    border-bottom: 1px solid #cbdbe0;
+}
+
+.info-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e9edf2;
+    vertical-align: top;
+}
+
+/* Адаптив */
+@media (max-width: 700px) {
+    .container {
+        padding: 0 16px;
+    }
+    
+    .two-columns {
+        grid-template-columns: 1fr;
+    }
+    
     .info-label {
-        width: 100%;
-        margin-bottom: 6px;
+        width: 140px;
     }
     
-    .info-row {
-        flex-direction: column;
+    .header-title {
+        font-size: 0.9rem;
     }
     
-    h1 {
-        font-size: 1.4rem;
-    }
-    
-    .result-card {
-        padding: 18px;
+    .home-button {
+        padding: 6px 14px;
+        font-size: 0.85rem;
     }
 }

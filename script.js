@@ -1,27 +1,24 @@
-// Загружаем данные из JSON-файла
 let housesData = [];
 
+// Элементы DOM
+const addressInput = document.getElementById('addressInput');
+const suggestionsDiv = document.getElementById('suggestions');
+const houseContent = document.getElementById('houseContent');
+const homeButton = document.getElementById('homeButton');
+
+// Загрузка данных
 async function loadData() {
     try {
         const response = await fetch('data.json');
-        if (!response.ok) throw new Error('Не удалось загрузить data.json');
+        if (!response.ok) throw new Error('Ошибка загрузки data.json');
         housesData = await response.json();
-        console.log('Данные загружены:', housesData.length, 'домов');
     } catch (error) {
-        console.error('Ошибка:', error);
-        document.getElementById('resultCard').innerHTML = `
-            <div style="color: red; padding: 20px;">
-                ❌ Ошибка загрузки данных. Убедитесь, что файл data.json лежит рядом с index.html.
-            </div>
-        `;
-        document.getElementById('resultCard').classList.remove('hidden');
+        console.error(error);
+        alert('Не удалось загрузить данные. Проверьте файл data.json');
     }
 }
 
-// Показ подсказок при вводе текста
-const addressInput = document.getElementById('addressInput');
-const suggestionsDiv = document.getElementById('suggestions');
-
+// Показ подсказок
 function showSuggestions() {
     const query = addressInput.value.trim().toLowerCase();
     if (query.length === 0) {
@@ -45,78 +42,133 @@ function showSuggestions() {
         div.addEventListener('click', () => {
             addressInput.value = house.address;
             suggestionsDiv.classList.add('hidden');
-            showHouseCard(house);
+            showFullHouseInfo(house);
         });
         suggestionsDiv.appendChild(div);
     });
-    
     suggestionsDiv.classList.remove('hidden');
 }
 
-addressInput.addEventListener('input', showSuggestions);
+// Отображение полной информации о доме
+function showFullHouseInfo(house) {
+    // Показываем контейнер
+    houseContent.classList.remove('hidden');
+    
+    // Адрес и район
+    document.getElementById('fullAddress').textContent = house.address;
+    document.getElementById('district').textContent = house.district;
+    
+    // Информация о здании
+    document.getElementById('buildingType').textContent = house.buildingType || 'Многоквартирный дом';
+    document.getElementById('buildYear').textContent = house.buildYear || '—';
+    document.getElementById('constructionYear').textContent = house.constructionYear || house.buildYear || '—';
+    
+    // Кнопки подъездов
+    const entranceButtonsDiv = document.getElementById('entranceButtons');
+    entranceButtonsDiv.innerHTML = '';
+    
+    if (house.entrances && house.entrances.length > 0) {
+        house.entrances.forEach((entrance, idx) => {
+            const btn = document.createElement('button');
+            btn.textContent = entrance.name || `Подъезд ${idx + 1}`;
+            btn.classList.add('entrance-btn');
+            if (idx === 0) btn.classList.add('active');
+            btn.addEventListener('click', () => {
+                // Убираем active у всех
+                document.querySelectorAll('.entrance-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                showLiftInfo(house, idx);
+            });
+            entranceButtonsDiv.appendChild(btn);
+        });
+        // Показываем информацию по первому подъезду
+        if (house.entrances.length > 0) showLiftInfo(house, 0);
+    } else {
+        // Если подъездов нет, создаем виртуальный
+        entranceButtonsDiv.innerHTML = '<button class="entrance-btn active">Лифт №1</button>';
+        showLiftInfo(house, 0);
+    }
+    
+    // Виды работ по программе
+    const programTbody = document.querySelector('#programWorks tbody');
+    programTbody.innerHTML = '';
+    if (house.programWorks && house.programWorks.length) {
+        house.programWorks.forEach(work => {
+            const row = programTbody.insertRow();
+            row.insertCell(0).textContent = work.year;
+            row.insertCell(1).textContent = work.description;
+        });
+    } else {
+        const row = programTbody.insertRow();
+        row.insertCell(0).textContent = '—';
+        row.insertCell(1).textContent = 'Нет данных';
+    }
+    
+    // Виды работ по краткосрочному плану
+    const shortTbody = document.querySelector('#shortTermWorks tbody');
+    shortTbody.innerHTML = '';
+    if (house.shortTermWorks && house.shortTermWorks.length) {
+        house.shortTermWorks.forEach(work => {
+            const row = shortTbody.insertRow();
+            row.insertCell(0).textContent = work.type;
+            row.insertCell(1).textContent = work.contractor;
+            row.insertCell(2).textContent = work.period;
+        });
+    } else {
+        const row = shortTbody.insertRow();
+        row.insertCell(0).textContent = '—';
+        row.insertCell(1).textContent = '—';
+        row.insertCell(2).textContent = '—';
+    }
+}
 
-// Скрываем подсказки при клике вне
-document.addEventListener('click', function(e) {
+// Показать информацию о лифте для выбранного подъезда
+function showLiftInfo(house, entranceIndex) {
+    const liftInfoDiv = document.getElementById('liftInfo');
+    const entrance = house.entrances?.[entranceIndex] || { 
+        lift: { 
+            model: '—', 
+            yearMade: '—', 
+            yearOper: '—', 
+            type: '—',
+            stops: '—',
+            condition: '—',
+            engine: '—',
+            note: '—'
+        } 
+    };
+    
+    const lift = entrance.lift || {};
+    
+    liftInfoDiv.innerHTML = `
+        <div class="info-row"><span class="info-label">Модель</span><span class="info-value">${lift.model || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Год изготовления</span><span class="info-value">${lift.yearMade || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value">${lift.yearOper || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${lift.type || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${lift.stops || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Текущее состояние</span><span class="info-value">${lift.condition || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${lift.engine || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${lift.note || '—'}</span></div>
+    `;
+}
+
+// Сброс к началу (кнопка Главная)
+function resetToHome() {
+    addressInput.value = '';
+    houseContent.classList.add('hidden');
+    suggestionsDiv.classList.add('hidden');
+    addressInput.focus();
+}
+
+// Обработчики
+addressInput.addEventListener('input', showSuggestions);
+homeButton.addEventListener('click', resetToHome);
+
+document.addEventListener('click', (e) => {
     if (e.target !== addressInput && !suggestionsDiv.contains(e.target)) {
         suggestionsDiv.classList.add('hidden');
     }
 });
 
-// Отображение карточки с информацией о доме
-function showHouseCard(house) {
-    const resultCard = document.getElementById('resultCard');
-    
-    // Формируем статус замены (фактическая или плановая)
-    const actualStatus = house.actual_date !== "Еще не проведена" 
-        ? `<span class="status-badge actual-date">✅ Фактически: ${house.actual_date}</span>`
-        : `<span class="status-badge">⏳ ${house.actual_date}</span>`;
-    
-    const plannedPeriod = `${house.planned_start} — ${house.planned_end}`;
-    
-    const html = `
-        <h2>🏠 ${house.address}</h2>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">📅 Плановый период замены:</div>
-                <div class="info-value"><span class="status-badge planned-date">${plannedPeriod}</span></div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">🔧 Фактическое исполнение:</div>
-                <div class="info-value">${actualStatus}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">🏭 Подрядная организация:</div>
-                <div class="info-value">${house.contractor}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">🛗 Новый лифт (марка/модель):</div>
-                <div class="info-value">${house.lift_brand}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">📌 Детали / примечания:</div>
-                <div class="info-value">${house.details}</div>
-            </div>
-        </div>
-    `;
-    
-    resultCard.innerHTML = html;
-    resultCard.classList.remove('hidden');
-}
-
-// При загрузке страницы загружаем данные
+// Загружаем данные
 loadData();
-
-// Дополнительно: если пользователь нажал Enter, показываем первый подходящий дом
-addressInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        const query = addressInput.value.trim().toLowerCase();
-        const found = housesData.find(house => house.address.toLowerCase().includes(query));
-        if (found) {
-            showHouseCard(found);
-            suggestionsDiv.classList.add('hidden');
-        } else {
-            document.getElementById('resultCard').innerHTML = `<div style="padding: 20px;">❌ Дом не найден. Проверьте адрес.</div>`;
-            document.getElementById('resultCard').classList.remove('hidden');
-        }
-    }
-});
