@@ -78,8 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('fullAddress').textContent = house.address;
         document.getElementById('district').textContent = house.district || '—';
         document.getElementById('buildingType').textContent = house.buildingType || 'Многоквартирный дом';
-        document.getElementById('buildYear').textContent = house.buildYear || '—';
-        document.getElementById('constructionYear').textContent = house.constructionYear || house.buildYear || '—';
+        
+        // ИСПРАВЛЕНО: Год ввода в эксплуатацию = constructionYear, Год постройки = buildYear
+        document.getElementById('buildYear').textContent = house.constructionYear || house.buildYear || '—';
+        document.getElementById('constructionYear').textContent = house.buildYear || '—';
+        
         document.getElementById('floors').textContent = house.floors || '—';
         document.getElementById('series').textContent = house.series || '—';
         
@@ -186,16 +189,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const entrance = house.entrances[entranceIndex];
         const previousLift = entrance ? entrance.previousLift : null;
         
-        // Если нет данных о предыдущем лифте — скрываем блок
         if (!previousLift) {
             previousLiftCard.style.display = 'none';
             return;
         }
         
-        // Показываем блок
         previousLiftCard.style.display = 'block';
         
-        // Рассчитываем срок эксплуатации предыдущего лифта
         let yearsInService = '—';
         if (previousLift.yearOper && previousLift.yearOper !== '—') {
             let endYear = previousLift.yearRemoved || new Date().getFullYear();
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="info-row"><span class="info-label">Тип лифта</span><span class="info-value">${previousLift.type || '—'}</span></div>
             <div class="info-row"><span class="info-label">Количество остановок</span><span class="info-value">${previousLift.stops || '—'}</span></div>
             <div class="info-row"><span class="info-label">Двигатель</span><span class="info-value">${previousLift.engine || '—'}</span></div>
-            <div class="info-row"><span class="info-label">Состояние до замены</span><span class="info-value">${previousLift.condition || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Текущее состояние (до замены)</span><span class="info-value">${previousLift.condition || '—'}</span></div>
             <div class="info-row"><span class="info-label">Примечание</span><span class="info-value">${previousLift.note || '—'}</span></div>
         `;
     }
