@@ -143,6 +143,7 @@ body {
     font-weight: 600;
     color: #0b3b5f;
     margin-bottom: 8px;
+    word-break: break-word;
 }
 
 .district {
@@ -188,11 +189,13 @@ body {
     font-weight: 600;
     width: 170px;
     color: #2c3e4e;
+    flex-shrink: 0;
 }
 
 .info-value {
     flex: 1;
     color: #1a2a3a;
+    word-break: break-word;
 }
 
 .entrance-buttons {
@@ -249,28 +252,106 @@ body {
     vertical-align: top;
 }
 
+/* Адаптив для телефонов */
 @media (max-width: 700px) {
     .container {
         padding: 0 16px;
     }
+    
+    /* На телефонах делаем одну колонку */
     .two-columns {
         grid-template-columns: 1fr;
     }
+    
+    /* Уменьшаем ширину метки и делаем её блочной */
     .info-label {
-        width: 140px;
+        width: 100%;
+        margin-bottom: 4px;
     }
+    
+    /* Метка и значение друг под другом */
+    .info-row {
+        flex-direction: column;
+        padding: 8px 0;
+    }
+    
+    .info-value {
+        width: 100%;
+        padding-left: 0;
+    }
+    
     .header-title {
         font-size: 0.9rem;
     }
+    
     .home-button {
         padding: 6px 14px;
         font-size: 0.85rem;
     }
+    
     #addressInput {
         padding: 12px 16px;
         font-size: 0.95rem;
     }
+    
     .search-section {
         max-width: 100%;
+    }
+    
+    /* Улучшаем отображение таблиц на телефонах */
+    .info-table {
+        font-size: 0.8rem;
+        min-width: 300px;
+    }
+    
+    .info-table th,
+    .info-table td {
+        padding: 8px 6px;
+        word-break: break-word;
+    }
+    
+    /* Кнопки подъездов */
+    .entrance-btn {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+    }
+    
+    /* Заголовок поиска */
+    .search-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    /* Адрес */
+    .full-address {
+        font-size: 1.1rem;
+    }
+}
+
+/* Для очень маленьких экранов (до 480px) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px;
+    }
+    
+    .info-card {
+        padding: 14px 16px;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    .info-table {
+        font-size: 0.75rem;
+        min-width: 280px;
+    }
+    
+    .header-title {
+        font-size: 0.8rem;
+    }
+    
+    .home-button {
+        padding: 5px 10px;
+        font-size: 0.75rem;
     }
 }
