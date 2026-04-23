@@ -229,12 +229,16 @@ body {
 
 .table-wrapper {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -4px;
+    padding: 0 4px;
 }
 
 .info-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
+    min-width: 500px;
 }
 
 .info-table th {
@@ -244,12 +248,14 @@ body {
     font-weight: 600;
     color: #0b3b5f;
     border-bottom: 1px solid #cbdbe0;
+    white-space: nowrap;
 }
 
 .info-table td {
     padding: 12px 10px;
     border-bottom: 1px solid #e9edf2;
     vertical-align: top;
+    white-space: nowrap;
 }
 
 /* Адаптив для телефонов */
@@ -298,16 +304,21 @@ body {
         max-width: 100%;
     }
     
-    /* Улучшаем отображение таблиц на телефонах */
+    /* Таблицы на телефонах - горизонтальная прокрутка */
+    .table-wrapper {
+        margin: 0 -12px;
+        padding: 0 12px;
+    }
+    
     .info-table {
         font-size: 0.8rem;
-        min-width: 300px;
+        min-width: 550px;
     }
     
     .info-table th,
     .info-table td {
-        padding: 8px 6px;
-        word-break: break-word;
+        padding: 10px 8px;
+        white-space: nowrap;
     }
     
     /* Кнопки подъездов */
@@ -341,9 +352,19 @@ body {
         font-size: 1rem;
     }
     
+    .table-wrapper {
+        margin: 0 -8px;
+        padding: 0 8px;
+    }
+    
     .info-table {
         font-size: 0.75rem;
-        min-width: 280px;
+        min-width: 500px;
+    }
+    
+    .info-table th,
+    .info-table td {
+        padding: 8px 6px;
     }
     
     .header-title {
