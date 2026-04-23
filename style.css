@@ -227,6 +227,7 @@ body {
     background: #dce5ec;
 }
 
+/* Общие стили для таблиц */
 .table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -253,18 +254,27 @@ body {
     vertical-align: top;
 }
 
+/* Специально для таблицы "Виды работ в соответствии с программой" — текст переносится */
+#programWorks td:last-child {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Специально для таблицы "Виды работ в соответствии с краткосрочным планом" — можно листать на телефоне */
+#shortTermWorks {
+    min-width: 500px;
+}
+
 /* Адаптив для телефонов */
 @media (max-width: 700px) {
     .container {
         padding: 0 16px;
     }
     
-    /* На телефонах делаем одну колонку */
     .two-columns {
         grid-template-columns: 1fr;
     }
     
-    /* Метка и значение друг под другом */
     .info-label {
         width: 100%;
         margin-bottom: 4px;
@@ -298,18 +308,26 @@ body {
         max-width: 100%;
     }
     
-    /* Таблицы на телефонах - горизонтальная прокрутка */
-    .table-wrapper {
-        overflow-x: auto;
-    }
-    
-    .info-table {
+    /* Таблица "Виды работ в соответствии с программой" — НЕ пролистывается, текст переносится */
+    #programWorks {
+        min-width: auto;
         font-size: 0.8rem;
-        min-width: 500px;
     }
     
-    .info-table th,
-    .info-table td {
+    #programWorks td {
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    /* Таблица "Виды работ в соответствии с краткосрочным планом" — пролистывается */
+    #shortTermWorks {
+        min-width: 550px;
+        font-size: 0.8rem;
+    }
+    
+    #shortTermWorks th,
+    #shortTermWorks td {
+        white-space: nowrap;
         padding: 8px 6px;
     }
     
@@ -341,9 +359,9 @@ body {
         font-size: 1rem;
     }
     
-    .info-table {
+    #shortTermWorks {
+        min-width: 500px;
         font-size: 0.75rem;
-        min-width: 450px;
     }
     
     .header-title {
