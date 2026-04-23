@@ -260,6 +260,19 @@
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
                     "note": "-"
+                },
+				"previousLift": {
+                    "model": "МЛЗ",
+                    "yearMade": 1976,
+                    "yearOper": 1977,
+                    "yearRemoved": 2025,
+                    "speed": "0.71 м/с",
+                    "type": "Пассажирский",
+                    "stops": 9,
+                    "engine": "АС62",
+                    "loadCapacity": "320 кг",
+                    "condition": "Эксплуатировался",
+                    "note": "-"
                 }
             },
 			{
