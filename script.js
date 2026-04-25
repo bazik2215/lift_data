@@ -34,13 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Обновление второго выпадающего списка в зависимости от выбранного типа плана
+    // Обновление второго выпадающего списка
     function updateTimeFilterOptions() {
         const planType = planTypeSelect.value;
         let timeValues = new Set();
         
         if (planType === 'program') {
-            // Собираем все уникальные годы из programWorks
             housesData.forEach(function(house) {
                 if (house.programWorks && house.programWorks.length > 0) {
                     house.programWorks.forEach(function(work) {
@@ -49,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         } else {
-            // Собираем все уникальные ГОДЫ из period (09.2025 - 12.2025 → 2025)
             housesData.forEach(function(house) {
                 if (house.shortTermWorks && house.shortTermWorks.length > 0) {
                     house.shortTermWorks.forEach(function(work) {
@@ -64,13 +62,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Преобразуем Set в массив и сортируем
         let sortedValues = Array.from(timeValues).sort();
-        
-        // Сохраняем текущее выбранное значение
         const currentValue = timeFilterSelect.value;
         
-        // Очищаем и заполняем select
         timeFilterSelect.innerHTML = '<option value="all">📋 Все сроки</option>';
         sortedValues.forEach(function(value) {
             const option = document.createElement('option');
@@ -79,12 +73,89 @@ document.addEventListener('DOMContentLoaded', function() {
             timeFilterSelect.appendChild(option);
         });
         
-        // Восстанавливаем предыдущее значение, если оно существует в новом списке
         if (currentValue !== 'all' && sortedValues.includes(currentValue)) {
             timeFilterSelect.value = currentValue;
         } else {
             timeFilterSelect.value = 'all';
         }
+    }
+    
+    // Получение списка лифтов с их регистрационными номерами и годами программы
+    function getLiftsListForProgram(house, selectedYear) {
+        let liftsWithYears = [];
+        let liftCounter = 1;
+        
+        if (!house.entrances) return [];
+        
+        house.entrances.forEach(function(entrance) {
+            // Новый формат (lifts)
+            if (entrance.lifts && entrance.lifts.length > 0) {
+                entrance.lifts.forEach(function(lift) {
+                    // Получаем регистрационный номер лифта
+                    let liftNumber = '?';
+                    if (lift.registrationNumber) {
+                        liftNumber = lift.registrationNumber;
+                    } else if (entrance.name) {
+                        const match = entrance.name.match(/№(\d+)/);
+                        if (match) liftNumber = match[1];
+                    }
+                    
+                    // Получаем год программы для этого лифта (из programWorks дома)
+                    let liftYear = null;
+                    if (house.programWorks && house.programWorks.length > 0) {
+                        liftYear = house.programWorks[0].year;
+                    }
+                    
+                    liftsWithYears.push({
+                        number: liftNumber,
+                        year: liftYear,
+                        name: lift.name || `Лифт №${liftNumber}`
+                    });
+                    liftCounter++;
+                });
+            }
+            // Старый формат (lift)
+            else if (entrance.lift) {
+                let liftNumber = '?';
+                if (entrance.name) {
+                    const match = entrance.name.match(/№(\d+)/);
+                    if (match) liftNumber = match[1];
+                }
+                
+                let liftYear = null;
+                if (house.programWorks && house.programWorks.length > 0) {
+                    liftYear = house.programWorks[0].year;
+                }
+                
+                liftsWithYears.push({
+                    number: liftNumber,
+                    year: liftYear,
+                    name: entrance.name || `Лифт №${liftNumber}`
+                });
+                liftCounter++;
+            }
+        });
+        
+        // Фильтруем по выбранному году (если выбран не "all")
+        if (selectedYear !== 'all') {
+            liftsWithYears = liftsWithYears.filter(function(lift) {
+                return lift.year === selectedYear;
+            });
+        }
+        
+        // Формируем HTML список
+        if (liftsWithYears.length === 0) {
+            return '<i>Нет данных о лифтах</i>';
+        }
+        
+        let html = '<ul style="margin: 5px 0 0 20px; padding: 0;">';
+        liftsWithYears.forEach(function(lift) {
+            const yearText = lift.year ? ` (${lift.year})` : '';
+            html += `<li>Лифт №${lift.number}${yearText}</li>`;
+        });
+        html += '</ul>';
+        
+        return html;
     }
     
     // Проверка, соответствует ли дом выбранным фильтрам
@@ -105,23 +176,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Получение информации для балуна в зависимости от типа плана
-    function getBalloonContent(house, planType) {
+    // Получение информации для балуна
+    function getBalloonContent(house, planType, selectedTime) {
         const address = house.address;
         const district = house.district || '—';
         
         if (planType === 'program') {
-            const years = house.programWorks ? house.programWorks.map(function(w) { return w.year; }).join(', ') : '—';
-            return `<b>${address}</b><br>🏢 Район: ${district}<br>📅 Годы программы: ${years}<br><a href="#" class="balloon-details-link" data-id="${house.id}">📋 Подробнее о доме →</a>`;
+            const liftsListHtml = getLiftsListForProgram(house, selectedTime);
+            
+            let programYears = '';
+            if (house.programWorks && house.programWorks.length > 0) {
+                const years = house.programWorks.map(function(w) { return w.year; }).join(', ');
+                programYears = `<br>📅 Годы программы: ${years}`;
+            }
+            
+            return `<b>${address}</b><br>🏢 Район: ${district}${programYears}<br>🛗 <b>Лифты:</b>${liftsListHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">📋 Подробнее о доме →</a>`;
         } else {
-            let shortInfo = '';
+            // Табличка для краткосрочного плана
+            let tableHtml = '<table style="width:100%; border-collapse: collapse; margin-top: 5px;">';
+            
             if (house.shortTermWorks && house.shortTermWorks.length > 0) {
                 const work = house.shortTermWorks[0];
-                shortInfo = `<br>🔧 ${work.type || '—'}<br>🏭 ${work.contractor || '—'}<br>📅 ${work.period || '—'}`;
+                tableHtml += `
+                    <tr><td style="padding: 4px 8px 4px 0; font-weight: 600; border-bottom: 1px solid #ddd;">🔧 Тип ремонта</td><td style="padding: 4px 0 4px 8px; border-bottom: 1px solid #ddd;">${work.type || '—'}</td></tr>
+                    <tr><td style="padding: 4px 8px 4px 0; font-weight: 600; border-bottom: 1px solid #ddd;">🏭 Подрядчик</td><td style="padding: 4px 0 4px 8px; border-bottom: 1px solid #ddd;">${work.contractor || '—'}</td></tr>
+                    <tr><td style="padding: 4px 8px 4px 0; font-weight: 600;">📅 Срок выполнения</td><td style="padding: 4px 0 4px 8px;">${work.period || '—'}</td></tr>
+                `;
             } else {
-                shortInfo = '<br>📋 Нет данных по краткосрочному плану';
+                tableHtml += `
+                    <tr><td style="padding: 4px 8px 4px 0; font-weight: 600;">📋 Данные</td><td style="padding: 4px 0 4px 8px;">Нет информации по краткосрочному плану</td></tr>
+                `;
             }
-            return `<b>${address}</b><br>🏢 Район: ${district}${shortInfo}<br><a href="#" class="balloon-details-link" data-id="${house.id}">📋 Подробнее о доме →</a>`;
+            tableHtml += '</table>';
+            
+            return `<b>${address}</b><br>🏢 Район: ${district}${tableHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">📋 Подробнее о доме →</a>`;
         }
     }
     
@@ -142,28 +230,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Применение фильтров и обновление меток
+    // Применение фильтров
     function applyFilters() {
         if (!currentMap) return;
         
         const planType = planTypeSelect.value;
         const timeValue = timeFilterSelect.value;
         
-        // Удаляем старые метки
         currentPlacemarks.forEach(function(p) {
             currentMap.geoObjects.remove(p);
         });
         currentPlacemarks = [];
         
-        // Фильтруем дома
         let filteredHouses = housesData.filter(function(house) {
             return isHouseMatchesFilter(house, planType, timeValue);
         });
         
-        // Добавляем метки для отфильтрованных домов
         filteredHouses.forEach(function(house) {
             if (house.coords && house.coords.length === 2) {
-                const balloonContent = getBalloonContent(house, planType);
+                const balloonContent = getBalloonContent(house, planType, timeValue);
                 
                 const placemark = new ymaps.Placemark(
                     house.coords,
@@ -238,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
         suggestionsDiv.classList.remove('hidden');
     });
     
-    // Функция отображения информации о доме
+    // Функция отображения информации о доме (полностью сохранена)
     function showHouseInfo(house) {
         console.log('Отображаем дом:', house.address);
         
@@ -317,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(1).textContent = work.description || '—';
             });
         } else {
-            programTbody.innerHTML = '<tr><td colspan="2">Нет данных<\/td><\/tr>';
+            programTbody.innerHTML = '<table><td colspan="2">Нет данных</td></tr>';
         }
         
         const shortTbody = document.querySelector('#shortTermWorks tbody');
@@ -330,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(2).textContent = work.period || '—';
             });
         } else {
-            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных<\/td><\/tr>';
+            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных</td></tr>';
         }
     }
     
@@ -444,6 +529,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Загружаем данные
     loadData();
 });
