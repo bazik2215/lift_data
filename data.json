@@ -8,7 +8,7 @@
         "constructionYear": 1987,
         "floors": 9,
         "series": "111-96",
-        "coords": [48.560115, 39.310170],
+        "coords": [48.528773, 39.270607],
         "entrances": [
             {
                 "name": "Подъезд 1 (Лифт №?)",
@@ -106,7 +106,7 @@
         "constructionYear": 1979,
         "floors": 12,
         "series": "II-66 (БС-44)",
-        "coords": [48.574200, 39.307500],
+        "coords": [48.568513, 39.303548],
         "entrances": [
             {
                 "name": "Подъезд 1",
@@ -193,7 +193,7 @@
         "constructionYear": 1977,
         "floors": 9,
         "series": "111-96",
-        "coords": [48.554800, 39.315000],
+        "coords": [48.578374, 39.398292],
         "entrances": [
             {
                 "name": "Подъезд 1 (Лифт №7740)",
@@ -407,7 +407,7 @@
         "constructionYear": 1976,
         "floors": 9,
         "series": "1-480А",
-        "coords": [48.548500, 39.320000],
+        "coords": [48.580912, 39.397207],
         "entrances": [
             {
                 "name": "Подъезд 1 (Лифт №?)",

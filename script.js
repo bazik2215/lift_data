@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let sortedValues = Array.from(timeValues).sort();
         const currentValue = timeFilterSelect.value;
         
-        timeFilterSelect.innerHTML = '<option value="all">📋 Все сроки</option>';
+        timeFilterSelect.innerHTML = '<option value="all">Все время</option>';
         sortedValues.forEach(function(value) {
             const option = document.createElement('option');
             option.value = value;
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (planType === 'program') {
             const liftsListHtml = getLiftsListForProgram(house, selectedTime);
-            return `<b>${address}</b><br>🏢 Район: ${district}<br>🛗 <b>Лифты:</b>${liftsListHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">📋 Подробнее о доме →</a>`;
+            return `<b>${address}</b><br>Район: ${district}<br><b>Лифты:</b>${liftsListHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">Подробнее о доме →</a>`;
         } else {
             // Табличка с границами для краткосрочного плана
             let tableHtml = '<table style="width:100%; border-collapse: collapse; margin-top: 5px; border: 1px solid #ccc;">';
@@ -187,29 +187,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 const work = house.shortTermWorks[0];
                 tableHtml += `
                     <tr>
-                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5; width: 35%;">🔧 Тип ремонта</td>
+                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5; width: 35%;">Тип ремонта</td>
                         <td style="padding: 6px 8px; border: 1px solid #ccc;">${work.type || '—'}</td>
                     </tr>
                     <tr>
-                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5;">🏭 Подрядчик</td>
+                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5;">Подрядчик</td>
                         <td style="padding: 6px 8px; border: 1px solid #ccc;">${work.contractor || '—'}</td>
                     </tr>
                     <tr>
-                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5;">📅 Срок выполнения</td>
+                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5;">Срок выполнения</td>
                         <td style="padding: 6px 8px; border: 1px solid #ccc;">${work.period || '—'}</td>
                     </tr>
                 `;
             } else {
                 tableHtml += `
                     <tr>
-                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">📋 Данные</td>
+                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">Данные</td>
                         <td style="padding: 6px 8px; border: 1px solid #ccc;">Нет информации по краткосрочному плану</td>
                     </tr>
                 `;
             }
             tableHtml += '</table>';
             
-            return `<b>${address}</b><br>🏢 Район: ${district}${tableHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">📋 Подробнее о доме →</a>`;
+            return `<b>${address}</b><br>🏢 Район: ${district}${tableHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">Подробнее о доме →</a>`;
         }
     }
     
