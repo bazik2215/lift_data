@@ -83,7 +83,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Получение списка лифтов с их регистрационными номерами и годами программы
     function getLiftsListForProgram(house, selectedYear) {
         let liftsWithYears = [];
-        let liftCounter = 1;
         
         if (!house.entrances) return [];
         
@@ -91,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Новый формат (lifts)
             if (entrance.lifts && entrance.lifts.length > 0) {
                 entrance.lifts.forEach(function(lift) {
-                    // Получаем регистрационный номер лифта
                     let liftNumber = '?';
                     if (lift.registrationNumber) {
                         liftNumber = lift.registrationNumber;
@@ -100,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (match) liftNumber = match[1];
                     }
                     
-                    // Получаем год программы для этого лифта (из programWorks дома)
                     let liftYear = null;
                     if (house.programWorks && house.programWorks.length > 0) {
                         liftYear = house.programWorks[0].year;
@@ -111,7 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         year: liftYear,
                         name: lift.name || `Лифт №${liftNumber}`
                     });
-                    liftCounter++;
                 });
             }
             // Старый формат (lift)
@@ -132,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     year: liftYear,
                     name: entrance.name || `Лифт №${liftNumber}`
                 });
-                liftCounter++;
             }
         });
         
@@ -148,10 +143,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return '<i>Нет данных о лифтах</i>';
         }
         
-        let html = '<ul style="margin: 5px 0 0 20px; padding: 0;">';
+        let html = '<ul style="margin: 5px 0 0 20px; padding: 0; list-style-type: disc;">';
         liftsWithYears.forEach(function(lift) {
             const yearText = lift.year ? ` (${lift.year})` : '';
-            html += `<li>Лифт №${lift.number}${yearText}</li>`;
+            html += `<li style="margin: 2px 0;">Лифт №${lift.number}${yearText}</li>`;
         });
         html += '</ul>';
         
@@ -183,28 +178,33 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (planType === 'program') {
             const liftsListHtml = getLiftsListForProgram(house, selectedTime);
-            
-            let programYears = '';
-            if (house.programWorks && house.programWorks.length > 0) {
-                const years = house.programWorks.map(function(w) { return w.year; }).join(', ');
-                programYears = `<br>📅 Годы программы: ${years}`;
-            }
-            
-            return `<b>${address}</b><br>🏢 Район: ${district}${programYears}<br>🛗 <b>Лифты:</b>${liftsListHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">📋 Подробнее о доме →</a>`;
+            return `<b>${address}</b><br>🏢 Район: ${district}<br>🛗 <b>Лифты:</b>${liftsListHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">📋 Подробнее о доме →</a>`;
         } else {
-            // Табличка для краткосрочного плана
-            let tableHtml = '<table style="width:100%; border-collapse: collapse; margin-top: 5px;">';
+            // Табличка с границами для краткосрочного плана
+            let tableHtml = '<table style="width:100%; border-collapse: collapse; margin-top: 5px; border: 1px solid #ccc;">';
             
             if (house.shortTermWorks && house.shortTermWorks.length > 0) {
                 const work = house.shortTermWorks[0];
                 tableHtml += `
-                    <tr><td style="padding: 4px 8px 4px 0; font-weight: 600; border-bottom: 1px solid #ddd;">🔧 Тип ремонта</td><td style="padding: 4px 0 4px 8px; border-bottom: 1px solid #ddd;">${work.type || '—'}</td></tr>
-                    <tr><td style="padding: 4px 8px 4px 0; font-weight: 600; border-bottom: 1px solid #ddd;">🏭 Подрядчик</td><td style="padding: 4px 0 4px 8px; border-bottom: 1px solid #ddd;">${work.contractor || '—'}</td></tr>
-                    <tr><td style="padding: 4px 8px 4px 0; font-weight: 600;">📅 Срок выполнения</td><td style="padding: 4px 0 4px 8px;">${work.period || '—'}</td></tr>
+                    <tr>
+                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5; width: 35%;">🔧 Тип ремонта</td>
+                        <td style="padding: 6px 8px; border: 1px solid #ccc;">${work.type || '—'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5;">🏭 Подрядчик</td>
+                        <td style="padding: 6px 8px; border: 1px solid #ccc;">${work.contractor || '—'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc; background-color: #f5f5f5;">📅 Срок выполнения</td>
+                        <td style="padding: 6px 8px; border: 1px solid #ccc;">${work.period || '—'}</td>
+                    </tr>
                 `;
             } else {
                 tableHtml += `
-                    <tr><td style="padding: 4px 8px 4px 0; font-weight: 600;">📋 Данные</td><td style="padding: 4px 0 4px 8px;">Нет информации по краткосрочному плану</td></tr>
+                    <tr>
+                        <td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">📋 Данные</td>
+                        <td style="padding: 6px 8px; border: 1px solid #ccc;">Нет информации по краткосрочному плану</td>
+                    </tr>
                 `;
             }
             tableHtml += '</table>';
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
         suggestionsDiv.classList.remove('hidden');
     });
     
-    // Функция отображения информации о доме (полностью сохранена)
+    // Функция отображения информации о доме
     function showHouseInfo(house) {
         console.log('Отображаем дом:', house.address);
         
@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(1).textContent = work.description || '—';
             });
         } else {
-            programTbody.innerHTML = '<table><td colspan="2">Нет данных</td></tr>';
+            programTbody.innerHTML = '<tr><td colspan="2">Нет данных</td></tr>';
         }
         
         const shortTbody = document.querySelector('#shortTermWorks tbody');
