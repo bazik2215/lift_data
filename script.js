@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(function(data) {
             housesData = data;
             console.log('Данные загружены! Количество домов:', housesData.length);
-            initMap(); // Инициализируем карту после загрузки данных
+            initMap();
         })
         .catch(function(error) {
             console.error('Ошибка:', error);
@@ -43,23 +43,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 zoom: 12,
                 controls: ['zoomControl', 'fullscreenControl']
             });
-            
-            // Добавляем метки после создания карты
             updateMapMarkers();
         });
     }
     
-    // Функция обновления меток на карте на основе всех данных
+    // Функция обновления меток на карте
     function updateMapMarkers() {
         if (!currentMap) return;
         
-        // Удаляем старые метки
         currentPlacemarks.forEach(function(p) {
             currentMap.geoObjects.remove(p);
         });
         currentPlacemarks = [];
         
-        // Проходим по всем домам и добавляем метки (только если есть координаты)
         housesData.forEach(function(house) {
             if (house.coords && house.coords.length === 2) {
                 const placemark = new ymaps.Placemark(
@@ -96,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Поиск при вводе (работает как обычно)
+    // Поиск при вводе
     addressInput.addEventListener('input', function() {
         const query = addressInput.value.trim().toLowerCase();
         
@@ -133,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         suggestionsDiv.classList.remove('hidden');
     });
     
-    // Функция отображения информации о доме (полностью сохранена)
+    // Функция отображения информации о доме
     function showHouseInfo(house) {
         console.log('Отображаем дом:', house.address);
         
@@ -147,13 +143,45 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('floors').textContent = house.floors || '—';
         document.getElementById('series').textContent = house.series || '—';
         
+        // Обработка кнопок подъездов (поддерживает оба формата)
         const entranceButtons = document.getElementById('entranceButtons');
         entranceButtons.innerHTML = '';
         
         if (house.entrances && house.entrances.length > 0) {
-            house.entrances.forEach(function(entrance, idx) {
+            // Собираем все лифты в один массив для отображения кнопок
+            const allLifts = [];
+            
+            house.entrances.forEach(function(entrance, entranceIdx) {
+                // Проверяем новый формат (lifts)
+                if (entrance.lifts && entrance.lifts.length > 0) {
+                    entrance.lifts.forEach(function(lift, liftIdx) {
+                        allLifts.push({
+                            id: entranceIdx + '_' + liftIdx,
+                            name: lift.name || (entrance.name ? entrance.name + ' - ' + (liftIdx + 1) : 'Лифт ' + (liftIdx + 1)),
+                            liftData: lift,
+                            entranceIdx: entranceIdx,
+                            liftIdx: liftIdx,
+                            isNewFormat: true
+                        });
+                    });
+                }
+                // Проверяем старый формат (lift)
+                else if (entrance.lift) {
+                    allLifts.push({
+                        id: entranceIdx + '_0',
+                        name: entrance.name || 'Подъезд ' + (entranceIdx + 1),
+                        liftData: entrance.lift,
+                        entranceIdx: entranceIdx,
+                        liftIdx: 0,
+                        isNewFormat: false
+                    });
+                }
+            });
+            
+            // Создаем кнопки для всех лифтов
+            allLifts.forEach(function(liftItem, idx) {
                 const btn = document.createElement('button');
-                btn.textContent = entrance.name || 'Подъезд ' + (idx + 1);
+                btn.textContent = liftItem.name;
                 btn.className = 'entrance-btn';
                 if (idx === 0) btn.classList.add('active');
                 btn.onclick = function() {
@@ -161,19 +189,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         b.classList.remove('active');
                     });
                     btn.classList.add('active');
-                    showLiftInfo(house, idx);
-                    showPreviousLift(house, idx);
+                    showLiftInfo(house, liftItem);
+                    showPreviousLift(house, liftItem);
                 };
                 entranceButtons.appendChild(btn);
             });
-            showLiftInfo(house, 0);
-            showPreviousLift(house, 0);
+            
+            // Показываем первый лифт
+            if (allLifts.length > 0) {
+                showLiftInfo(house, allLifts[0]);
+                showPreviousLift(house, allLifts[0]);
+            }
         } else {
             entranceButtons.innerHTML = '<button class="entrance-btn active">Лифт №1</button>';
-            showLiftInfo(house, 0);
-            showPreviousLift(house, 0);
+            // Создаем фейковые данные для старого формата
+            showLiftInfo(house, { liftData: null, isNewFormat: false });
+            showPreviousLift(house, { liftData: null, isNewFormat: false });
         }
         
+        // Программа работ
         const programTbody = document.querySelector('#programWorks tbody');
         programTbody.innerHTML = '';
         if (house.programWorks && house.programWorks.length > 0) {
@@ -183,9 +217,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(1).textContent = work.description || '—';
             });
         } else {
-            programTbody.innerHTML = '<tr><td colspan="2">Нет данных</td></tr>';
+            programTbody.innerHTML = '<tr><td colspan="2">Нет данных<\/td><\/tr>';
         }
         
+        // Краткосрочный план
         const shortTbody = document.querySelector('#shortTermWorks tbody');
         shortTbody.innerHTML = '';
         if (house.shortTermWorks && house.shortTermWorks.length > 0) {
@@ -196,21 +231,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(2).textContent = work.period || '—';
             });
         } else {
-            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных</td></tr>';
+            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных<\/td><\/tr>';
         }
     }
     
-    // Функция отображения информации о текущем лифте (без изменений)
-    function showLiftInfo(house, entranceIndex) {
+    // Функция отображения информации о текущем лифте
+    function showLiftInfo(house, liftItem) {
         const liftInfo = document.getElementById('liftInfo');
-        const entrance = house.entrances[entranceIndex];
         
-        if (!entrance || !entrance.lift) {
+        // Получаем данные лифта
+        let lift = null;
+        if (liftItem && liftItem.liftData) {
+            lift = liftItem.liftData;
+        } else if (house.entrances && house.entrances[0] && house.entrances[0].lift) {
+            // Старый формат
+            lift = house.entrances[0].lift;
+        }
+        
+        if (!lift) {
             liftInfo.innerHTML = '<div class="info-row">Нет данных о лифте</div>';
             return;
         }
-        
-        const lift = entrance.lift;
         
         let yearsInService = '—';
         if (lift.yearOper && lift.yearOper !== '—') {
@@ -236,13 +277,18 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
-    // Функция отображения информации о предыдущем лифте (без изменений)
-    function showPreviousLift(house, entranceIndex) {
+    // Функция отображения информации о предыдущем лифте
+    function showPreviousLift(house, liftItem) {
         const previousLiftCard = document.getElementById('previousLiftCard');
         const previousLiftInfo = document.getElementById('previousLiftInfo');
         
-        const entrance = house.entrances[entranceIndex];
-        const previousLift = entrance ? entrance.previousLift : null;
+        // Получаем данные предыдущего лифта
+        let previousLift = null;
+        if (liftItem && liftItem.liftData && liftItem.liftData.previousLift) {
+            previousLift = liftItem.liftData.previousLift;
+        } else if (house.entrances && house.entrances[0] && house.entrances[0].lift && house.entrances[0].lift.previousLift) {
+            previousLift = house.entrances[0].lift.previousLift;
+        }
         
         if (!previousLift) {
             previousLiftCard.style.display = 'none';
