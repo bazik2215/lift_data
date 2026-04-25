@@ -1,5 +1,7 @@
 // Глобальная переменная для данных
 let housesData = [];
+let currentMap = null;
+let currentPlacemarks = [];
 
 // Ждем полной загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
@@ -15,22 +17,86 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('data.json?t=' + Date.now())
         .then(function(response) {
             console.log('Ответ от сервера:', response.status);
-            if (!response.ok) {
-                throw new Error('Ошибка загрузки: ' + response.status);
-            }
+            if (!response.ok) throw new Error('Ошибка загрузки: ' + response.status);
             return response.json();
         })
         .then(function(data) {
             housesData = data;
             console.log('Данные загружены! Количество домов:', housesData.length);
-            console.log('Первый дом:', housesData[0]);
+            initMap(); // Инициализируем карту после загрузки данных
         })
         .catch(function(error) {
             console.error('Ошибка:', error);
             alert('Не удалось загрузить data.json. Проверьте консоль F12');
         });
     
-    // Поиск при вводе
+    // Инициализация карты
+    function initMap() {
+        if (typeof ymaps === 'undefined') {
+            console.error('Яндекс.Карты не загрузились');
+            return;
+        }
+        
+        ymaps.ready(function() {
+            currentMap = new ymaps.Map('map', {
+                center: [48.574, 39.307],
+                zoom: 12,
+                controls: ['zoomControl', 'fullscreenControl']
+            });
+            
+            // Добавляем метки после создания карты
+            updateMapMarkers();
+        });
+    }
+    
+    // Функция обновления меток на карте на основе всех данных
+    function updateMapMarkers() {
+        if (!currentMap) return;
+        
+        // Удаляем старые метки
+        currentPlacemarks.forEach(function(p) {
+            currentMap.geoObjects.remove(p);
+        });
+        currentPlacemarks = [];
+        
+        // Проходим по всем домам и добавляем метки (только если есть координаты)
+        housesData.forEach(function(house) {
+            if (house.coords && house.coords.length === 2) {
+                const placemark = new ymaps.Placemark(
+                    house.coords,
+                    {
+                        balloonContentHeader: '<b>' + house.address + '</b>',
+                        balloonContentBody: '<strong>📅 Год постройки:</strong> ' + (house.buildYear || '—') + '<br><strong>🏢 Район:</strong> ' + (house.district || '—') + '<br><strong>🚪 Подъездов:</strong> ' + (house.entrances ? house.entrances.length : '—'),
+                        balloonContentFooter: '<a href="#" class="balloon-details-link" data-id="' + house.id + '">📋 Подробнее о доме →</a>'
+                    },
+                    { preset: 'islands#blueHomeIcon' }
+                );
+                
+                placemark.events.add('balloonopen', function() {
+                    setTimeout(function() {
+                        const link = document.querySelector('.balloon-details-link');
+                        if (link) {
+                            link.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const houseId = parseInt(this.dataset.id);
+                                const selectedHouse = housesData.find(function(h) { return h.id === houseId; });
+                                if (selectedHouse) {
+                                    showHouseInfo(selectedHouse);
+                                    currentMap.balloon.close();
+                                    document.getElementById('houseContent').scrollIntoView({ behavior: 'smooth' });
+                                }
+                            });
+                        }
+                    }, 100);
+                });
+                
+                currentPlacemarks.push(placemark);
+                currentMap.geoObjects.add(placemark);
+            }
+        });
+    }
+    
+    // Поиск при вводе (работает как обычно)
     addressInput.addEventListener('input', function() {
         const query = addressInput.value.trim().toLowerCase();
         
@@ -67,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         suggestionsDiv.classList.remove('hidden');
     });
     
-    // Функция отображения информации о доме
+    // Функция отображения информации о доме (полностью сохранена)
     function showHouseInfo(house) {
         console.log('Отображаем дом:', house.address);
         
@@ -117,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(1).textContent = work.description || '—';
             });
         } else {
-            programTbody.innerHTML = '<tr><td colspan="2">Нет данных</tr>';
+            programTbody.innerHTML = '<tr><td colspan="2">Нет данных</td></tr>';
         }
         
         const shortTbody = document.querySelector('#shortTermWorks tbody');
@@ -130,11 +196,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(2).textContent = work.period || '—';
             });
         } else {
-            shortTbody.innerHTML = '<td><td colspan="3">Нет данных</tr>';
+            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных</td></tr>';
         }
     }
     
-    // Функция отображения информации о текущем лифте
+    // Функция отображения информации о текущем лифте (без изменений)
     function showLiftInfo(house, entranceIndex) {
         const liftInfo = document.getElementById('liftInfo');
         const entrance = house.entrances[entranceIndex];
@@ -170,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
-    // Функция отображения информации о предыдущем лифте
+    // Функция отображения информации о предыдущем лифте (без изменений)
     function showPreviousLift(house, entranceIndex) {
         const previousLiftCard = document.getElementById('previousLiftCard');
         const previousLiftInfo = document.getElementById('previousLiftInfo');
