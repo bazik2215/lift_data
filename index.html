@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Лифты — капитальный ремонт в Луганске</title>
     <link rel="stylesheet" href="style.css">
-    <!-- НОВЫЙ API-КЛЮЧ (ЗАМЕНИТЕ ЕГО НА ВАШ) -->
     <script src="https://api-maps.yandex.ru/2.1/?apikey=b45543af-a624-4ee6-bef2-7f2e8e8498fd&lang=ru_RU"></script>
 </head>
 <body>
@@ -27,8 +26,25 @@
                 <div id="suggestions" class="suggestions hidden"></div>
             </div>
 
-            <!-- БЛОК КАРТЫ -->
-            <div id="map" class="map-container" style="height: 400px; margin-bottom: 30px; border-radius: 20px;"></div>
+            <!-- Блок фильтров -->
+            <div class="filters-block">
+                <div class="filter-group">
+                    <label for="planType" class="filter-label">📋 Тип плана:</label>
+                    <select id="planType" class="filter-select">
+                        <option value="program">📅 Виды работ в соответствии с программой</option>
+                        <option value="shortTerm">⚡ Виды работ в соответствии с краткосрочным планом</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="timeFilter" class="filter-label">📅 Период / сроки:</label>
+                    <select id="timeFilter" class="filter-select">
+                        <option value="all">📋 Все сроки</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Контейнер для карты -->
+            <div id="map" class="map-container"></div>
 
             <div id="houseContent" class="hidden">
                 <div class="address-block">
