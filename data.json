@@ -2,13 +2,13 @@
     {
         "id": 2,
         "address": "г.Луганск, Заречный квартал, д. 11",
-		"coords": [48.528773, 39.270607],
         "district": "Артёмовский район",
         "buildingType": "Многоквартирный дом",
         "buildYear": 1987,
         "constructionYear": 1987,
         "floors": 9,
         "series": "111-96",
+        "coords": [48.560115, 39.310170],
         "entrances": [
             {
                 "name": "Подъезд 1 (Лифт №?)",
@@ -100,69 +100,70 @@
     {
         "id": 3,
         "address": "г.Луганск, Советская улица, д. 59 литера А",
-		"coords": [48.568505, 39.303510],
         "district": "Ленинский район",
         "buildingType": "Многоквартирный дом",
         "buildYear": 1974,
         "constructionYear": 1979,
         "floors": 12,
         "series": "II-66 (БС-44)",
+        "coords": [48.574200, 39.307500],
         "entrances": [
             {
-                "name": "Подъезд 1 (Лифт №?)",
-                "lift": {
-                    "model": "ЩЛЗ",
-                    "yearMade": 2025,
-                    "yearOper": 2025,
-                    "speed": "1 м/с",
-                    "type": "Пассажирский",
-                    "stops": 12,
-                    "condition": "Эксплуатируется",
-                    "engine": "АИР132",
-                    "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1974,
-                    "yearOper": 1979,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 12,
-                    "engine": "АС62",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "Были заколочены вентиляционные отверстия по бокам кабины"
-                }
-            },
-            {
-                "name": "Подъезд 1 (Лифт №?)",
-                "lift": {
-                    "model": "ЩЛЗ",
-                    "yearMade": 2025,
-                    "yearOper": 2025,
-                    "speed": "1 м/с",
-                    "type": "Грузопассажирский",
-                    "stops": 12,
-                    "condition": "Эксплуатируется",
-                    "engine": "АИР132",
-                    "loadCapacity": "630 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "КМЗ",
-                    "yearMade": 1974,
-                    "yearOper": 1979,
-                    "yearRemoved": 2025,
-                    "speed": "1 м/с",
-                    "type": "Грузопассажирский",
-                    "stops": 12,
-                    "engine": "АС2-91",
-                    "loadCapacity": "500 кг",
-                    "condition": "Заброшен",
-                    "note": "Был заброшен долгое время. Вызывные посты ВП-53"
-                }
+                "name": "Подъезд 1",
+                "lifts": [
+                    {
+                        "name": "Лифт №1 (пассажирский)",
+                        "model": "ЩЛЗ",
+                        "yearMade": 2025,
+                        "yearOper": 2025,
+                        "speed": "1 м/с",
+                        "type": "Пассажирский",
+                        "stops": 12,
+                        "condition": "Эксплуатируется",
+                        "engine": "АИР132",
+                        "loadCapacity": "400 кг",
+                        "note": "-",
+                        "previousLift": {
+                            "model": "МЛЗ",
+                            "yearMade": 1974,
+                            "yearOper": 1979,
+                            "yearRemoved": 2025,
+                            "speed": "0.71 м/с",
+                            "type": "Пассажирский",
+                            "stops": 12,
+                            "engine": "АС62",
+                            "loadCapacity": "320 кг",
+                            "condition": "Эксплуатировался",
+                            "note": "Были заколочены вентиляционные отверстия по бокам кабины"
+                        }
+                    },
+                    {
+                        "name": "Лифт №2 (грузопассажирский)",
+                        "model": "ЩЛЗ",
+                        "yearMade": 2025,
+                        "yearOper": 2025,
+                        "speed": "1 м/с",
+                        "type": "Грузопассажирский",
+                        "stops": 12,
+                        "condition": "Эксплуатируется",
+                        "engine": "АИР132",
+                        "loadCapacity": "630 кг",
+                        "note": "-",
+                        "previousLift": {
+                            "model": "КМЗ",
+                            "yearMade": 1974,
+                            "yearOper": 1979,
+                            "yearRemoved": 2025,
+                            "speed": "1 м/с",
+                            "type": "Грузопассажирский",
+                            "stops": 12,
+                            "engine": "АС2-91",
+                            "loadCapacity": "500 кг",
+                            "condition": "Заброшен",
+                            "note": "Был заброшен долгое время. Вызывные посты ВП-53"
+                        }
+                    }
+                ]
             }
         ],
         "programWorks": [
@@ -186,13 +187,13 @@
     {
         "id": 1,
         "address": "г.Луганск, квартал Дзержинского, д. 6",
-		"coords": [48.578414, 39.398346],
         "district": "Жовтневый район",
         "buildingType": "Многоквартирный дом",
         "buildYear": 1977,
         "constructionYear": 1977,
         "floors": 9,
         "series": "111-96",
+        "coords": [48.554800, 39.315000],
         "entrances": [
             {
                 "name": "Подъезд 1 (Лифт №7740)",
@@ -206,20 +207,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1977,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС62",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1977,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС62",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -234,20 +235,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1977,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС62",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1977,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС62",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -262,20 +263,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1977,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС62",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1977,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС62",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -290,20 +291,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1977,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС62",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1977,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС62",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -318,20 +319,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1977,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС62",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1977,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС62",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -346,20 +347,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1977,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС62",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1977,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС62",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             }
         ],
@@ -400,13 +401,13 @@
     {
         "id": 4,
         "address": "г.Луганск, квартал Норинского, д. 1",
-		"coords": [48.580884, 39.397128],
         "district": "Жовтневый район",
         "buildingType": "Многоквартирный дом",
         "buildYear": 1976,
         "constructionYear": 1976,
         "floors": 9,
         "series": "1-480А",
+        "coords": [48.548500, 39.320000],
         "entrances": [
             {
                 "name": "Подъезд 1 (Лифт №?)",
@@ -420,20 +421,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1976,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АН180",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1976,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АН180",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -448,20 +449,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1976,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АН180",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1976,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АН180",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -476,20 +477,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1976,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС72",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1976,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС72",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -504,20 +505,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1976,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС72",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1976,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС72",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -532,20 +533,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1976,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АН180",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1976,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АН180",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -560,20 +561,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1976,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АН180",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1976,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АН180",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -588,20 +589,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1976,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АН180",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1976,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АН180",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             },
             {
@@ -616,20 +617,20 @@
                     "condition": "Эксплуатируется",
                     "engine": "АИР132",
                     "loadCapacity": "400 кг",
-                    "note": "-"
-                },
-                "previousLift": {
-                    "model": "МЛЗ",
-                    "yearMade": 1976,
-                    "yearOper": 1976,
-                    "yearRemoved": 2025,
-                    "speed": "0.71 м/с",
-                    "type": "Пассажирский",
-                    "stops": 9,
-                    "engine": "АС62",
-                    "loadCapacity": "320 кг",
-                    "condition": "Эксплуатировался",
-                    "note": "-"
+                    "note": "-",
+                    "previousLift": {
+                        "model": "МЛЗ",
+                        "yearMade": 1976,
+                        "yearOper": 1976,
+                        "yearRemoved": 2025,
+                        "speed": "0.71 м/с",
+                        "type": "Пассажирский",
+                        "stops": 9,
+                        "engine": "АС62",
+                        "loadCapacity": "320 кг",
+                        "condition": "Эксплуатировался",
+                        "note": "-"
+                    }
                 }
             }
         ],
