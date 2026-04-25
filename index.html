@@ -2,12 +2,16 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лифты — капитальный ремонт</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Лифты — капитальный ремонт в Луганске</title>
     <link rel="stylesheet" href="style.css">
+    <!-- !!! ВСТАВЬТЕ ВАШ API-КЛЮЧ ЯНДЕКСА ВМЕСТО "ВАШ_КЛЮЧ_API" !!! -->
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=b45543af-a624-4ee6-bef2-7f2e8e8498fd
+&lang=ru_RU"></script>
 </head>
 <body>
     <div class="page">
+        <!-- Синяя шапка с кнопкой Главная -->
         <div class="header">
             <div class="header-content">
                 <button id="homeButton" class="home-button">🏠 Главная</button>
@@ -16,6 +20,7 @@
         </div>
 
         <div class="container">
+            <!-- Поиск дома -->
             <div class="search-header">
                 <h2>Поиск дома</h2>
             </div>
@@ -25,6 +30,27 @@
                 <div id="suggestions" class="suggestions hidden"></div>
             </div>
 
+            <!-- Блок фильтров -->
+            <div class="filters-block">
+                <div class="filter-group">
+                    <label for="planType" class="filter-label">📋 Тип плана:</label>
+                    <select id="planType" class="filter-select">
+                        <option value="program">📅 Виды работ в соответствии с программой</option>
+                        <option value="shortTerm">⚡ Виды работ в соответствии с краткосрочным планом</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="timeFilter" class="filter-label">📅 Период / сроки:</label>
+                    <select id="timeFilter" class="filter-select">
+                        <option value="all">📋 Все сроки</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Контейнер для карты -->
+            <div id="map" class="map-container"></div>
+
+            <!-- Контент с информацией о доме -->
             <div id="houseContent" class="hidden">
                 <div class="address-block">
                     <div class="full-address" id="fullAddress"></div>
@@ -32,7 +58,7 @@
                 </div>
 
                 <div class="info-card">
-                    <div class="card-title"> Информация о здании</div>
+                    <div class="card-title">📋 Информация о здании</div>
                     <div class="info-grid two-columns">
                         <div class="info-row"><span class="info-label">Тип</span><span class="info-value" id="buildingType">—</span></div>
                         <div class="info-row"><span class="info-label">Год ввода в эксплуатацию</span><span class="info-value" id="buildYear">—</span></div>
@@ -43,35 +69,46 @@
                 </div>
 
                 <div class="info-card">
-                    <div class="card-title"> Выберите подъезд / лифт</div>
+                    <div class="card-title">🚪 Выберите подъезд / лифт</div>
                     <div class="entrance-buttons" id="entranceButtons"></div>
                 </div>
 
                 <div class="info-card">
-                    <div class="card-title"> Состояние лифта</div>
+                    <div class="card-title">🔧 Состояние лифта</div>
                     <div class="info-grid two-columns" id="liftInfo"></div>
                 </div>
 
                 <div class="info-card" id="previousLiftCard" style="display: none;">
-                    <div class="card-title"> Предыдущий лифт (до замены)</div>
+                    <div class="card-title">📜 Предыдущий лифт (до замены)</div>
                     <div class="info-grid two-columns" id="previousLiftInfo"></div>
                 </div>
 
                 <div class="info-card">
-                    <div class="card-title"> Виды работ в соответствии с программой</div>
+                    <div class="card-title">📅 Виды работ в соответствии с программой</div>
                     <div class="table-wrapper">
                         <table class="info-table" id="programWorks">
-                            <thead><tr><th>Год</th><th>Тип ремонта</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Год</th>
+                                    <th>Тип ремонта</th>
+                                </tr>
+                            </thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
 
                 <div class="info-card">
-                    <div class="card-title"> Виды работ в соответствии с краткосрочным планом</div>
+                    <div class="card-title">⚡ Виды работ в соответствии с краткосрочным планом</div>
                     <div class="table-wrapper">
                         <table class="info-table" id="shortTermWorks">
-                            <thead><tr><th>Тип ремонта</th><th>Подрядчик</th><th>Срок выполнения</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Тип ремонта</th>
+                                    <th>Подрядчик</th>
+                                    <th>Срок выполнения</th>
+                                </tr>
+                            </thead>
                             <tbody></tbody>
                         </table>
                     </div>

@@ -1,5 +1,7 @@
 // Глобальная переменная для данных
 let housesData = [];
+let currentMap = null;
+let currentPlacemarks = [];
 
 // Ждем полной загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,25 +12,194 @@ document.addEventListener('DOMContentLoaded', function() {
     const suggestionsDiv = document.getElementById('suggestions');
     const houseContent = document.getElementById('houseContent');
     const homeButton = document.getElementById('homeButton');
+    const planTypeSelect = document.getElementById('planType');
+    const timeFilterSelect = document.getElementById('timeFilter');
     
-    // Загружаем данные (с убийцей кэша)
-    fetch('data.json?t=' + Date.now())
-        .then(function(response) {
-            console.log('Ответ от сервера:', response.status);
-            if (!response.ok) {
-                throw new Error('Ошибка загрузки: ' + response.status);
-            }
-            return response.json();
-        })
-        .then(function(data) {
-            housesData = data;
-            console.log('Данные загружены! Количество домов:', housesData.length);
-            console.log('Первый дом:', housesData[0]);
-        })
-        .catch(function(error) {
-            console.error('Ошибка:', error);
-            alert('Не удалось загрузить data.json. Проверьте консоль F12');
+    // Загружаем данные
+    function loadData() {
+        fetch('data.json?t=' + Date.now())
+            .then(function(response) {
+                if (!response.ok) throw new Error('Ошибка загрузки: ' + response.status);
+                return response.json();
+            })
+            .then(function(data) {
+                housesData = data;
+                console.log('Данные загружены! Количество домов:', housesData.length);
+                updateTimeFilterOptions();
+                initMap();
+            })
+            .catch(function(error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось загрузить data.json. Проверьте консоль F12');
+            });
+    }
+    
+    // Обновление второго выпадающего списка (периодов) в зависимости от выбранного типа плана
+    function updateTimeFilterOptions() {
+        const planType = planTypeSelect.value;
+        let timeValues = new Set();
+        
+        if (planType === 'program') {
+            // Собираем все уникальные годы из programWorks
+            housesData.forEach(function(house) {
+                if (house.programWorks && house.programWorks.length > 0) {
+                    house.programWorks.forEach(function(work) {
+                        if (work.year) timeValues.add(work.year);
+                    });
+                }
+            });
+        } else {
+            // Собираем все уникальные периоды из shortTermWorks
+            housesData.forEach(function(house) {
+                if (house.shortTermWorks && house.shortTermWorks.length > 0) {
+                    house.shortTermWorks.forEach(function(work) {
+                        if (work.period) timeValues.add(work.period);
+                    });
+                }
+            });
+        }
+        
+        // Преобразуем Set в массив и сортируем
+        let sortedValues = Array.from(timeValues).sort();
+        
+        // Сохраняем текущее выбранное значение
+        const currentValue = timeFilterSelect.value;
+        
+        // Очищаем и заполняем select
+        timeFilterSelect.innerHTML = '<option value="all">📋 Все сроки</option>';
+        sortedValues.forEach(function(value) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            timeFilterSelect.appendChild(option);
         });
+        
+        // Восстанавливаем предыдущее значение, если оно существует в новом списке
+        if (currentValue !== 'all' && sortedValues.includes(currentValue)) {
+            timeFilterSelect.value = currentValue;
+        } else {
+            timeFilterSelect.value = 'all';
+        }
+    }
+    
+    // Получение значения периода для дома в зависимости от типа плана
+    function getHouseTimeValue(house, planType) {
+        if (planType === 'program') {
+            if (house.programWorks && house.programWorks.length > 0) {
+                return house.programWorks[0].year;
+            }
+        } else {
+            if (house.shortTermWorks && house.shortTermWorks.length > 0) {
+                return house.shortTermWorks[0].period;
+            }
+        }
+        return null;
+    }
+    
+    // Проверка, соответствует ли дом выбранным фильтрам
+    function isHouseMatchesFilter(house, planType, timeValue) {
+        if (planType === 'program') {
+            if (!house.programWorks || house.programWorks.length === 0) return false;
+            if (timeValue === 'all') return true;
+            return house.programWorks.some(function(work) {
+                return work.year === timeValue;
+            });
+        } else {
+            if (!house.shortTermWorks || house.shortTermWorks.length === 0) return false;
+            if (timeValue === 'all') return true;
+            return house.shortTermWorks.some(function(work) {
+                return work.period === timeValue;
+            });
+        }
+    }
+    
+    // Инициализация карты
+    function initMap() {
+        if (typeof ymaps === 'undefined') {
+            console.error('Яндекс.Карты не загрузились. Проверьте API-ключ.');
+            return;
+        }
+        
+        ymaps.ready(function() {
+            currentMap = new ymaps.Map('map', {
+                center: [48.574, 39.307],
+                zoom: 12,
+                controls: ['zoomControl', 'fullscreenControl']
+            });
+            
+            applyFilters();
+        });
+    }
+    
+    // Применение фильтров и обновление меток
+    function applyFilters() {
+        if (!currentMap) return;
+        
+        const planType = planTypeSelect.value;
+        const timeValue = timeFilterSelect.value;
+        
+        console.log('Применяем фильтры:', planType, timeValue);
+        
+        // Удаляем старые метки
+        currentPlacemarks.forEach(function(p) {
+            currentMap.geoObjects.remove(p);
+        });
+        currentPlacemarks = [];
+        
+        // Фильтруем дома
+        let filteredHouses = housesData.filter(function(house) {
+            return isHouseMatchesFilter(house, planType, timeValue);
+        });
+        
+        console.log('Отображаем домов после фильтра:', filteredHouses.length);
+        
+        // Добавляем метки для отфильтрованных домов
+        filteredHouses.forEach(function(house) {
+            if (house.coords && house.coords.length === 2) {
+                let preset = 'islands#blueHomeIcon';
+                const timeValueForColor = getHouseTimeValue(house, planType);
+                if (timeValueForColor) {
+                    if (timeValueForColor === '2024-2025') preset = 'islands#redHomeIcon';
+                    else if (timeValueForColor === '2025-2030') preset = 'islands#greenHomeIcon';
+                }
+                
+                const placemark = new ymaps.Placemark(
+                    house.coords,
+                    {
+                        balloonContentHeader: '<b>' + house.address + '</b>',
+                        balloonContentBody: '<strong>📅 ' + (planType === 'program' ? 'План' : 'Период') + ':</strong> ' + (getHouseTimeValue(house, planType) || '—') + '<br><strong>🏢 Район:</strong> ' + (house.district || '—') + '<br><strong>🚪 Подъездов:</strong> ' + (house.entrances ? house.entrances.length : '—'),
+                        balloonContentFooter: '<a href="#" class="balloon-details-link" data-id="' + house.id + '">📋 Подробнее о доме →</a>'
+                    },
+                    { preset: preset }
+                );
+                
+                placemark.events.add('balloonopen', function() {
+                    setTimeout(function() {
+                        const link = document.querySelector('.balloon-details-link');
+                        if (link) {
+                            link.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const houseId = parseInt(this.dataset.id);
+                                const selectedHouse = housesData.find(function(h) { return h.id === houseId; });
+                                if (selectedHouse) {
+                                    showHouseInfo(selectedHouse);
+                                    currentMap.balloon.close();
+                                    document.getElementById('houseContent').scrollIntoView({ behavior: 'smooth' });
+                                }
+                            });
+                        }
+                    }, 50);
+                });
+                
+                currentPlacemarks.push(placemark);
+                currentMap.geoObjects.add(placemark);
+            }
+        });
+        
+        if (filteredHouses.length === 0) {
+            console.log('Нет домов для отображения на карте');
+        }
+    }
     
     // Поиск при вводе
     addressInput.addEventListener('input', function() {
@@ -61,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 addressInput.value = house.address;
                 suggestionsDiv.classList.add('hidden');
                 showHouseInfo(house);
+                document.getElementById('houseContent').scrollIntoView({ behavior: 'smooth' });
             };
             suggestionsDiv.appendChild(div);
         });
@@ -71,22 +243,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function showHouseInfo(house) {
         console.log('Отображаем дом:', house.address);
         
-        // Показываем контейнер
         houseContent.classList.remove('hidden');
         
-        // Заполняем адрес и район
         document.getElementById('fullAddress').textContent = house.address;
         document.getElementById('district').textContent = house.district || '—';
         document.getElementById('buildingType').textContent = house.buildingType || 'Многоквартирный дом';
         
-        // ИСПРАВЛЕНО: Год ввода в эксплуатацию = constructionYear, Год постройки = buildYear
         document.getElementById('buildYear').textContent = house.constructionYear || house.buildYear || '—';
         document.getElementById('constructionYear').textContent = house.buildYear || '—';
         
         document.getElementById('floors').textContent = house.floors || '—';
         document.getElementById('series').textContent = house.series || '—';
         
-        // Кнопки подъездов
         const entranceButtons = document.getElementById('entranceButtons');
         entranceButtons.innerHTML = '';
         
@@ -114,7 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
             showPreviousLift(house, 0);
         }
         
-        // Программа работ
         const programTbody = document.querySelector('#programWorks tbody');
         programTbody.innerHTML = '';
         if (house.programWorks && house.programWorks.length > 0) {
@@ -127,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
             programTbody.innerHTML = '<tr><td colspan="2">Нет данных</td></tr>';
         }
         
-        // Краткосрочный план
         const shortTbody = document.querySelector('#shortTermWorks tbody');
         shortTbody.innerHTML = '';
         if (house.shortTermWorks && house.shortTermWorks.length > 0) {
@@ -142,10 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Функция отображения информации о текущем лифте
     function showLiftInfo(house, entranceIndex) {
-        console.log('Показываем лифт, индекс:', entranceIndex);
-        
         const liftInfo = document.getElementById('liftInfo');
         const entrance = house.entrances[entranceIndex];
         
@@ -156,7 +319,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const lift = entrance.lift;
         
-        // Рассчитываем срок эксплуатации
         let yearsInService = '—';
         if (lift.yearOper && lift.yearOper !== '—') {
             const currentYear = new Date().getFullYear();
@@ -181,7 +343,6 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
-    // Функция отображения информации о предыдущем лифте
     function showPreviousLift(house, entranceIndex) {
         const previousLiftCard = document.getElementById('previousLiftCard');
         const previousLiftInfo = document.getElementById('previousLiftInfo');
@@ -232,10 +393,15 @@ document.addEventListener('DOMContentLoaded', function() {
         addressInput.focus();
     });
     
-    // Скрываем подсказки при клике вне
-    document.addEventListener('click', function(e) {
-        if (e.target !== addressInput && !suggestionsDiv.contains(e.target)) {
-            suggestionsDiv.classList.add('hidden');
-        }
+    // Обработчики изменения фильтров
+    planTypeSelect.addEventListener('change', function() {
+        updateTimeFilterOptions();
+        applyFilters();
     });
-});
+    
+    timeFilterSelect.addEventListener('change', function() {
+        applyFilters();
+    });
+    
+    // Скрываем подсказки при клике вне
+   
