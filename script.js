@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (planType === 'program') {
             const liftsListHtml = getLiftsListForProgram(house, selectedTime);
-            return `<b>${address}</b><br>Район: ${district}<br><b>Лифты:</b>${liftsListHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">Подробнее о доме →</a>`;
+            return `<b>${address}</b><br>${district}<br><b>Лифты:</b>${liftsListHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">Подробнее о доме →</a>`;
         } else {
             // Табличка с границами для краткосрочного плана
             let tableHtml = '<table style="width:100%; border-collapse: collapse; margin-top: 5px; border: 1px solid #ccc;">';
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             tableHtml += '</table>';
             
-            return `<b>${address}</b><br>🏢 Район: ${district}${tableHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">Подробнее о доме →</a>`;
+            return `<b>${address}</b><br>${district}${tableHtml}<br><br><a href="#" class="balloon-details-link" data-id="${house.id}">Подробнее о доме →</a>`;
         }
     }
     
