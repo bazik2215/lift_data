@@ -5,6 +5,50 @@ let currentPlacemarks = [];
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Карта загружена');
     
+    // ========== ФИКС ПОДСКАЗОК В ТЁМНОЙ ТЕМЕ ==========
+    function fixSuggestionsTheme() {
+        const suggestionsDiv = document.getElementById('suggestions');
+        if (!suggestionsDiv) return;
+        
+        function handleMouseEnter(e) {
+            if (document.body.classList.contains('dark-theme')) {
+                e.target.style.backgroundColor = '#1a1e2c';
+                e.target.style.color = '#e0e0e0';
+            } else {
+                e.target.style.backgroundColor = '#e6f4fa';
+                e.target.style.color = '#1a2a3a';
+            }
+        }
+        
+        function handleMouseLeave(e) {
+            if (document.body.classList.contains('dark-theme')) {
+                e.target.style.backgroundColor = '#2a2e3d';
+                e.target.style.color = '#e0e0e0';
+            } else {
+                e.target.style.backgroundColor = '';
+                e.target.style.color = '';
+            }
+        }
+        
+        const items = suggestionsDiv.querySelectorAll('div');
+        items.forEach(item => {
+            item.removeEventListener('mouseenter', handleMouseEnter);
+            item.removeEventListener('mouseleave', handleMouseLeave);
+            item.addEventListener('mouseenter', handleMouseEnter);
+            item.addEventListener('mouseleave', handleMouseLeave);
+        });
+    }
+    
+    function observeSuggestions() {
+        const suggestionsDiv = document.getElementById('suggestions');
+        if (!suggestionsDiv) return;
+        
+        const observer = new MutationObserver(function() {
+            fixSuggestionsTheme();
+        });
+        observer.observe(suggestionsDiv, { childList: true, subtree: true });
+    }
+    
     // Тёмная тема
     const themeToggle = document.getElementById('themeToggle');
     const savedTheme = localStorage.getItem('theme');
@@ -24,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('theme', 'light');
                 themeToggle.textContent = '🌙';
             }
+            setTimeout(fixSuggestionsTheme, 10);
         });
     }
     
@@ -82,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateHeaderStats();
                 updateTimeFilterOptions();
                 initMap();
+                observeSuggestions();
             })
             .catch(function(error) {
                 console.error('Ошибка:', error);
@@ -132,17 +178,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Функция получения списка лифтов для балуна (с поддержкой registrationNumber)
     function getLiftsListForProgram(house, selectedYear) {
         let liftsWithYears = [];
         if (!house.entrances) return [];
-        
         house.entrances.forEach(function(entrance) {
-            // Новый формат (lifts)
             if (entrance.lifts && entrance.lifts.length > 0) {
                 entrance.lifts.forEach(function(lift) {
                     let liftNumber = '?';
-                    // Приоритет: registrationNumber > номер из названия
                     if (lift.registrationNumber && lift.registrationNumber !== '') {
                         liftNumber = lift.registrationNumber;
                     } else if (entrance.name) {
@@ -152,9 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     let liftYear = house.programWorks && house.programWorks.length > 0 ? house.programWorks[0].year : null;
                     liftsWithYears.push({ number: liftNumber, year: liftYear });
                 });
-            } 
-            // Старый формат (lift)
-            else if (entrance.lift) {
+            } else if (entrance.lift) {
                 let liftNumber = '?';
                 if (entrance.name) {
                     const match = entrance.name.match(/№(\d+)/);
@@ -164,13 +204,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 liftsWithYears.push({ number: liftNumber, year: liftYear });
             }
         });
-        
         if (selectedYear !== 'all') {
             liftsWithYears = liftsWithYears.filter(function(lift) { return lift.year === selectedYear; });
         }
-        
         if (liftsWithYears.length === 0) return '<i>Нет данных</i>';
-        
         let html = '<ul style="margin: 5px 0 0 20px; padding: 0; list-style-type: disc;">';
         liftsWithYears.forEach(function(lift) {
             const yearText = lift.year ? ' (' + lift.year + ')' : '';
@@ -281,6 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
             suggestionsDiv.appendChild(div);
         });
         suggestionsDiv.classList.remove('hidden');
+        setTimeout(fixSuggestionsTheme, 10);
     });
     
     planTypeSelect.addEventListener('change', function() {
