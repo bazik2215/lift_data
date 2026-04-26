@@ -133,17 +133,20 @@
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            padding: 24px;
             position: relative;
         }
         
         .modal-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
+            padding: 16px 20px;
+            background: white;
             border-bottom: 2px solid #cbdbe0;
+            border-radius: 20px 20px 0 0;
         }
         
         .modal-title {
@@ -155,9 +158,19 @@
         .modal-close {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
             color: #999;
+            line-height: 1;
+            padding: 0 8px;
+        }
+        
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        
+        .modal-body {
+            padding: 20px;
         }
         
         .form-group {
@@ -258,7 +271,15 @@
         
         body.dark-theme .modal-content {
             background: #252a38;
-            color: #e0e0e0;
+        }
+        
+        body.dark-theme .modal-header {
+            background: #252a38;
+            border-bottom-color: #3a3e4d;
+        }
+        
+        body.dark-theme .modal-title {
+            color: #a0c4e8;
         }
         
         body.dark-theme .form-group label {
@@ -299,6 +320,14 @@
             .houses-table-admin {
                 font-size: 0.75rem;
                 min-width: 600px;
+            }
+            
+            .modal-header {
+                padding: 12px 16px;
+            }
+            
+            .modal-title {
+                font-size: 1.1rem;
             }
         }
     </style>
@@ -364,7 +393,7 @@
                 <div class="modal-title" id="modalTitle">Редактирование дома</div>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <div id="modalBody"></div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
     
@@ -794,104 +823,4 @@
                             yearOper: document.getElementById(`prev_lift_yearOper_${i}_${j}`)?.value || '',
                             yearRemoved: document.getElementById(`prev_lift_yearRemoved_${i}_${j}`)?.value || '',
                             loadCapacity: document.getElementById(`prev_lift_loadCapacity_${i}_${j}`)?.value || '',
-                            speed: document.getElementById(`prev_lift_speed_${i}_${j}`)?.value || '',
-                            note: document.getElementById(`prev_lift_note_${i}_${j}`)?.value || ''
-                        };
-                    }
-                    lifts.push(lift);
-                }
-                entrances.push({ name: entranceName, lifts: lifts });
-            }
-            
-            // Собираем программы
-            const programWorks = [];
-            for (let i = 0; i < window.programsData.length; i++) {
-                programWorks.push({
-                    year: document.getElementById(`prog_year_${i}`)?.value || '',
-                    description: document.getElementById(`prog_desc_${i}`)?.value || ''
-                });
-            }
-            
-            // Собираем краткосрочные планы
-            const shortTermWorks = [];
-            for (let i = 0; i < window.shortTermData.length; i++) {
-                shortTermWorks.push({
-                    type: document.getElementById(`term_type_${i}`)?.value || '',
-                    contractor: document.getElementById(`term_contractor_${i}`)?.value || '',
-                    period: document.getElementById(`term_period_${i}`)?.value || ''
-                });
-            }
-            
-            const coordsStr = document.getElementById('houseCoords')?.value || '';
-            let coords = null;
-            if (coordsStr) {
-                const parts = coordsStr.split(',').map(function(s) { return parseFloat(s.trim()); });
-                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                    coords = parts;
-                }
-            }
-            
-            const houseData = {
-                id: newId,
-                address: document.getElementById('houseAddress')?.value || '',
-                district: document.getElementById('houseDistrict')?.value || '',
-                buildingType: document.getElementById('houseBuildingType')?.value || 'Многоквартирный дом',
-                buildYear: parseInt(document.getElementById('houseBuildYear')?.value) || 0,
-                constructionYear: parseInt(document.getElementById('houseConstructionYear')?.value) || 0,
-                floors: parseInt(document.getElementById('houseFloors')?.value) || 0,
-                series: document.getElementById('houseSeries')?.value || '',
-                coords: coords,
-                entrances: entrances,
-                programWorks: programWorks,
-                shortTermWorks: shortTermWorks
-            };
-            
-            if (houseId === null) {
-                housesData.push(houseData);
-            } else {
-                const index = housesData.findIndex(function(h) { return h.id === houseId; });
-                if (index !== -1) housesData[index] = houseData;
-            }
-            
-            closeModal();
-            renderHousesTable();
-            updateStats();
-        };
-        
-        window.closeModal = function() {
-            document.getElementById('houseModal').style.display = 'none';
-        };
-        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-        
-        // ========== СОХРАНЕНИЕ JSON ==========
-        document.getElementById('saveJsonBtn').addEventListener('click', function() {
-            const jsonStr = JSON.stringify(housesData, null, 2);
-            const blob = new Blob([jsonStr], {type: 'application/json'});
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.href = url;
-            link.download = 'data.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            alert('JSON сохранён! Загрузите файл data.json в ваш репозиторий на GitHub.');
-        });
-        
-        // Тёмная тема для админки
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark-theme');
-        }
-    </script>
-</body>
-</html>
+                            speed: document.getElementById(`prev_lift_speed_${i}_${j}`)?.value
