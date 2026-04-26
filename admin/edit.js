@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     } else {
         const house = housesData.find(h => h.id === houseId);
         if (house) {
-            // Сохраняем копию старого дома для сравнения
             oldHouseData = JSON.parse(JSON.stringify(house));
             fillForm(house);
         } else {
@@ -56,7 +55,7 @@ function setupEventListeners() {
         saveBtn.addEventListener('click', () => saveHouse());
     }
     
-    // Кнопка сохранения JSON (скачивание data.json)
+    // Кнопка сохранения JSON
     const saveJsonBtn = document.getElementById('saveJsonBtn');
     if (saveJsonBtn) {
         saveJsonBtn.addEventListener('click', () => {
@@ -85,19 +84,31 @@ function setupEventListeners() {
     // Кнопка добавления подъезда
     const addEntranceBtn = document.getElementById('addEntranceBtn');
     if (addEntranceBtn) {
-        addEntranceBtn.addEventListener('click', () => addEntrance());
+        addEntranceBtn.addEventListener('click', () => {
+            saveCurrentEntranceData();
+            window.entrancesData.push({ name: '', lifts: [] });
+            renderEntrances();
+        });
     }
     
     // Кнопка добавления программы
     const addProgramBtn = document.getElementById('addProgramBtn');
     if (addProgramBtn) {
-        addProgramBtn.addEventListener('click', () => addProgram());
+        addProgramBtn.addEventListener('click', () => {
+            saveCurrentProgramsData();
+            window.programsData.push({ year: '', description: '' });
+            renderPrograms();
+        });
     }
     
     // Кнопка добавления краткосрочного плана
     const addShortTermBtn = document.getElementById('addShortTermBtn');
     if (addShortTermBtn) {
-        addShortTermBtn.addEventListener('click', () => addShortTerm());
+        addShortTermBtn.addEventListener('click', () => {
+            saveCurrentShortTermData();
+            window.shortTermData.push({ type: '', contractor: '', period: '' });
+            renderShortTerm();
+        });
     }
     
     // Предпросмотр координат
@@ -155,8 +166,8 @@ function fillForm(house) {
 
 // ========== ПОЛУЧЕНИЕ СЛЕДУЮЩЕГО ID ==========
 function getNextId() {
-    // getNextId теперь в common.js с учётом localStorage
-    return window.getNextId ? window.getNextId() : (Math.max(...housesData.map(h => h.id), 0) + 1);
+    const maxId = Math.max(...housesData.map(h => h.id), 0);
+    return maxId + 1;
 }
 
 // ========== ПРЕДПРОСМОТР КООРДИНАТ ==========
@@ -455,7 +466,6 @@ async function saveHouse() {
         housesData.push(houseData);
         showToast(`✅ Дом "${address}" добавлен в память`);
         
-        // Логируем добавление
         await addHistoryRecord('add', houseData.id, houseData.address, {
             summary: `${houseData.entrances?.length || 0} подъездов, ${getLiftsCount(houseData)} лифтов, ${houseData.programWorks?.length || 0} программ`
         });
@@ -465,7 +475,6 @@ async function saveHouse() {
             housesData[index] = houseData;
             showToast(`✅ Дом "${address}" сохранён в памяти`);
             
-            // Логируем изменения
             if (oldHouseData) {
                 const changes = compareHouses(oldHouseData, houseData);
                 if (changes.length > 0) {
@@ -485,23 +494,18 @@ async function saveHouse() {
 // ========== УДАЛЕНИЕ ДОМА ==========
 async function deleteHouse() {
     if (confirm('🗑️ Удалить дом? Это действие нельзя отменить.')) {
-        // Сохраняем копию для истории
         const deletedHouse = housesData.find(h => h.id === houseId);
         
         housesData = housesData.filter(h => h.id !== houseId);
         showToast('✅ Дом удалён из памяти');
         
-        // Логируем удаление
         if (deletedHouse) {
             await addHistoryRecord('delete', deletedHouse.id, deletedHouse.address, {
                 deletedData: JSON.parse(JSON.stringify(deletedHouse))
             });
         }
         
-        // Сохраняем в localStorage
         saveToLocalStorage();
-        
-        // Переходим на страницу списка
         window.location.href = 'index.html';
     }
 }
