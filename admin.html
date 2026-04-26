@@ -178,7 +178,7 @@
         document.getElementById('addHouseBtn').addEventListener('click', () => { editingHouseId = null; document.getElementById('modalTitle').textContent = '➕ Добавление дома'; showHouseForm(null); });
         window.editHouse = function(id) { editingHouseId = id; document.getElementById('modalTitle').textContent = '✏️ Редактирование дома'; showHouseForm(housesData.find(h => h.id === id)); };
         
-        // ========== СОХРАНЕНИЕ ДАННЫХ ПЕРЕД ДОБАВЛЕНИЕМ/УДАЛЕНИЕМ ==========
+        // Сохранение данных перед добавлением/удалением
         function saveCurrentEntranceData() {
             for (let i = 0; i < window.entrancesData.length; i++) {
                 window.entrancesData[i].name = document.getElementById(`entrance_name_${i}`)?.value || '';
@@ -365,7 +365,7 @@
                 div.className = 'subgroup';
                 div.innerHTML = `<div style="display: flex; justify-content: space-between;"><strong>План ${idx + 1}</strong><button class="action-icon" onclick="removeShortTerm(${idx})">🗑️</button></div>
                     <div class="form-group"><label>Тип ремонта</label><textarea id="term_type_${idx}">${escapeHtml(term.type || '')}</textarea></div>
-                    <div class="form-group"><label>Подрядчик</label><input type="text" id="term_contractor_${idx}" value="${escapeHtml(term.contractor || '')}"></div>
+                    <div class="form-group"><label>Подрядчик</label><textarea id="term_contractor_${idx}" rows="2">${escapeHtml(term.contractor || '')}</textarea></div>
                     <div class="form-group"><label>Период</label><input type="text" id="term_period_${idx}" value="${escapeHtml(term.period || '')}"></div>`;
                 container.appendChild(div);
             });
