@@ -487,9 +487,7 @@
         
         function updateThemeButtons(theme) {
             const btns = document.querySelectorAll('.admin-theme-toggle');
-            btns.forEach(btn => {
-                if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-            });
+            btns.forEach(btn => { if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙'; });
         }
         
         function toggleTheme() {
@@ -510,9 +508,7 @@
                 document.getElementById('loginPanel').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 loadData();
-            } else {
-                alert('Неверный пароль');
-            }
+            } else { alert('Неверный пароль'); }
         });
         
         document.getElementById('logoutBtn').addEventListener('click', function() {
@@ -523,47 +519,28 @@
         
         function loadData() {
             fetch('data.json?t=' + Date.now())
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Ошибка загрузки');
-                    return response.json();
-                })
-                .then(function(data) {
-                    housesData = data;
-                    renderHousesTable();
-                    updateStats();
-                })
-                .catch(function(error) {
-                    console.error('Ошибка:', error);
-                    alert('Не удалось загрузить data.json. Убедитесь, что файл существует.');
-                });
+                .then(response => { if (!response.ok) throw new Error('Ошибка загрузки'); return response.json(); })
+                .then(data => { housesData = data; renderHousesTable(); updateStats(); })
+                .catch(error => { console.error('Ошибка:', error); alert('Не удалось загрузить data.json.'); });
         }
         
         function getLiftsCount(house) {
             let count = 0;
             if (house.entrances) {
-                house.entrances.forEach(function(entrance) {
-                    if (entrance.lifts && entrance.lifts.length > 0) {
-                        count += entrance.lifts.length;
-                    } else if (entrance.lift) {
-                        count += 1;
-                    }
+                house.entrances.forEach(entrance => {
+                    if (entrance.lifts && entrance.lifts.length > 0) count += entrance.lifts.length;
+                    else if (entrance.lift) count += 1;
                 });
             }
             return count;
         }
         
-        function getProgramsCount(house) {
-            return (house.programWorks ? house.programWorks.length : 0);
-        }
+        function getProgramsCount(house) { return house.programWorks ? house.programWorks.length : 0; }
         
         function updateStats() {
             const totalHouses = housesData.length;
-            let totalLifts = 0;
-            let totalPrograms = 0;
-            housesData.forEach(function(house) {
-                totalLifts += getLiftsCount(house);
-                totalPrograms += getProgramsCount(house);
-            });
+            let totalLifts = 0, totalPrograms = 0;
+            housesData.forEach(house => { totalLifts += getLiftsCount(house); totalPrograms += getProgramsCount(house); });
             document.getElementById('totalHouses').textContent = totalHouses;
             document.getElementById('totalLifts').textContent = totalLifts;
             document.getElementById('totalPrograms').textContent = totalPrograms;
@@ -572,8 +549,8 @@
         function renderHousesTable() {
             const tbody = document.getElementById('housesTableBody');
             tbody.innerHTML = '';
-            housesData.sort(function(a, b) { return a.id - b.id; });
-            housesData.forEach(function(house) {
+            housesData.sort((a, b) => a.id - b.id);
+            housesData.forEach(house => {
                 const row = tbody.insertRow();
                 row.insertCell(0).textContent = house.id;
                 row.insertCell(1).textContent = house.address;
@@ -581,25 +558,19 @@
                 row.insertCell(3).textContent = house.floors || '—';
                 row.insertCell(4).textContent = house.buildYear || '—';
                 row.insertCell(5).textContent = getLiftsCount(house);
-                const actionsCell = row.insertCell(6);
-                actionsCell.innerHTML = `
-                    <div class="action-icons">
-                        <button class="action-icon" onclick="editHouse(${house.id})" title="Редактировать">✏️</button>
-                        <button class="action-icon" onclick="deleteHouse(${house.id})" title="Удалить">🗑️</button>
-                    </div>
-                `;
+                row.insertCell(6).innerHTML = `<div class="action-icons"><button class="action-icon" onclick="editHouse(${house.id})" title="Редактировать">✏️</button><button class="action-icon" onclick="deleteHouse(${house.id})" title="Удалить">🗑️</button></div>`;
             });
         }
         
         window.deleteHouse = function(id) {
             if (confirm('Удалить дом? Это действие нельзя отменить.')) {
-                housesData = housesData.filter(function(house) { return house.id !== id; });
+                housesData = housesData.filter(house => house.id !== id);
                 renderHousesTable();
                 updateStats();
             }
         };
         
-        document.getElementById('addHouseBtn').addEventListener('click', function() {
+        document.getElementById('addHouseBtn').addEventListener('click', () => {
             editingHouseId = null;
             document.getElementById('modalTitle').textContent = '➕ Добавление дома';
             showHouseForm(null);
@@ -608,152 +579,117 @@
         window.editHouse = function(id) {
             editingHouseId = id;
             document.getElementById('modalTitle').textContent = '✏️ Редактирование дома';
-            const house = housesData.find(function(h) { return h.id === id; });
-            showHouseForm(house);
+            showHouseForm(housesData.find(h => h.id === id));
         };
         
-        function saveCurrentLiftData(entranceIdx) {
-            const lifts = window[`liftsData_${entranceIdx}`] || [];
-            for (let j = 0; j < lifts.length; j++) {
-                lifts[j].registrationNumber = document.getElementById(`lift_regNumber_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].name = document.getElementById(`lift_name_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].model = document.getElementById(`lift_model_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].yearMade = document.getElementById(`lift_yearMade_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].yearOper = document.getElementById(`lift_yearOper_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].speed = document.getElementById(`lift_speed_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].loadCapacity = document.getElementById(`lift_loadCapacity_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].type = document.getElementById(`lift_type_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].stops = document.getElementById(`lift_stops_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].engine = document.getElementById(`lift_engine_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].condition = document.getElementById(`lift_condition_${entranceIdx}_${j}`)?.value || '';
-                lifts[j].note = document.getElementById(`lift_note_${entranceIdx}_${j}`)?.value || '';
-                
-                lifts[j].previousLift = {
-                    model: document.getElementById(`prev_lift_model_${entranceIdx}_${j}`)?.value || '',
-                    yearMade: document.getElementById(`prev_lift_yearMade_${entranceIdx}_${j}`)?.value || '',
-                    yearOper: document.getElementById(`prev_lift_yearOper_${entranceIdx}_${j}`)?.value || '',
-                    yearRemoved: document.getElementById(`prev_lift_yearRemoved_${entranceIdx}_${j}`)?.value || '',
-                    loadCapacity: document.getElementById(`prev_lift_loadCapacity_${entranceIdx}_${j}`)?.value || '',
-                    speed: document.getElementById(`prev_lift_speed_${entranceIdx}_${j}`)?.value || '',
-                    note: document.getElementById(`prev_lift_note_${entranceIdx}_${j}`)?.value || ''
-                };
+        // ========== СОХРАНЕНИЕ ДАННЫХ ПОДЪЕЗДОВ И ЛИФТОВ ==========
+        function saveCurrentEntranceData() {
+            for (let i = 0; i < window.entrancesData.length; i++) {
+                window.entrancesData[i].name = document.getElementById(`entrance_name_${i}`)?.value || '';
+                const lifts = window[`liftsData_${i}`] || [];
+                for (let j = 0; j < lifts.length; j++) {
+                    lifts[j].registrationNumber = document.getElementById(`lift_regNumber_${i}_${j}`)?.value || '';
+                    lifts[j].name = document.getElementById(`lift_name_${i}_${j}`)?.value || '';
+                    lifts[j].model = document.getElementById(`lift_model_${i}_${j}`)?.value || '';
+                    lifts[j].yearMade = document.getElementById(`lift_yearMade_${i}_${j}`)?.value || '';
+                    lifts[j].yearOper = document.getElementById(`lift_yearOper_${i}_${j}`)?.value || '';
+                    lifts[j].speed = document.getElementById(`lift_speed_${i}_${j}`)?.value || '';
+                    lifts[j].loadCapacity = document.getElementById(`lift_loadCapacity_${i}_${j}`)?.value || '';
+                    lifts[j].type = document.getElementById(`lift_type_${i}_${j}`)?.value || '';
+                    lifts[j].stops = document.getElementById(`lift_stops_${i}_${j}`)?.value || '';
+                    lifts[j].engine = document.getElementById(`lift_engine_${i}_${j}`)?.value || '';
+                    lifts[j].condition = document.getElementById(`lift_condition_${i}_${j}`)?.value || '';
+                    lifts[j].note = document.getElementById(`lift_note_${i}_${j}`)?.value || '';
+                    lifts[j].previousLift = {
+                        model: document.getElementById(`prev_lift_model_${i}_${j}`)?.value || '',
+                        yearMade: document.getElementById(`prev_lift_yearMade_${i}_${j}`)?.value || '',
+                        yearOper: document.getElementById(`prev_lift_yearOper_${i}_${j}`)?.value || '',
+                        yearRemoved: document.getElementById(`prev_lift_yearRemoved_${i}_${j}`)?.value || '',
+                        loadCapacity: document.getElementById(`prev_lift_loadCapacity_${i}_${j}`)?.value || '',
+                        speed: document.getElementById(`prev_lift_speed_${i}_${j}`)?.value || '',
+                        note: document.getElementById(`prev_lift_note_${i}_${j}`)?.value || ''
+                    };
+                }
+                window[`liftsData_${i}`] = lifts;
+                window.entrancesData[i].lifts = lifts;
             }
-            window[`liftsData_${entranceIdx}`] = lifts;
         }
         
+        window.addEntrance = function() {
+            saveCurrentEntranceData();
+            window.entrancesData.push({ name: '', lifts: [] });
+            renderEntrances();
+        };
+        
+        window.removeEntrance = function(idx) {
+            saveCurrentEntranceData();
+            window.entrancesData.splice(idx, 1);
+            renderEntrances();
+        };
+        
         window.addLift = function(entranceIdx) {
-            saveCurrentLiftData(entranceIdx);
+            saveCurrentEntranceData();
             if (!window[`liftsData_${entranceIdx}`]) window[`liftsData_${entranceIdx}`] = [];
             window[`liftsData_${entranceIdx}`].push({ registrationNumber: '', name: '', model: '', yearMade: '', yearOper: '', speed: '', loadCapacity: '', type: '', stops: '', engine: '', condition: '', note: '' });
             renderLifts(entranceIdx);
         };
         
         window.removeLift = function(entranceIdx, liftIdx) {
-            saveCurrentLiftData(entranceIdx);
+            saveCurrentEntranceData();
             window[`liftsData_${entranceIdx}`].splice(liftIdx, 1);
             renderLifts(entranceIdx);
         };
         
         function showHouseForm(house) {
             const modalBody = document.getElementById('modalBody');
-            
             const isNew = !house;
             const defaultHouse = {
                 id: isNew ? (Math.max(...housesData.map(h => h.id), 0) + 1) : house.id,
-                address: house ? (house.address || '') : '',
-                district: house ? (house.district || '') : '',
-                buildingType: house ? (house.buildingType || 'Многоквартирный дом') : 'Многоквартирный дом',
-                buildYear: house ? (house.buildYear || '') : '',
-                constructionYear: house ? (house.constructionYear || '') : '',
-                floors: house ? (house.floors || '') : '',
-                series: house ? (house.series || '') : '',
-                coords: house ? (house.coords ? house.coords.join(', ') : '') : '',
-                entrances: house ? house.entrances : [],
-                programWorks: house ? house.programWorks : [],
-                shortTermWorks: house ? house.shortTermWorks : []
+                address: house?.address || '',
+                district: house?.district || '',
+                buildingType: house?.buildingType || 'Многоквартирный дом',
+                buildYear: house?.buildYear || '',
+                constructionYear: house?.constructionYear || '',
+                floors: house?.floors || '',
+                series: house?.series || '',
+                coords: house?.coords ? house.coords.join(', ') : '',
+                entrances: house?.entrances || [],
+                programWorks: house?.programWorks || [],
+                shortTermWorks: house?.shortTermWorks || []
             };
             
             modalBody.innerHTML = `
-                <div class="form-group">
-                    <label>ID (уникальный номер)</label>
-                    <input type="number" id="houseId" value="${defaultHouse.id}" ${!isNew ? 'readonly' : ''}>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Адрес *</label>
-                        <input type="text" id="houseAddress" value="${escapeHtml(defaultHouse.address)}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Район</label>
-                        <input type="text" id="houseDistrict" value="${escapeHtml(defaultHouse.district)}">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Тип здания</label>
-                        <input type="text" id="houseBuildingType" value="${escapeHtml(defaultHouse.buildingType)}">
-                    </div>
-                    <div class="form-group">
-                        <label>Серия/проект</label>
-                        <input type="text" id="houseSeries" value="${escapeHtml(defaultHouse.series)}">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Год постройки</label>
-                        <input type="number" id="houseBuildYear" value="${defaultHouse.buildYear}">
-                    </div>
-                    <div class="form-group">
-                        <label>Год ввода в эксплуатацию</label>
-                        <input type="number" id="houseConstructionYear" value="${defaultHouse.constructionYear}">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Этажность</label>
-                        <input type="number" id="houseFloors" value="${defaultHouse.floors}">
-                    </div>
-                    <div class="form-group">
-                        <label>Координаты (широта, долгота)</label>
-                        <input type="text" id="houseCoords" value="${defaultHouse.coords}" placeholder="48.560115, 39.310170">
-                    </div>
-                </div>
+                <div class="form-group"><label>ID (уникальный номер)</label><input type="number" id="houseId" value="${defaultHouse.id}" ${!isNew ? 'readonly' : ''}></div>
+                <div class="form-row"><div class="form-group"><label>Адрес *</label><input type="text" id="houseAddress" value="${escapeHtml(defaultHouse.address)}" required></div>
+                <div class="form-group"><label>Район</label><input type="text" id="houseDistrict" value="${escapeHtml(defaultHouse.district)}"></div></div>
+                <div class="form-row"><div class="form-group"><label>Тип здания</label><input type="text" id="houseBuildingType" value="${escapeHtml(defaultHouse.buildingType)}"></div>
+                <div class="form-group"><label>Серия/проект</label><input type="text" id="houseSeries" value="${escapeHtml(defaultHouse.series)}"></div></div>
+                <div class="form-row"><div class="form-group"><label>Год постройки</label><input type="number" id="houseBuildYear" value="${defaultHouse.buildYear}"></div>
+                <div class="form-group"><label>Год ввода в эксплуатацию</label><input type="number" id="houseConstructionYear" value="${defaultHouse.constructionYear}"></div></div>
+                <div class="form-row"><div class="form-group"><label>Этажность</label><input type="number" id="houseFloors" value="${defaultHouse.floors}"></div>
+                <div class="form-group"><label>Координаты (широта, долгота)</label><input type="text" id="houseCoords" value="${defaultHouse.coords}" placeholder="48.560115, 39.310170"></div></div>
                 
-                <div class="subgroup">
-                    <div class="subgroup-title">🛗 Подъезды и лифты</div>
-                    <div id="entrancesContainer"></div>
-                    <button type="button" class="btn-add" id="addEntranceBtn">➕ Добавить подъезд</button>
-                </div>
-                
-                <div class="subgroup">
-                    <div class="subgroup-title">📅 Программа работ</div>
-                    <div id="programsContainer"></div>
-                    <button type="button" class="btn-add" id="addProgramBtn">➕ Добавить программу</button>
-                </div>
-                
-                <div class="subgroup">
-                    <div class="subgroup-title">⚡ Краткосрочный план</div>
-                    <div id="shortTermContainer"></div>
-                    <button type="button" class="btn-add" id="addShortTermBtn">➕ Добавить план</button>
-                </div>
+                <div class="subgroup"><div class="subgroup-title">🛗 Подъезды и лифты</div><div id="entrancesContainer"></div><button type="button" class="btn-add" id="addEntranceBtn">➕ Добавить подъезд</button></div>
+                <div class="subgroup"><div class="subgroup-title">📅 Программа работ</div><div id="programsContainer"></div><button type="button" class="btn-add" id="addProgramBtn">➕ Добавить программу</button></div>
+                <div class="subgroup"><div class="subgroup-title">⚡ Краткосрочный план</div><div id="shortTermContainer"></div><button type="button" class="btn-add" id="addShortTermBtn">➕ Добавить план</button></div>
             `;
             
-            window.entrancesData = defaultHouse.entrances ? JSON.parse(JSON.stringify(defaultHouse.entrances)) : [];
-            window.programsData = defaultHouse.programWorks ? JSON.parse(JSON.stringify(defaultHouse.programWorks)) : [];
-            window.shortTermData = defaultHouse.shortTermWorks ? JSON.parse(JSON.stringify(defaultHouse.shortTermWorks)) : [];
+            window.entrancesData = JSON.parse(JSON.stringify(defaultHouse.entrances));
+            window.programsData = JSON.parse(JSON.stringify(defaultHouse.programWorks));
+            window.shortTermData = JSON.parse(JSON.stringify(defaultHouse.shortTermWorks));
             
             renderEntrances();
             renderPrograms();
             renderShortTerm();
             
-            document.getElementById('addEntranceBtn').onclick = function() { addEntrance(); };
-            document.getElementById('addProgramBtn').onclick = function() { addProgram(); };
-            document.getElementById('addShortTermBtn').onclick = function() { addShortTerm(); };
+            document.getElementById('addEntranceBtn').onclick = () => addEntrance();
+            document.getElementById('addProgramBtn').onclick = () => addProgram();
+            document.getElementById('addShortTermBtn').onclick = () => addShortTerm();
             
             const saveBtn = document.getElementById('saveHouseBtn');
             const newSaveBtn = saveBtn.cloneNode(true);
             saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            newSaveBtn.onclick = function() { saveHouse(editingHouseId); };
+            newSaveBtn.onclick = () => saveHouse(editingHouseId);
             
             document.getElementById('houseModal').style.display = 'flex';
         }
@@ -761,9 +697,8 @@
         window.renderEntrances = function() {
             const container = document.getElementById('entrancesContainer');
             if (!container) return;
-            
             container.innerHTML = '';
-            window.entrancesData.forEach(function(entrance, idx) {
+            window.entrancesData.forEach((entrance, idx) => {
                 const div = document.createElement('div');
                 div.className = 'subgroup';
                 div.style.marginBottom = '12px';
@@ -772,15 +707,11 @@
                         <strong>Подъезд ${idx + 1}</strong>
                         <button class="action-icon" onclick="removeEntrance(${idx})" style="color: red;">🗑️</button>
                     </div>
-                    <div class="form-group">
-                        <label>Название подъезда</label>
-                        <input type="text" id="entrance_name_${idx}" value="${escapeHtml(entrance.name || '')}">
-                    </div>
+                    <div class="form-group"><label>Название подъезда</label><input type="text" id="entrance_name_${idx}" value="${escapeHtml(entrance.name || '')}"></div>
                     <div id="lifts_${idx}_container"></div>
                     <button class="btn-add" onclick="addLift(${idx})">➕ Добавить лифт</button>
                 `;
                 container.appendChild(div);
-                
                 const lifts = entrance.lifts || (entrance.lift ? [entrance.lift] : []);
                 window[`liftsData_${idx}`] = JSON.parse(JSON.stringify(lifts));
                 renderLifts(idx);
@@ -790,59 +721,38 @@
         window.renderLifts = function(entranceIdx) {
             const container = document.getElementById(`lifts_${entranceIdx}_container`);
             if (!container) return;
-            
             const lifts = window[`liftsData_${entranceIdx}`] || [];
             container.innerHTML = '';
-            lifts.forEach(function(lift, liftIdx) {
+            lifts.forEach((lift, liftIdx) => {
                 const liftDiv = document.createElement('div');
                 liftDiv.className = 'subgroup';
                 liftDiv.style.marginBottom = '8px';
                 liftDiv.style.padding = '8px';
-                liftDiv.id = `lift_div_${entranceIdx}_${liftIdx}`;
                 liftDiv.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <strong>Лифт ${liftIdx + 1}</strong>
                         <button class="action-icon" onclick="removeLift(${entranceIdx}, ${liftIdx})" style="color: red;">🗑️</button>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Рег. номер лифта</label><input type="text" id="lift_regNumber_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.registrationNumber || '')}" placeholder="Например: 7740"></div>
-                        <div class="form-group"><label>Название</label><input type="text" id="lift_name_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.name || '')}"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Модель</label><input type="text" id="lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.model || '')}"></div>
-                        <div class="form-group"><label>Год изготовления</label><input type="number" id="lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.yearMade || ''}"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Год ввода</label><input type="number" id="lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.yearOper || ''}"></div>
-                        <div class="form-group"><label>Скорость</label><input type="text" id="lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.speed || '')}"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Грузоподъемность</label><input type="text" id="lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.loadCapacity || '')}"></div>
-                        <div class="form-group"><label>Тип лифта</label><input type="text" id="lift_type_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.type || '')}"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Остановок</label><input type="number" id="lift_stops_${entranceIdx}_${liftIdx}" value="${lift.stops || ''}"></div>
-                        <div class="form-group"><label>Двигатель</label><input type="text" id="lift_engine_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.engine || '')}"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Состояние</label><input type="text" id="lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.condition || '')}"></div>
-                        <div class="form-group"><label>Примечание</label><input type="text" id="lift_note_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.note || '')}"></div>
-                    </div>
-                    
+                    <div class="form-row"><div class="form-group"><label>Рег. номер лифта</label><input type="text" id="lift_regNumber_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.registrationNumber || '')}" placeholder="Например: 7740"></div>
+                    <div class="form-group"><label>Название</label><input type="text" id="lift_name_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.name || '')}"></div></div>
+                    <div class="form-row"><div class="form-group"><label>Модель</label><input type="text" id="lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.model || '')}"></div>
+                    <div class="form-group"><label>Год изготовления</label><input type="number" id="lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.yearMade || ''}"></div></div>
+                    <div class="form-row"><div class="form-group"><label>Год ввода</label><input type="number" id="lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.yearOper || ''}"></div>
+                    <div class="form-group"><label>Скорость</label><input type="text" id="lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.speed || '')}"></div></div>
+                    <div class="form-row"><div class="form-group"><label>Грузоподъемность</label><input type="text" id="lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.loadCapacity || '')}"></div>
+                    <div class="form-group"><label>Тип лифта</label><input type="text" id="lift_type_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.type || '')}"></div></div>
+                    <div class="form-row"><div class="form-group"><label>Остановок</label><input type="number" id="lift_stops_${entranceIdx}_${liftIdx}" value="${lift.stops || ''}"></div>
+                    <div class="form-group"><label>Двигатель</label><input type="text" id="lift_engine_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.engine || '')}"></div></div>
+                    <div class="form-row"><div class="form-group"><label>Состояние</label><input type="text" id="lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.condition || '')}"></div>
+                    <div class="form-group"><label>Примечание</label><input type="text" id="lift_note_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.note || '')}"></div></div>
                     <div style="margin-top: 10px;">
                         <details><summary>📜 Предыдущий лифт (до замены)</summary>
-                            <div class="form-row">
-                                <div class="form-group"><label>Модель</label><input type="text" id="prev_lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.model : '')}"></div>
-                                <div class="form-group"><label>Год изготовления</label><input type="number" id="prev_lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearMade : ''}"></div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group"><label>Год ввода</label><input type="number" id="prev_lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearOper : ''}"></div>
-                                <div class="form-group"><label>Год вывода</label><input type="number" id="prev_lift_yearRemoved_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearRemoved : ''}"></div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group"><label>Грузоподъемность</label><input type="text" id="prev_lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.loadCapacity : '')}"></div>
-                                <div class="form-group"><label>Скорость</label><input type="text" id="prev_lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.speed : '')}"></div>
-                            </div>
+                            <div class="form-row"><div class="form-group"><label>Модель</label><input type="text" id="prev_lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.model : '')}"></div>
+                            <div class="form-group"><label>Год изготовления</label><input type="number" id="prev_lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearMade : ''}"></div></div>
+                            <div class="form-row"><div class="form-group"><label>Год ввода</label><input type="number" id="prev_lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearOper : ''}"></div>
+                            <div class="form-group"><label>Год вывода</label><input type="number" id="prev_lift_yearRemoved_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearRemoved : ''}"></div></div>
+                            <div class="form-row"><div class="form-group"><label>Грузоподъемность</label><input type="text" id="prev_lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.loadCapacity : '')}"></div>
+                            <div class="form-group"><label>Скорость</label><input type="text" id="prev_lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.speed : '')}"></div></div>
                             <div class="form-group"><label>Примечание</label><textarea id="prev_lift_note_${entranceIdx}_${liftIdx}">${escapeHtml(lift.previousLift ? lift.previousLift.note : '')}</textarea></div>
                         </details>
                     </div>
@@ -851,142 +761,62 @@
             });
         };
         
-        window.addEntrance = function() {
-            window.entrancesData.push({ name: '', lifts: [] });
-            renderEntrances();
-        };
-        
-        window.removeEntrance = function(idx) {
-            window.entrancesData.splice(idx, 1);
-            renderEntrances();
-        };
-        
         window.renderPrograms = function() {
             const container = document.getElementById('programsContainer');
             if (!container) return;
             container.innerHTML = '';
-            window.programsData.forEach(function(prog, idx) {
+            window.programsData.forEach((prog, idx) => {
                 const div = document.createElement('div');
                 div.className = 'subgroup';
-                div.innerHTML = `
-                    <div style="display: flex; justify-content: space-between;">
-                        <strong>Программа ${idx + 1}</strong>
-                        <button class="action-icon" onclick="removeProgram(${idx})">🗑️</button>
-                    </div>
+                div.innerHTML = `<div style="display: flex; justify-content: space-between;"><strong>Программа ${idx + 1}</strong><button class="action-icon" onclick="removeProgram(${idx})">🗑️</button></div>
                     <div class="form-group"><label>Год</label><input type="text" id="prog_year_${idx}" value="${escapeHtml(prog.year || '')}"></div>
-                    <div class="form-group"><label>Описание</label><textarea id="prog_desc_${idx}">${escapeHtml(prog.description || '')}</textarea></div>
-                `;
+                    <div class="form-group"><label>Описание</label><textarea id="prog_desc_${idx}">${escapeHtml(prog.description || '')}</textarea></div>`;
                 container.appendChild(div);
             });
         };
         
-        window.addProgram = function() {
-            window.programsData.push({ year: '', description: '' });
-            renderPrograms();
-        };
-        
-        window.removeProgram = function(idx) {
-            window.programsData.splice(idx, 1);
-            renderPrograms();
-        };
+        window.addProgram = function() { window.programsData.push({ year: '', description: '' }); renderPrograms(); };
+        window.removeProgram = function(idx) { window.programsData.splice(idx, 1); renderPrograms(); };
         
         window.renderShortTerm = function() {
             const container = document.getElementById('shortTermContainer');
             if (!container) return;
             container.innerHTML = '';
-            window.shortTermData.forEach(function(term, idx) {
+            window.shortTermData.forEach((term, idx) => {
                 const div = document.createElement('div');
                 div.className = 'subgroup';
-                div.innerHTML = `
-                    <div style="display: flex; justify-content: space-between;">
-                        <strong>План ${idx + 1}</strong>
-                        <button class="action-icon" onclick="removeShortTerm(${idx})">🗑️</button>
-                    </div>
+                div.innerHTML = `<div style="display: flex; justify-content: space-between;"><strong>План ${idx + 1}</strong><button class="action-icon" onclick="removeShortTerm(${idx})">🗑️</button></div>
                     <div class="form-group"><label>Тип ремонта</label><textarea id="term_type_${idx}">${escapeHtml(term.type || '')}</textarea></div>
                     <div class="form-group"><label>Подрядчик</label><input type="text" id="term_contractor_${idx}" value="${escapeHtml(term.contractor || '')}"></div>
-                    <div class="form-group"><label>Период</label><input type="text" id="term_period_${idx}" value="${escapeHtml(term.period || '')}"></div>
-                `;
+                    <div class="form-group"><label>Период</label><input type="text" id="term_period_${idx}" value="${escapeHtml(term.period || '')}"></div>`;
                 container.appendChild(div);
             });
         };
         
-        window.addShortTerm = function() {
-            window.shortTermData.push({ type: '', contractor: '', period: '' });
-            renderShortTerm();
-        };
-        
-        window.removeShortTerm = function(idx) {
-            window.shortTermData.splice(idx, 1);
-            renderShortTerm();
-        };
+        window.addShortTerm = function() { window.shortTermData.push({ type: '', contractor: '', period: '' }); renderShortTerm(); };
+        window.removeShortTerm = function(idx) { window.shortTermData.splice(idx, 1); renderShortTerm(); };
         
         window.saveHouse = function(houseId) {
+            saveCurrentEntranceData();
             const newId = parseInt(document.getElementById('houseId').value);
-            
             const entrances = [];
             for (let i = 0; i < window.entrancesData.length; i++) {
-                const entranceName = document.getElementById(`entrance_name_${i}`)?.value || '';
-                const lifts = [];
-                const liftsData = window[`liftsData_${i}`] || [];
-                for (let j = 0; j < liftsData.length; j++) {
-                    const lift = {
-                        registrationNumber: document.getElementById(`lift_regNumber_${i}_${j}`)?.value || '',
-                        name: document.getElementById(`lift_name_${i}_${j}`)?.value || '',
-                        model: document.getElementById(`lift_model_${i}_${j}`)?.value || '',
-                        yearMade: document.getElementById(`lift_yearMade_${i}_${j}`)?.value || '',
-                        yearOper: document.getElementById(`lift_yearOper_${i}_${j}`)?.value || '',
-                        speed: document.getElementById(`lift_speed_${i}_${j}`)?.value || '',
-                        loadCapacity: document.getElementById(`lift_loadCapacity_${i}_${j}`)?.value || '',
-                        type: document.getElementById(`lift_type_${i}_${j}`)?.value || '',
-                        stops: document.getElementById(`lift_stops_${i}_${j}`)?.value || '',
-                        engine: document.getElementById(`lift_engine_${i}_${j}`)?.value || '',
-                        condition: document.getElementById(`lift_condition_${i}_${j}`)?.value || '',
-                        note: document.getElementById(`lift_note_${i}_${j}`)?.value || ''
-                    };
-                    
-                    const prevModel = document.getElementById(`prev_lift_model_${i}_${j}`)?.value;
-                    if (prevModel) {
-                        lift.previousLift = {
-                            model: prevModel,
-                            yearMade: document.getElementById(`prev_lift_yearMade_${i}_${j}`)?.value || '',
-                            yearOper: document.getElementById(`prev_lift_yearOper_${i}_${j}`)?.value || '',
-                            yearRemoved: document.getElementById(`prev_lift_yearRemoved_${i}_${j}`)?.value || '',
-                            loadCapacity: document.getElementById(`prev_lift_loadCapacity_${i}_${j}`)?.value || '',
-                            speed: document.getElementById(`prev_lift_speed_${i}_${j}`)?.value || '',
-                            note: document.getElementById(`prev_lift_note_${i}_${j}`)?.value || ''
-                        };
-                    }
-                    lifts.push(lift);
-                }
-                entrances.push({ name: entranceName, lifts: lifts });
+                entrances.push({ name: window.entrancesData[i].name, lifts: window[`liftsData_${i}`] || [] });
             }
-            
             const programWorks = [];
             for (let i = 0; i < window.programsData.length; i++) {
-                programWorks.push({
-                    year: document.getElementById(`prog_year_${i}`)?.value || '',
-                    description: document.getElementById(`prog_desc_${i}`)?.value || ''
-                });
+                programWorks.push({ year: document.getElementById(`prog_year_${i}`)?.value || '', description: document.getElementById(`prog_desc_${i}`)?.value || '' });
             }
-            
             const shortTermWorks = [];
             for (let i = 0; i < window.shortTermData.length; i++) {
-                shortTermWorks.push({
-                    type: document.getElementById(`term_type_${i}`)?.value || '',
-                    contractor: document.getElementById(`term_contractor_${i}`)?.value || '',
-                    period: document.getElementById(`term_period_${i}`)?.value || ''
-                });
+                shortTermWorks.push({ type: document.getElementById(`term_type_${i}`)?.value || '', contractor: document.getElementById(`term_contractor_${i}`)?.value || '', period: document.getElementById(`term_period_${i}`)?.value || '' });
             }
-            
             const coordsStr = document.getElementById('houseCoords')?.value || '';
             let coords = null;
             if (coordsStr) {
-                const parts = coordsStr.split(',').map(function(s) { return parseFloat(s.trim()); });
-                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                    coords = parts;
-                }
+                const parts = coordsStr.split(',').map(s => parseFloat(s.trim()));
+                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) coords = parts;
             }
-            
             const houseData = {
                 id: newId,
                 address: document.getElementById('houseAddress')?.value || '',
@@ -1001,34 +831,18 @@
                 programWorks: programWorks,
                 shortTermWorks: shortTermWorks
             };
-            
-            if (houseId === null) {
-                housesData.push(houseData);
-            } else {
-                const index = housesData.findIndex(function(h) { return h.id === houseId; });
-                if (index !== -1) housesData[index] = houseData;
-            }
-            
+            if (houseId === null) housesData.push(houseData);
+            else { const index = housesData.findIndex(h => h.id === houseId); if (index !== -1) housesData[index] = houseData; }
             closeModal();
             renderHousesTable();
             updateStats();
         };
         
-        window.closeModal = function() {
-            document.getElementById('houseModal').style.display = 'none';
-        };
+        window.closeModal = () => document.getElementById('houseModal').style.display = 'none';
         
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
         
-        document.getElementById('saveJsonBtn').addEventListener('click', function() {
+        document.getElementById('saveJsonBtn').addEventListener('click', () => {
             const jsonStr = JSON.stringify(housesData, null, 2);
             const blob = new Blob([jsonStr], {type: 'application/json'});
             const link = document.createElement('a');
