@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <!-- Подключаем библиотеку html2pdf для экспорта в PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=b45543af-a624-4ee6-bef2-7f2e8e8498fd&lang=ru_RU"></script>
 </head>
 <body>
     <div class="page">
@@ -33,6 +34,9 @@
                         <button id="exportPdfBtn" class="action-btn" title="Экспортировать информацию в PDF">📄 Экспорт в PDF</button>
                     </div>
                 </div>
+
+                <!-- Контейнер для карты (скрыт по умолчанию) -->
+                <div id="houseMap" class="house-map-container" style="display: none;"></div>
 
                 <div class="info-card">
                     <div class="card-title">Информация о здании</div>

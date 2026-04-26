@@ -1,5 +1,7 @@
 let housesData = [];
 let currentHouse = null;
+let houseMap = null;
+let mapInitialized = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Страница дома загружена');
@@ -57,16 +59,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function initActionButtons(house) {
-        // Кнопка "Показать на карте"
+        // Кнопка "Показать на карте" — открывает/закрывает карту
         const showOnMapBtn = document.getElementById('showOnMapBtn');
-        if (showOnMapBtn) {
+        const mapContainer = document.getElementById('houseMap');
+        
+        if (showOnMapBtn && mapContainer) {
             showOnMapBtn.addEventListener('click', function() {
-                if (house.coords && house.coords.length === 2) {
-                    const [lat, lon] = house.coords;
-                    const url = `https://yandex.ru/maps/?ll=${lon},${lat}&z=18`;
-                    window.open(url, '_blank');
+                if (mapContainer.style.display === 'none') {
+                    // Показываем карту
+                    mapContainer.style.display = 'block';
+                    showOnMapBtn.textContent = '🗺️ Скрыть карту';
+                    showOnMapBtn.classList.add('active-map');
+                    
+                    // Инициализируем карту, если ещё не инициализирована
+                    if (!mapInitialized && house.coords && house.coords.length === 2) {
+                        initHouseMap(house.coords);
+                    } else if (house.coords && house.coords.length === 2 && houseMap) {
+                        // Если карта уже была, просто центрируем
+                        houseMap.setCenter(house.coords, 17);
+                    } else if (!house.coords) {
+                        showToast('❌ Координаты этого дома пока не добавлены');
+                        mapContainer.style.display = 'none';
+                        showOnMapBtn.textContent = '🗺️ Показать на карте';
+                        showOnMapBtn.classList.remove('active-map');
+                    }
                 } else {
-                    alert('Координаты этого дома пока не добавлены');
+                    // Скрываем карту
+                    mapContainer.style.display = 'none';
+                    showOnMapBtn.textContent = '🗺️ Показать на карте';
+                    showOnMapBtn.classList.remove('active-map');
                 }
             });
         }
@@ -93,6 +114,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    function initHouseMap(coords) {
+        if (typeof ymaps === 'undefined') {
+            console.error('Яндекс.Карты не загрузились');
+            return;
+        }
+        
+        ymaps.ready(function() {
+            houseMap = new ymaps.Map('houseMap', {
+                center: coords,
+                zoom: 17,
+                controls: ['zoomControl', 'fullscreenControl']
+            });
+            
+            // Добавляем метку на карту
+            const placemark = new ymaps.Placemark(
+                coords,
+                {
+                    balloonContentHeader: '<b>' + currentHouse.address + '</b>',
+                    balloonContentBody: '📍 ' + (currentHouse.district || '')
+                },
+                { preset: 'islands#blueHomeIcon' }
+            );
+            houseMap.geoObjects.add(placemark);
+            mapInitialized = true;
+        });
+    }
+    
     function showToast(message) {
         const existingToast = document.querySelector('.toast-notification');
         if (existingToast) existingToast.remove();
@@ -111,6 +159,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const element = document.getElementById('houseContent');
         if (!element) return;
         
+        // Временно скрываем карту, если она открыта, чтобы не мешала
+        const mapContainer = document.getElementById('houseMap');
+        const wasVisible = mapContainer && mapContainer.style.display === 'block';
+        if (wasVisible) {
+            mapContainer.style.display = 'none';
+        }
+        
         const originalTitle = document.title;
         const address = document.getElementById('fullAddress').textContent;
         document.title = address + ' - информация о лифтах';
@@ -127,10 +182,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         html2pdf().set(opt).from(element).save().then(function() {
             document.title = originalTitle;
+            // Восстанавливаем карту, если она была открыта
+            if (wasVisible) {
+                mapContainer.style.display = 'block';
+            }
         }).catch(function(error) {
             console.error('PDF error:', error);
             showToast('❌ Ошибка при создании PDF');
             document.title = originalTitle;
+            if (wasVisible) {
+                mapContainer.style.display = 'block';
+            }
         });
     }
     
@@ -198,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(1).textContent = work.description || '—';
             });
         } else {
-            programTbody.innerHTML = '<tr><td colspan="2">Нет данных</td><\/tr>';
+            programTbody.innerHTML = '<tr><td colspan="2">Нет данных<\/td><\/tr>';
         }
         
         const shortTbody = document.querySelector('#shortTermWorks tbody');
@@ -211,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(2).textContent = work.period || '—';
             });
         } else {
-            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных</td><\/tr>';
+            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных<\/td><\/tr>';
         }
     }
     
