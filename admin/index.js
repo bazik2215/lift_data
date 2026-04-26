@@ -1,61 +1,28 @@
-// ========== ПЕРЕМЕННЫЕ ==========
 let currentPage = 1;
 let itemsPerPage = 20;
 let currentSort = { column: 'id', direction: 'asc' };
 let currentSearchQuery = '';
 let filteredData = [];
-let selectedHouses = new Set(); // Множество для хранения ID выбранных домов
-let isTempMode = false; // Режим показа временных данных
+let selectedHouses = new Set();
 
-// ========== ИНИЦИАЛИЗАЦИЯ ==========
 document.addEventListener('DOMContentLoaded', async function() {
-    // Проверка авторизации
     if (!checkAuth()) return;
-    
-    // Инициализация темы
     initAdminTheme();
-    
-    // Настройка обработчиков
     setupEventListeners();
-    
-    // Загрузка данных
     await loadData();
-    
-    // Проверяем наличие временных данных в localStorage
-    const tempData = localStorage.getItem(STORAGE_KEY);
-    if (tempData) {
-        const parsedTemp = JSON.parse(tempData);
-        if (parsedTemp.length > 0) {
-            isTempMode = true;
-            showToast(`📦 Обнаружены временные данные (${parsedTemp.length} домов). Нажмите «Сохранить JSON» для переноса на GitHub.`, 4000);
-            
-            // Показываем кнопку очистки временных данных
-            const clearTempBtn = document.getElementById('clearLocalStorageBtn');
-            if (clearTempBtn) clearTempBtn.style.display = 'inline-block';
-        }
-    }
-    
-    // Обновление статистики
     updateStatsCards();
-    
-    // Рендеринг таблицы
     applyFiltersAndRender();
+    updateTempDataIndicator();
 });
 
-// ========== НАСТРОЙКА ОБРАБОТЧИКОВ ==========
 function setupEventListeners() {
-    // Поиск
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            currentSearchQuery = e.target.value;
-            currentPage = 1;
-            selectedHouses.clear();
-            applyFiltersAndRender();
-        });
-    }
+    document.getElementById('searchInput')?.addEventListener('input', (e) => {
+        currentSearchQuery = e.target.value;
+        currentPage = 1;
+        selectedHouses.clear();
+        applyFiltersAndRender();
+    });
     
-    // Сортировка
     document.querySelectorAll('.sortable').forEach(th => {
         th.addEventListener('click', () => {
             const column = th.dataset.sort;
@@ -70,117 +37,56 @@ function setupEventListeners() {
         });
     });
     
-    // Кнопка добавления дома
-    const addHouseBtn = document.getElementById('addHouseBtn');
-    if (addHouseBtn) {
-        addHouseBtn.addEventListener('click', () => {
-            window.location.href = 'edit.html';
-        });
-    }
-    
-    // Кнопка сохранения JSON
-    const saveJsonBtn = document.getElementById('saveJsonBtn');
-    if (saveJsonBtn) {
-        saveJsonBtn.addEventListener('click', () => {
-            // Перед сохранением объединяем временные данные с основными
-            const tempData = localStorage.getItem(STORAGE_KEY);
-            if (tempData) {
-                const parsedTemp = JSON.parse(tempData);
-                if (parsedTemp.length > 0) {
-                    // Добавляем временные дома, которых нет в основном списке
-                    const existingIds = new Set(housesData.map(h => h.id));
-                    parsedTemp.forEach(tempHouse => {
-                        if (!existingIds.has(tempHouse.id)) {
-                            housesData.push(tempHouse);
-                        }
-                    });
-                    // Сортируем по id
-                    housesData.sort((a, b) => a.id - b.id);
-                    showToast(`📦 Временные данные (${parsedTemp.length} домов) добавлены в экспорт`);
-                }
-            }
-            saveJSON();
-            
-            // После сохранения предлагаем очистить localStorage
-            setTimeout(() => {
-                if (confirm('JSON сохранён! Очистить временные данные из браузера? (Данные останутся на GitHub)')) {
-                    clearLocalStorage();
-                    location.reload();
-                }
-            }, 500);
-        });
-    }
-    
-    // Кнопка выхода
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
-    
-    // Кнопка смены темы
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleAdminTheme);
-    }
-    
-    // Кнопка массового удаления
-    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-    if (deleteSelectedBtn) {
-        deleteSelectedBtn.addEventListener('click', () => deleteSelectedHouses());
-    }
-    
-    // Кнопка очистки временных данных
-    const clearTempBtn = document.getElementById('clearLocalStorageBtn');
-    if (clearTempBtn) {
-        clearTempBtn.addEventListener('click', () => {
-            if (confirm('Очистить все временные данные из браузера? (Данные на GitHub не пострадают)')) {
-                clearLocalStorage();
-                location.reload();
-            }
-        });
-    }
-    
-    // Чекбокс "Выбрать все"
-    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', (e) => {
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const pageData = filteredData.slice(start, end);
-            
-            if (e.target.checked) {
-                pageData.forEach(house => selectedHouses.add(house.id));
-            } else {
-                pageData.forEach(house => selectedHouses.delete(house.id));
-            }
-            renderTable();
-            updateDeleteButtonVisibility();
-        });
-    }
-}
-
-// ========== ПОЛУЧЕНИЕ ДАННЫХ ДЛЯ ОТОБРАЖЕНИЯ ==========
-function getDisplayData() {
-    // Объединяем основные данные с временными из localStorage
-    const tempData = localStorage.getItem(STORAGE_KEY);
-    if (!tempData) return [...housesData];
-    
-    const parsedTemp = JSON.parse(tempData);
-    const allHouses = [...housesData];
-    const existingIds = new Set(allHouses.map(h => h.id));
-    
-    parsedTemp.forEach(tempHouse => {
-        if (!existingIds.has(tempHouse.id)) {
-            allHouses.push(tempHouse);
+    document.getElementById('addHouseBtn')?.addEventListener('click', () => window.location.href = 'edit.html');
+    document.getElementById('saveJsonBtn')?.addEventListener('click', () => saveJSON());
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    document.getElementById('themeToggle')?.addEventListener('click', toggleAdminTheme);
+    document.getElementById('deleteSelectedBtn')?.addEventListener('click', () => deleteSelectedHouses());
+    document.getElementById('clearLocalStorageBtn')?.addEventListener('click', () => {
+        if (confirm('Очистить все временные данные? (Данные на GitHub не пострадают)')) {
+            clearTempHouses();
+            location.reload();
         }
     });
     
-    // Сортируем по id
-    allHouses.sort((a, b) => a.id - b.id);
-    return allHouses;
+    document.getElementById('selectAllCheckbox')?.addEventListener('change', (e) => {
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageData = filteredData.slice(start, end);
+        if (e.target.checked) pageData.forEach(house => selectedHouses.add(house.id));
+        else pageData.forEach(house => selectedHouses.delete(house.id));
+        renderTable();
+        updateDeleteButtonVisibility();
+    });
 }
 
-// ========== ОБНОВЛЕНИЕ КНОПКИ УДАЛЕНИЯ ==========
+function getDisplayData() {
+    return getAllHouses();
+}
+
+function updateStatsCards() {
+    const allHouses = getAllHouses();
+    document.getElementById('totalHouses').textContent = allHouses.length;
+    document.getElementById('totalLifts').textContent = getTotalLiftsCount();
+    document.getElementById('totalPrograms').textContent = getTotalProgramsCount();
+}
+
+function updateTempDataIndicator() {
+    const tempHouses = loadTempHouses();
+    const indicator = document.getElementById('tempDataIndicator');
+    const clearBtn = document.getElementById('clearLocalStorageBtn');
+    if (tempHouses.length > 0) {
+        if (indicator) {
+            indicator.style.display = 'inline-block';
+            indicator.textContent = `⚠️ ${tempHouses.length} временных домов (не сохранены на GitHub)`;
+        }
+        if (clearBtn) clearBtn.style.display = 'inline-block';
+    } else {
+        if (indicator) indicator.style.display = 'none';
+        if (clearBtn) clearBtn.style.display = 'none';
+    }
+}
+
 function updateDeleteButtonVisibility() {
     const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
     if (deleteSelectedBtn) {
@@ -192,163 +98,39 @@ function updateDeleteButtonVisibility() {
         }
     }
     
-    // Обновление состояния чекбокса "Выбрать все"
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     if (selectAllCheckbox && filteredData.length > 0) {
         const start = (currentPage - 1) * itemsPerPage;
         const end = start + itemsPerPage;
         const pageData = filteredData.slice(start, end);
-        const allSelected = pageData.length > 0 && pageData.every(house => selectedHouses.has(house.id));
+        const allSelected = pageData.length > 0 && pageData.every(h => selectedHouses.has(h.id));
         selectAllCheckbox.checked = allSelected;
-        selectAllCheckbox.indeterminate = !allSelected && pageData.some(house => selectedHouses.has(house.id));
+        selectAllCheckbox.indeterminate = !allSelected && pageData.some(h => selectedHouses.has(h.id));
     }
 }
 
-// ========== МАССОВОЕ УДАЛЕНИЕ ==========
-async function deleteSelectedHouses() {
-    if (selectedHouses.size === 0) return;
-    
-    const count = selectedHouses.size;
-    if (confirm(`🗑️ Удалить ${count} дом(ов)? Это действие нельзя отменить.`)) {
-        // Сохраняем копии удаляемых домов для истории
-        const allDisplayData = getDisplayData();
-        const deletedHouses = allDisplayData.filter(house => selectedHouses.has(house.id));
-        
-        // Удаляем из основного массива
-        housesData = housesData.filter(house => !selectedHouses.has(house.id));
-        
-        // Удаляем из localStorage, если там были эти дома
-        const tempData = localStorage.getItem(STORAGE_KEY);
-        if (tempData) {
-            let parsedTemp = JSON.parse(tempData);
-            parsedTemp = parsedTemp.filter(house => !selectedHouses.has(house.id));
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedTemp));
-        }
-        
-        selectedHouses.clear();
-        
-        // Обновление отображения
-        const displayData = getDisplayData();
-        const totalPages = Math.ceil(displayData.length / itemsPerPage);
-        if (displayData.length === count && currentPage > 1) {
-            currentPage--;
-        }
-        applyFiltersAndRender();
-        updateStatsCards();
-        showToast(`✅ Удалено ${count} дом(ов)`);
-        
-        // Логируем каждое удаление
-        for (const house of deletedHouses) {
-            await addHistoryRecord('delete', house.id, house.address, {
-                deletedData: JSON.parse(JSON.stringify(house))
-            });
-        }
-        
-        // Скрыть кнопку массового удаления
-        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-        if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
-    }
-}
-
-// ========== ОБНОВЛЕНИЕ КАРТОЧЕК СТАТИСТИКИ ==========
-function updateStatsCards() {
-    const displayData = getDisplayData();
-    const totalHouses = displayData.length;
-    let totalLifts = 0;
-    let totalPrograms = 0;
-    
-    displayData.forEach(house => {
-        totalLifts += getLiftsCount(house);
-        totalPrograms += house.programWorks?.length || 0;
-    });
-    
-    const totalHousesEl = document.getElementById('totalHouses');
-    const totalLiftsEl = document.getElementById('totalLifts');
-    const totalProgramsEl = document.getElementById('totalPrograms');
-    
-    if (totalHousesEl) totalHousesEl.textContent = totalHouses;
-    if (totalLiftsEl) totalLiftsEl.textContent = totalLifts;
-    if (totalProgramsEl) totalProgramsEl.textContent = totalPrograms;
-}
-
-// ========== ПРИМЕНЕНИЕ ФИЛЬТРОВ ==========
 function applyFiltersAndRender() {
     const displayData = getDisplayData();
-    
-    // Фильтрация по поиску
-    if (currentSearchQuery) {
-        filteredData = displayData.filter(house => 
-            house.address.toLowerCase().includes(currentSearchQuery.toLowerCase())
-        );
-    } else {
-        filteredData = [...displayData];
-    }
-    
-    // Сортировка
+    filteredData = currentSearchQuery ? displayData.filter(house => house.address.toLowerCase().includes(currentSearchQuery.toLowerCase())) : [...displayData];
     filteredData = sortHouses(filteredData, currentSort.column, currentSort.direction);
-    
-    // Обновление информации о сортировке
     updateSortInfo();
-    
-    // Рендеринг таблицы
     renderTable();
-    
-    // Рендеринг пагинации
     renderPagination();
-    
-    // Обновление кнопки массового удаления
     updateDeleteButtonVisibility();
-    
-    // Показываем индикатор временных данных
     updateTempDataIndicator();
 }
 
-// ========== ИНДИКАТОР ВРЕМЕННЫХ ДАННЫХ ==========
-function updateTempDataIndicator() {
-    const tempData = localStorage.getItem(STORAGE_KEY);
-    const tempCount = tempData ? JSON.parse(tempData).length : 0;
-    
-    const indicator = document.getElementById('tempDataIndicator');
-    if (indicator) {
-        if (tempCount > 0) {
-            indicator.style.display = 'inline-block';
-            indicator.textContent = `⚠️ ${tempCount} временных домов (не сохранены на GitHub)`;
-            indicator.style.background = '#f39c12';
-            indicator.style.color = 'white';
-            indicator.style.padding = '4px 12px';
-            indicator.style.borderRadius = '30px';
-            indicator.style.fontSize = '0.7rem';
-        } else {
-            indicator.style.display = 'none';
-        }
-    }
-}
-
-// ========== ОБНОВЛЕНИЕ ИНФОРМАЦИИ О СОРТИРОВКЕ ==========
 function updateSortInfo() {
     const sortInfo = document.getElementById('sortInfo');
     if (sortInfo) {
-        const columnNames = {
-            id: 'ID',
-            address: 'адресу',
-            district: 'району',
-            buildYear: 'году постройки'
-        };
-        const directionText = currentSort.direction === 'asc' ? '↑' : '↓';
-        sortInfo.textContent = `Сортировка: по ${columnNames[currentSort.column]} ${directionText}`;
+        const columnNames = { id: 'ID', address: 'адресу', district: 'району', buildYear: 'году постройки' };
+        sortInfo.textContent = `Сортировка: по ${columnNames[currentSort.column]} ${currentSort.direction === 'asc' ? '↑' : '↓'}`;
     }
-    
-    // Обновление стрелок в заголовках
-    document.querySelectorAll('.sortable .sort-arrow').forEach(arrow => {
-        arrow.textContent = '';
-    });
+    document.querySelectorAll('.sortable .sort-arrow').forEach(arrow => arrow.textContent = '');
     const activeHeader = document.querySelector(`.sortable[data-sort="${currentSort.column}"] .sort-arrow`);
-    if (activeHeader) {
-        activeHeader.textContent = currentSort.direction === 'asc' ? ' ↑' : ' ↓';
-    }
+    if (activeHeader) activeHeader.textContent = currentSort.direction === 'asc' ? ' ↑' : ' ↓';
 }
 
-// ========== РЕНДЕРИНГ ТАБЛИЦЫ ==========
 function renderTable() {
     const tbody = document.getElementById('housesTableBody');
     if (!tbody) return;
@@ -358,7 +140,6 @@ function renderTable() {
     const pageData = filteredData.slice(start, end);
     
     tbody.innerHTML = '';
-    
     if (pageData.length === 0) {
         const row = tbody.insertRow();
         row.insertCell(0).colSpan = 8;
@@ -370,24 +151,17 @@ function renderTable() {
     
     pageData.forEach(house => {
         const row = tbody.insertRow();
-        
-        // Чекбокс
         const checkboxCell = row.insertCell(0);
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = selectedHouses.has(house.id);
         checkbox.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                selectedHouses.add(house.id);
-            } else {
-                selectedHouses.delete(house.id);
-            }
+            if (e.target.checked) selectedHouses.add(house.id);
+            else selectedHouses.delete(house.id);
             updateDeleteButtonVisibility();
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
             if (selectAllCheckbox) {
-                const start = (currentPage - 1) * itemsPerPage;
-                const end = start + itemsPerPage;
-                const pageData = filteredData.slice(start, end);
+                const pageData = filteredData.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
                 const allSelected = pageData.length > 0 && pageData.every(h => selectedHouses.has(h.id));
                 selectAllCheckbox.checked = allSelected;
                 selectAllCheckbox.indeterminate = !allSelected && pageData.some(h => selectedHouses.has(h.id));
@@ -401,56 +175,30 @@ function renderTable() {
         row.insertCell(4).textContent = house.buildYear || '—';
         row.insertCell(5).textContent = getLiftsCount(house);
         row.insertCell(6).textContent = house.programWorks?.length || 0;
-        
-        const actionsCell = row.insertCell(7);
-        actionsCell.innerHTML = `
-            <div class="action-icons">
-                <button class="action-icon" onclick="editHouse(${house.id})" title="Редактировать">✏️</button>
-                <button class="action-icon" onclick="duplicateHouseHandler(${house.id})" title="Дублировать">📋</button>
-                <button class="action-icon" onclick="deleteHouseHandler(${house.id})" title="Удалить">🗑️</button>
-            </div>
-        `;
+        row.insertCell(7).innerHTML = `<div class="action-icons">
+            <button class="action-icon" onclick="editHouse(${house.id})">✏️</button>
+            <button class="action-icon" onclick="duplicateHouseHandler(${house.id})">📋</button>
+            <button class="action-icon" onclick="deleteHouseHandler(${house.id})">🗑️</button>
+        </div>`;
     });
 }
 
-// ========== РЕНДЕРИНГ ПАГИНАЦИИ ==========
 function renderPagination() {
     const paginationContainer = document.getElementById('pagination');
     if (!paginationContainer) return;
-    
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    if (totalPages <= 1) { paginationContainer.innerHTML = ''; return; }
     
-    if (totalPages <= 1) {
-        paginationContainer.innerHTML = '';
-        return;
-    }
-    
-    let html = '';
-    html += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
-    
-    const startPage = Math.max(1, currentPage - 2);
-    const endPage = Math.min(totalPages, currentPage + 2);
-    
-    if (startPage > 1) {
-        html += `<button onclick="goToPage(1)">1</button>`;
-        if (startPage > 2) html += `<span style="padding: 0 4px;">...</span>`;
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-        html += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active-page' : ''}">${i}</button>`;
-    }
-    
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) html += `<span style="padding: 0 4px;">...</span>`;
-        html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
-    }
-    
-    html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
-    
+    let html = `<button onclick="goToPage(${currentPage-1})" ${currentPage===1 ? 'disabled' : ''}>←</button>`;
+    const startPage = Math.max(1, currentPage-2);
+    const endPage = Math.min(totalPages, currentPage+2);
+    if (startPage > 1) { html += `<button onclick="goToPage(1)">1</button>`; if (startPage > 2) html += `<span style="padding:0 4px;">...</span>`; }
+    for (let i=startPage; i<=endPage; i++) html += `<button onclick="goToPage(${i})" class="${i===currentPage ? 'active-page' : ''}">${i}</button>`;
+    if (endPage < totalPages) { if (endPage < totalPages-1) html += `<span style="padding:0 4px;">...</span>`; html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`; }
+    html += `<button onclick="goToPage(${currentPage+1})" ${currentPage===totalPages ? 'disabled' : ''}>→</button>`;
     paginationContainer.innerHTML = html;
 }
 
-// ========== ПЕРЕХОД НА СТРАНИЦУ ==========
 window.goToPage = function(page) {
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     if (page < 1 || page > totalPages) return;
@@ -461,70 +209,47 @@ window.goToPage = function(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// ========== РЕДАКТИРОВАНИЕ ДОМА ==========
-window.editHouse = function(id) {
-    window.location.href = `edit.html?id=${id}`;
-};
+window.editHouse = function(id) { window.location.href = `edit.html?id=${id}`; };
 
-// ========== ДУБЛИРОВАНИЕ ДОМА ==========
 window.duplicateHouseHandler = async function(id) {
-    const displayData = getDisplayData();
-    const originalHouse = displayData.find(h => h.id === id);
+    const allHouses = getAllHouses();
+    const originalHouse = allHouses.find(h => h.id === id);
     if (!originalHouse) return;
-    
     const newHouse = duplicateHouse(originalHouse);
-    
-    // Добавляем в основной массив
-    housesData.push(newHouse);
-    
-    // Добавляем в localStorage
-    saveToLocalStorage();
-    
+    addHouseToTemp(newHouse);
     applyFiltersAndRender();
     updateStatsCards();
-    showToast(`✅ Дом "${newHouse.address}" скопирован`);
-    
-    // Логируем дублирование
-    await addHistoryRecord('duplicate', newHouse.id, newHouse.address, {
-        sourceHouseId: originalHouse.id,
-        sourceHouseAddress: originalHouse.address
-    });
+    showToast(`✅ Дом "${newHouse.address}" скопирован во временное хранилище`);
+    await addHistoryRecord('duplicate', newHouse.id, newHouse.address, { sourceHouseId: originalHouse.id });
 };
 
-// ========== УДАЛЕНИЕ ДОМА ==========
 window.deleteHouseHandler = async function(id) {
-    const displayData = getDisplayData();
-    const house = displayData.find(h => h.id === id);
+    const allHouses = getAllHouses();
+    const house = allHouses.find(h => h.id === id);
     if (!house) return;
-    
-    if (confirm(`🗑️ Удалить дом "${house.address}"? Это действие нельзя отменить.`)) {
-        // Сохраняем копию для истории
-        const deletedHouse = JSON.parse(JSON.stringify(house));
-        
-        // Удаляем из основного массива
-        housesData = housesData.filter(h => h.id !== id);
-        
-        // Удаляем из localStorage, если там был этот дом
-        const tempData = localStorage.getItem(STORAGE_KEY);
-        if (tempData) {
-            let parsedTemp = JSON.parse(tempData);
-            parsedTemp = parsedTemp.filter(h => h.id !== id);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedTemp));
-        }
-        
+    if (confirm(`🗑️ Удалить дом "${house.address}"?`)) {
+        const tempHouses = loadTempHouses();
+        const newTempHouses = tempHouses.filter(h => h.id !== id);
+        saveTempHouses(newTempHouses);
         selectedHouses.delete(id);
-        
-        const displayDataNew = getDisplayData();
-        if (displayDataNew.length === 0 && currentPage > 1) {
-            currentPage--;
-        }
         applyFiltersAndRender();
         updateStatsCards();
-        showToast(`✅ Дом "${house.address}" удалён`);
-        
-        // Логируем удаление
-        await addHistoryRecord('delete', id, house.address, {
-            deletedData: deletedHouse
-        });
+        updateTempDataIndicator();
+        showToast(`✅ Дом "${house.address}" удалён из временного хранилища`);
+        await addHistoryRecord('delete', id, house.address, { summary: 'Удалён через админ-панель' });
     }
 };
+
+async function deleteSelectedHouses() {
+    if (selectedHouses.size === 0) return;
+    if (confirm(`🗑️ Удалить ${selectedHouses.size} дом(ов)?`)) {
+        let tempHouses = loadTempHouses();
+        tempHouses = tempHouses.filter(h => !selectedHouses.has(h.id));
+        saveTempHouses(tempHouses);
+        selectedHouses.clear();
+        applyFiltersAndRender();
+        updateStatsCards();
+        updateTempDataIndicator();
+        showToast(`✅ Удалено ${selectedHouses.size} дом(ов)`);
+    }
+}

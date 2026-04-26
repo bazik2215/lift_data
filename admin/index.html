@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="admin-wrapper">
-        <!-- Шапка -->
         <div class="admin-header">
             <div class="admin-header-left">
                 <div class="admin-logo">🔐 Админ-панель</div>
@@ -25,23 +24,12 @@
             </div>
         </div>
 
-        <!-- Основной контент -->
         <div class="admin-container">
-            <!-- Верхняя панель -->
             <div class="top-panel">
                 <div class="stats-cards">
-                    <div class="stat-card">
-                        <div class="stat-card-value" id="totalHouses">0</div>
-                        <div class="stat-card-label">🏘️ Домов</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-value" id="totalLifts">0</div>
-                        <div class="stat-card-label">🛗 Лифтов</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-value" id="totalPrograms">0</div>
-                        <div class="stat-card-label">📅 Программ</div>
-                    </div>
+                    <div class="stat-card"><div class="stat-card-value" id="totalHouses">0</div><div class="stat-card-label">🏘️ Домов</div></div>
+                    <div class="stat-card"><div class="stat-card-value" id="totalLifts">0</div><div class="stat-card-label">🛗 Лифтов</div></div>
+                    <div class="stat-card"><div class="stat-card-value" id="totalPrograms">0</div><div class="stat-card-label">📅 Программ</div></div>
                 </div>
                 <div class="action-buttons">
                     <button id="addHouseBtn" class="btn btn-primary">➕ Добавить дом</button>
@@ -49,21 +37,19 @@
                     <button id="deleteSelectedBtn" class="btn btn-danger" style="display: none;">🗑️ Удалить выбранные</button>
                     <button id="clearLocalStorageBtn" class="btn btn-warning" style="background: #f39c12; color: white; display: none;">🗑️ Очистить временные данные</button>
                 </div>
-                <div id="tempDataIndicator" class="temp-data-indicator" style="display: none;"></div>
+                <div id="tempDataIndicator" class="temp-data-indicator" style="display: none; background: #f39c12; color: white; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; margin-top: 10px; display: inline-block;"></div>
             </div>
 
-            <!-- Поиск и фильтры -->
             <div class="search-bar">
                 <input type="text" id="searchInput" placeholder="🔍 Поиск по адресу..." class="search-input">
                 <div class="sort-info" id="sortInfo">Сортировка: по ID ↑</div>
             </div>
 
-            <!-- Таблица домов -->
             <div class="table-wrapper">
                 <table class="houses-table">
                     <thead>
                         <tr>
-                            <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" title="Выбрать все"></th>
+                            <th style="width:40px;"><input type="checkbox" id="selectAllCheckbox" title="Выбрать все"></th>
                             <th data-sort="id" class="sortable">ID <span class="sort-arrow"></span></th>
                             <th data-sort="address" class="sortable">🏠 Адрес <span class="sort-arrow"></span></th>
                             <th data-sort="district" class="sortable">📍 Район <span class="sort-arrow"></span></th>
@@ -76,19 +62,13 @@
                     <tbody id="housesTableBody"></tbody>
                 </table>
             </div>
-
-            <!-- Пагинация -->
             <div class="pagination" id="pagination"></div>
         </div>
     </div>
 
-    <!-- Индикатор последнего сохранения -->
     <div id="lastSaveIndicator" class="last-save-indicator">
         <div class="last-save-icon">💾</div>
-        <div class="last-save-text">
-            <span id="lastSaveDate">Нет данных</span>
-            <span id="lastSaveRelative"></span>
-        </div>
+        <div class="last-save-text"><span id="lastSaveDate">Нет данных</span><span id="lastSaveRelative"></span></div>
     </div>
 
     <script src="common.js"></script>
