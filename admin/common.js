@@ -52,6 +52,36 @@ function getLiftsCount(house) {
     return count;
 }
 
+function getAllLifts(house) {
+    const lifts = [];
+    if (house.entrances) {
+        house.entrances.forEach(entrance => {
+            if (entrance.lifts && entrance.lifts.length > 0) {
+                entrance.lifts.forEach(lift => lifts.push(lift));
+            } else if (entrance.lift) {
+                lifts.push(entrance.lift);
+            }
+        });
+    }
+    return lifts;
+}
+
+function getAllPreviousLifts(house) {
+    const previousLifts = [];
+    if (house.entrances) {
+        house.entrances.forEach(entrance => {
+            if (entrance.lifts && entrance.lifts.length > 0) {
+                entrance.lifts.forEach(lift => {
+                    if (lift.previousLift) previousLifts.push(lift.previousLift);
+                });
+            } else if (entrance.lift && entrance.lift.previousLift) {
+                previousLifts.push(entrance.lift.previousLift);
+            }
+        });
+    }
+    return previousLifts;
+}
+
 function getTotalLiftsCount() {
     let total = 0;
     housesData.forEach(house => total += getLiftsCount(house));
@@ -66,17 +96,65 @@ function getTotalProgramsCount() {
     return total;
 }
 
-function getNextId() {
-    const maxId = Math.max(...housesData.map(h => h.id), 0);
-    return maxId + 1;
+// ========== ПОИСК И СОРТИРОВКА ==========
+function filterHousesByAddress(query) {
+    if (!query) return housesData;
+    return housesData.filter(house => 
+        house.address.toLowerCase().includes(query.toLowerCase())
+    );
 }
 
+function sortHouses(houses, sortBy, sortDirection) {
+    const sorted = [...houses];
+    sorted.sort((a, b) => {
+        let valA, valB;
+        switch (sortBy) {
+            case 'id':
+                valA = a.id;
+                valB = b.id;
+                break;
+            case 'address':
+                valA = a.address || '';
+                valB = b.address || '';
+                return sortDirection === 'asc' 
+                    ? valA.localeCompare(valB) 
+                    : valB.localeCompare(valA);
+            case 'district':
+                valA = a.district || '';
+                valB = b.district || '';
+                return sortDirection === 'asc' 
+                    ? valA.localeCompare(valB) 
+                    : valB.localeCompare(valA);
+            case 'buildYear':
+                valA = a.buildYear || 0;
+                valB = b.buildYear || 0;
+                break;
+            default:
+                return 0;
+        }
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+    return sorted;
+}
+
+// ========== ДУБЛИРОВАНИЕ ДОМА ==========
 function duplicateHouse(house) {
     const newHouse = JSON.parse(JSON.stringify(house));
     const maxId = Math.max(...housesData.map(h => h.id), 0);
     newHouse.id = maxId + 1;
     newHouse.address = `${newHouse.address} (копия)`;
     return newHouse;
+}
+
+// ========== УДАЛЕНИЕ ДОМА ==========
+function deleteHouseById(id) {
+    if (confirm('🗑️ Удалить дом? Это действие нельзя отменить.')) {
+        housesData = housesData.filter(house => house.id !== id);
+        return true;
+    }
+    return false;
 }
 
 // ========== УВЕДОМЛЕНИЯ ==========
@@ -117,6 +195,7 @@ function showToast(message, duration = 3000) {
     setTimeout(() => toast.remove(), duration);
 }
 
+// ========== ЭСКЕЙПИНГ HTML ==========
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => {
@@ -131,6 +210,7 @@ function escapeHtml(str) {
 function getRelativeTime(timestamp) {
     const now = Date.now();
     const diffSeconds = Math.floor((now - timestamp) / 1000);
+    
     if (diffSeconds < 60) return 'только что';
     if (diffSeconds < 3600) {
         const minutes = Math.floor(diffSeconds / 60);
@@ -147,6 +227,7 @@ function getRelativeTime(timestamp) {
 function updateLastSaveIndicator() {
     const lastSaveDateSpan = document.getElementById('lastSaveDate');
     const lastSaveRelativeSpan = document.getElementById('lastSaveRelative');
+    
     if (!lastSaveDateSpan) return;
     
     const savedTimestamp = localStorage.getItem('adminLastSave');
@@ -155,7 +236,10 @@ function updateLastSaveIndicator() {
         const formattedDate = date.toLocaleDateString('ru-RU');
         const formattedTime = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         lastSaveDateSpan.textContent = `${formattedDate}, ${formattedTime}`;
-        if (lastSaveRelativeSpan) lastSaveRelativeSpan.textContent = `(${getRelativeTime(parseInt(savedTimestamp))})`;
+        
+        if (lastSaveRelativeSpan) {
+            lastSaveRelativeSpan.textContent = `(${getRelativeTime(parseInt(savedTimestamp))})`;
+        }
     } else {
         lastSaveDateSpan.textContent = 'Нет данных';
         if (lastSaveRelativeSpan) lastSaveRelativeSpan.textContent = '';
@@ -163,99 +247,136 @@ function updateLastSaveIndicator() {
 }
 
 function saveLastSaveTimestamp() {
-    localStorage.setItem('adminLastSave', Date.now());
+    const now = Date.now();
+    localStorage.setItem('adminLastSave', now);
     updateLastSaveIndicator();
 }
 
-// ========== ИСТОРИЯ ==========
-async function addHistoryRecord(action, houseId, houseAddress, details) {
-    try {
-        let history = { records: [] };
-        try {
-            const response = await fetch('../history.json?t=' + Date.now());
-            if (response.ok) history = await response.json();
-        } catch(e) {}
+// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ (с поддержкой тёмной темы) ==========
+function showConfirmModal(options) {
+    return new Promise((resolve) => {
+        const existingModal = document.querySelector('.custom-confirm-modal');
+        if (existingModal) existingModal.remove();
         
-        const newRecord = {
-            id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-            timestamp: new Date().toISOString(),
-            action: action,
-            houseId: houseId,
-            houseAddress: houseAddress,
-            user: 'admin',
-            role: 'admin',
-            details: details || {}
+        const isDarkTheme = document.body.classList.contains('dark-theme');
+        
+        const colors = isDarkTheme ? {
+            background: '#252a38',
+            textColor: '#e0e0e0',
+            titleColor: '#a0c4e8',
+            messageColor: '#b0b4c0',
+            cancelBg: '#3a3e4d',
+            cancelHover: '#4a4e5d',
+            cancelText: '#e0e0e0'
+        } : {
+            background: '#ffffff',
+            textColor: '#1a2a3a',
+            titleColor: '#0b3b5f',
+            messageColor: '#4a627a',
+            cancelBg: '#eef2f6',
+            cancelHover: '#dce5ec',
+            cancelText: '#1a2a3a'
         };
         
-        history.records.unshift(newRecord);
-        if (history.records.length > 2000) history.records = history.records.slice(0, 2000);
+        const modal = document.createElement('div');
+        modal.className = 'custom-confirm-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            animation: fadeIn 0.2s ease-out;
+        `;
         
-        const jsonStr = JSON.stringify(history, null, 2);
-        const blob = new Blob([jsonStr], {type: 'application/json'});
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = 'history.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        showToast('📜 История изменений сохранена! Загрузите history.json на GitHub.');
+        const content = document.createElement('div');
+        content.style.cssText = `
+            background: ${colors.background};
+            border-radius: 20px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideIn 0.2s ease-out;
+        `;
         
-        return newRecord;
-    } catch(error) {
-        console.error('Ошибка записи в историю:', error);
-        return null;
-    }
+        const icon = options.icon || '⚠️';
+        const title = options.title || 'Подтверждение';
+        const message = options.message || 'Вы уверены?';
+        const confirmText = options.confirmText || 'Да';
+        const cancelText = options.cancelText || 'Отмена';
+        const confirmColor = options.confirmColor || '#dc2626';
+        
+        content.innerHTML = `
+            <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
+            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: ${colors.titleColor};">${title}</div>
+            <div style="margin-bottom: 24px; color: ${colors.messageColor}; line-height: 1.5;">${message}</div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="confirmYes" class="confirm-btn-yes" style="background: ${confirmColor}; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${confirmText}</button>
+                <button id="confirmNo" class="confirm-btn-no" style="background: ${colors.cancelBg}; color: ${colors.cancelText}; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${cancelText}</button>
+            </div>
+        `;
+        
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+        
+        if (!document.querySelector('#confirm-modal-styles')) {
+            const style = document.createElement('style');
+            style.id = 'confirm-modal-styles';
+            style.textContent = `
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+                .confirm-btn-yes:hover, .confirm-btn-no:hover { transform: scale(0.98); }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        const confirmBtn = document.getElementById('confirmYes');
+        const cancelBtn = document.getElementById('confirmNo');
+        
+        const cleanup = () => { modal.remove(); };
+        
+        confirmBtn.addEventListener('click', () => { cleanup(); resolve(true); });
+        cancelBtn.addEventListener('click', () => { cleanup(); resolve(false); });
+        
+        modal.addEventListener('click', (e) => { if (e.target === modal) { cleanup(); resolve(false); } });
+        
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(false);
+                document.removeEventListener('keydown', handleEsc);
+            }
+        };
+        document.addEventListener('keydown', handleEsc);
+    });
 }
 
-// ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
-function checkAuth() {
-    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
-        window.location.href = 'login.html';
-        return false;
-    }
-    return true;
-}
-
-// ========== ТЁМНАЯ ТЕМА ==========
-function initAdminTheme() {
-    const savedTheme = localStorage.getItem('adminTheme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-theme');
-        const themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) themeBtn.textContent = '☀️';
-    } else {
-        document.body.classList.remove('dark-theme');
-        const themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) themeBtn.textContent = '🌙';
-    }
-}
-
-function toggleAdminTheme() {
-    if (document.body.classList.contains('dark-theme')) {
-        document.body.classList.remove('dark-theme');
-        localStorage.setItem('adminTheme', 'light');
-        const themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) themeBtn.textContent = '🌙';
-    } else {
-        document.body.classList.add('dark-theme');
-        localStorage.setItem('adminTheme', 'dark');
-        const themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) themeBtn.textContent = '☀️';
-    }
-}
-
+// ========== ВЫХОД С КАСТОМНЫМ ОКНОМ ==========
 async function logout() {
-    if (confirm('Точно выйти из админ-панели?')) {
+    const confirmed = await showConfirmModal({
+        icon: '🚪',
+        title: 'Выход из админ-панели',
+        message: 'Точно выйти? Все несохранённые изменения будут потеряны.',
+        confirmText: 'Да, выйти',
+        cancelText: 'Отмена',
+        confirmColor: '#dc2626'
+    });
+    
+    if (confirmed) {
         sessionStorage.removeItem('adminLoggedIn');
         window.location.href = 'login.html';
     }
 }
 
-// ========== СОХРАНЕНИЕ ДАННЫХ ИЗ ФОРМ (ДЛЯ EDIT.JS) ==========
+// ========== СОХРАНЕНИЕ ТЕКУЩИХ ДАННЫХ ПОДЪЕЗДОВ (для edit.js) ==========
 window.saveCurrentEntranceData = function() {
-    if (!window.entrancesData) return;
     for (let i = 0; i < window.entrancesData.length; i++) {
         window.entrancesData[i].name = document.getElementById(`entrance_name_${i}`)?.value || '';
         const lifts = window[`liftsData_${i}`] || [];
@@ -297,16 +418,16 @@ window.saveCurrentEntranceData = function() {
     }
 };
 
+// ========== СОХРАНЕНИЕ ПРОГРАММ (для edit.js) ==========
 window.saveCurrentProgramsData = function() {
-    if (!window.programsData) return;
     for (let i = 0; i < window.programsData.length; i++) {
         window.programsData[i].year = document.getElementById(`prog_year_${i}`)?.value || '';
         window.programsData[i].description = document.getElementById(`prog_desc_${i}`)?.value || '';
     }
 };
 
+// ========== СОХРАНЕНИЕ КРАТКОСРОЧНЫХ ПЛАНОВ (для edit.js) ==========
 window.saveCurrentShortTermData = function() {
-    if (!window.shortTermData) return;
     for (let i = 0; i < window.shortTermData.length; i++) {
         window.shortTermData[i].type = document.getElementById(`term_type_${i}`)?.value || '';
         window.shortTermData[i].contractor = document.getElementById(`term_contractor_${i}`)?.value || '';
@@ -314,6 +435,44 @@ window.saveCurrentShortTermData = function() {
     }
 };
 
+// ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
+function checkAuth() {
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
+}
+
+// ========== ИНИЦИАЛИЗАЦИЯ ТЁМНОЙ ТЕМЫ ==========
+function initAdminTheme() {
+    const savedTheme = localStorage.getItem('adminTheme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) themeBtn.textContent = '☀️';
+    } else {
+        document.body.classList.remove('dark-theme');
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) themeBtn.textContent = '🌙';
+    }
+}
+
+function toggleAdminTheme() {
+    if (document.body.classList.contains('dark-theme')) {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('adminTheme', 'light');
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) themeBtn.textContent = '🌙';
+    } else {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('adminTheme', 'dark');
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) themeBtn.textContent = '☀️';
+    }
+}
+
+// ========== ИНИЦИАЛИЗАЦИЯ ИНДИКАТОРА ==========
 document.addEventListener('DOMContentLoaded', function() {
     updateLastSaveIndicator();
 });
