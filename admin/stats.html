@@ -84,7 +84,6 @@
             border-radius: 10px;
             height: 20px;
             overflow: hidden;
-            display: inline-block;
             width: 100%;
             min-width: 80px;
         }
@@ -100,18 +99,6 @@
             color: white;
             font-size: 0.7rem;
             white-space: nowrap;
-        }
-        
-        .percent-text {
-            margin-left: 8px;
-            font-size: 0.7rem;
-            color: #4a627a;
-        }
-        
-        .progress-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         
         body.dark-theme .stats-card {
@@ -146,10 +133,6 @@
         
         body.dark-theme .progress-bar {
             background: #3a3e4d;
-        }
-        
-        body.dark-theme .percent-text {
-            color: #8a8e9d;
         }
     </style>
 </head>
@@ -260,6 +243,15 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Индикатор последнего сохранения -->
+    <div id="lastSaveIndicator" class="last-save-indicator">
+        <div class="last-save-icon">💾</div>
+        <div class="last-save-text">
+            <span id="lastSaveDate">Нет данных</span>
+            <span id="lastSaveRelative"></span>
         </div>
     </div>
 

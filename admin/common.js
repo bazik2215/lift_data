@@ -20,7 +20,7 @@ function loadData() {
         });
 }
 
-// ========== СОХРАНЕНИЕ JSON ==========
+// ========== СОХРАНЕНИЕ JSON (ОБНОВЛЁННОЕ) ==========
 function saveJSON() {
     const jsonStr = JSON.stringify(housesData, null, 2);
     const blob = new Blob([jsonStr], {type: 'application/json'});
@@ -32,6 +32,10 @@ function saveJSON() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    
+    // Сохраняем время последнего сохранения
+    saveLastSaveTimestamp();
+    
     showToast('✅ JSON сохранён! Загрузите файл на GitHub.');
 }
 
@@ -204,6 +208,52 @@ function escapeHtml(str) {
     });
 }
 
+// ========== ИНДИКАЦИЯ ПОСЛЕДНЕГО СОХРАНЕНИЯ ==========
+function getRelativeTime(timestamp) {
+    const now = Date.now();
+    const diffSeconds = Math.floor((now - timestamp) / 1000);
+    
+    if (diffSeconds < 60) return 'только что';
+    if (diffSeconds < 3600) {
+        const minutes = Math.floor(diffSeconds / 60);
+        return `${minutes} ${minutes === 1 ? 'минуту' : minutes < 5 ? 'минуты' : 'минут'} назад`;
+    }
+    if (diffSeconds < 86400) {
+        const hours = Math.floor(diffSeconds / 3600);
+        return `${hours} ${hours === 1 ? 'час' : hours < 5 ? 'часа' : 'часов'} назад`;
+    }
+    const days = Math.floor(diffSeconds / 86400);
+    return `${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'} назад`;
+}
+
+function updateLastSaveIndicator() {
+    const lastSaveDateSpan = document.getElementById('lastSaveDate');
+    const lastSaveRelativeSpan = document.getElementById('lastSaveRelative');
+    
+    if (!lastSaveDateSpan) return;
+    
+    const savedTimestamp = localStorage.getItem('adminLastSave');
+    if (savedTimestamp) {
+        const date = new Date(parseInt(savedTimestamp));
+        const formattedDate = date.toLocaleDateString('ru-RU');
+        const formattedTime = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        lastSaveDateSpan.textContent = `${formattedDate}, ${formattedTime}`;
+        
+        if (lastSaveRelativeSpan) {
+            lastSaveRelativeSpan.textContent = `(${getRelativeTime(parseInt(savedTimestamp))})`;
+        }
+    } else {
+        lastSaveDateSpan.textContent = 'Нет данных';
+        if (lastSaveRelativeSpan) lastSaveRelativeSpan.textContent = '';
+    }
+}
+
+function saveLastSaveTimestamp() {
+    const now = Date.now();
+    localStorage.setItem('adminLastSave', now);
+    updateLastSaveIndicator();
+}
+
 // ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ (с поддержкой тёмной темы) ==========
 function showConfirmModal(options) {
     return new Promise((resolve) => {
@@ -346,6 +396,23 @@ function showConfirmModal(options) {
     });
 }
 
+// ========== ВЫХОД С КАСТОМНЫМ ОКНОМ ==========
+async function logout() {
+    const confirmed = await showConfirmModal({
+        icon: '🚪',
+        title: 'Выход из админ-панели',
+        message: 'Точно выйти? Все несохранённые изменения будут потеряны.',
+        confirmText: 'Да, выйти',
+        cancelText: 'Отмена',
+        confirmColor: '#dc2626'
+    });
+    
+    if (confirmed) {
+        sessionStorage.removeItem('adminLoggedIn');
+        window.location.href = 'login.html';
+    }
+}
+
 // ========== СОХРАНЕНИЕ ТЕКУЩИХ ДАННЫХ ПОДЪЕЗДОВ (для edit.js) ==========
 window.saveCurrentEntranceData = function() {
     for (let i = 0; i < window.entrancesData.length; i++) {
@@ -443,19 +510,7 @@ function toggleAdminTheme() {
     }
 }
 
-// ========== ВЫХОД С КАСТОМНЫМ ОКНОМ ==========
-async function logout() {
-    const confirmed = await showConfirmModal({
-        icon: '🚪',
-        title: 'Выход из админ-панели',
-        message: 'Точно выйти? Все несохранённые изменения будут потеряны.',
-        confirmText: 'Да, выйти',
-        cancelText: 'Отмена',
-        confirmColor: '#dc2626'
-    });
-    
-    if (confirmed) {
-        sessionStorage.removeItem('adminLoggedIn');
-        window.location.href = 'login.html';
-    }
-}
+// ========== ИНИЦИАЛИЗАЦИЯ ИНДИКАТОРА ПРИ ЗАГРУЗКЕ ==========
+document.addEventListener('DOMContentLoaded', function() {
+    updateLastSaveIndicator();
+});

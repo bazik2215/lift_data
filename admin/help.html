@@ -403,6 +403,17 @@
                 </div>
             </div>
 
+            <!-- Индикатор последнего сохранения -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>💾</span> Индикатор последнего сохранения
+                </div>
+                <div class="help-card-content">
+                    В правом нижнем углу всех страниц админ-панели отображается дата, время и относительное время 
+                    последнего нажатия кнопки «💾 Сохранить JSON». Это помогает не забыть сохранить изменения.
+                </div>
+            </div>
+
             <!-- Контакты -->
             <div class="help-section">
                 <div class="help-section-title">
@@ -413,6 +424,15 @@
                     Пароль доступа: <code>admin123</code> (можно изменить в файле <code>login.html</code>).
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Индикатор последнего сохранения -->
+    <div id="lastSaveIndicator" class="last-save-indicator">
+        <div class="last-save-icon">💾</div>
+        <div class="last-save-text">
+            <span id="lastSaveDate">Нет данных</span>
+            <span id="lastSaveRelative"></span>
         </div>
     </div>
 
@@ -448,7 +468,7 @@
         
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            logout(); // Используем функцию logout из common.js
+            logout();
         });
         
         initTheme();
