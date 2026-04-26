@@ -32,24 +32,31 @@ body {
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 24px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
-.home-button {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
+.header-nav {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-link {
     color: white;
-    padding: 8px 18px;
-    border-radius: 30px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 5px 0;
+    border-bottom: 2px solid transparent;
+    transition: 0.2s;
 }
 
-.home-button:hover {
-    background: rgba(255,255,255,0.3);
-    transform: scale(0.98);
+.nav-link:hover {
+    border-bottom-color: rgba(255,255,255,0.5);
+}
+
+.nav-link.active {
+    border-bottom-color: white;
 }
 
 .header-title {
@@ -78,7 +85,7 @@ body {
     margin-bottom: 30px;
 }
 
-#addressInput {
+#addressInput, #searchInput {
     width: 100%;
     padding: 14px 20px;
     font-size: 1rem;
@@ -90,13 +97,13 @@ body {
     box-sizing: border-box;
 }
 
-#addressInput:focus {
+#addressInput:focus, #searchInput:focus {
     border-color: #0b5e7e;
     outline: none;
     box-shadow: 0 0 0 3px rgba(11,94,126,0.15);
 }
 
-#addressInput::placeholder {
+#addressInput::placeholder, #searchInput::placeholder {
     font-size: 0.95rem;
     color: #8aa0b5;
 }
@@ -151,7 +158,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Блок фильтров */
 .filters-block {
     background: white;
     border-radius: 20px;
@@ -195,7 +201,6 @@ body {
     box-shadow: 0 0 0 2px rgba(11,94,126,0.2);
 }
 
-/* Карта */
 .map-container {
     width: 100%;
     height: 420px;
@@ -206,7 +211,6 @@ body {
     z-index: 1;
 }
 
-/* Информационные карточки */
 .info-card {
     background: white;
     border-radius: 20px;
@@ -283,19 +287,18 @@ body {
     background: #dce5ec;
 }
 
-/* Таблицы */
 .table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
 
-.info-table {
+.info-table, .houses-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
 }
 
-.info-table th {
+.info-table th, .houses-table th {
     text-align: left;
     padding: 12px 10px;
     background: #eef2f6;
@@ -304,10 +307,30 @@ body {
     border-bottom: 1px solid #cbdbe0;
 }
 
-.info-table td {
+.info-table td, .houses-table td {
     padding: 12px 10px;
     border-bottom: 1px solid #e9edf2;
     vertical-align: top;
+}
+
+.houses-table td:last-child {
+    white-space: nowrap;
+}
+
+.details-link {
+    color: #0b5e7e;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.details-link:hover {
+    text-decoration: underline;
+}
+
+.balloon-link {
+    color: #0b5e7e;
+    text-decoration: none;
+    font-weight: 500;
 }
 
 #programWorks td:last-child {
@@ -319,7 +342,6 @@ body {
     min-width: 500px;
 }
 
-/* Адаптив для телефонов */
 @media (max-width: 700px) {
     .container {
         padding: 0 16px;
@@ -344,16 +366,20 @@ body {
         padding-left: 0;
     }
     
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
     .header-title {
         font-size: 0.9rem;
     }
     
-    .home-button {
-        padding: 6px 14px;
+    .nav-link {
         font-size: 0.85rem;
     }
     
-    #addressInput {
+    #addressInput, #searchInput {
         padding: 12px 16px;
         font-size: 0.95rem;
     }
@@ -409,9 +435,13 @@ body {
     .full-address {
         font-size: 1.1rem;
     }
+    
+    .houses-table {
+        font-size: 0.75rem;
+        min-width: 500px;
+    }
 }
 
-/* Для очень маленьких экранов */
 @media (max-width: 480px) {
     .container {
         padding: 0 12px;
@@ -432,10 +462,5 @@ body {
     
     .header-title {
         font-size: 0.8rem;
-    }
-    
-    .home-button {
-        padding: 5px 10px;
-        font-size: 0.75rem;
     }
 }

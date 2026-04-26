@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Лифты — список домов</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-nav">
+                    <a href="index.html" class="nav-link">🏠 Карта</a>
+                    <a href="houses.html" class="nav-link active">📋 Список домов</a>
+                </div>
+                <div class="header-title">Информация о замене лифтов</div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="search-header">
+                <h2>Список домов</h2>
+            </div>
+            
+            <div class="search-section">
+                <input type="text" id="searchInput" placeholder="Фильтр по адресу..." autocomplete="off">
+            </div>
+
+            <div class="info-card">
+                <div class="table-wrapper">
+                    <table class="houses-table" id="housesTable">
+                        <thead>
+                            <tr>
+                                <th>Адрес</th>
+                                <th>Район</th>
+                                <th>Год постройки</th>
+                                <th>Этажей</th>
+                                <th>Лифтов</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="housesList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="list.js"></script>
+</body>
+</html>
