@@ -4,7 +4,7 @@ let currentEditingHouseId = null;
 
 // ========== ЗАГРУЗКА ДАННЫХ ==========
 function loadData() {
-    return fetch('../../data.json?t=' + Date.now())
+    return fetch('../data.json?t=' + Date.now())
         .then(response => {
             if (!response.ok) throw new Error('Ошибка загрузки data.json');
             return response.json();
@@ -223,7 +223,6 @@ window.saveCurrentEntranceData = function() {
             lifts[j].condition = document.getElementById(`lift_condition_${i}_${j}`)?.value || '';
             lifts[j].note = document.getElementById(`lift_note_${i}_${j}`)?.value || '';
             
-            // Сохраняем предыдущий лифт
             const prevModel = document.getElementById(`prev_lift_model_${i}_${j}`)?.value;
             if (prevModel) {
                 lifts[j].previousLift = {
