@@ -46,13 +46,6 @@ function setupEventListeners() {
     const saveBtn = document.getElementById('saveHouseBtn');
     if (saveBtn) saveBtn.addEventListener('click', () => saveHouse());
     
-    const saveJsonBtn = document.getElementById('saveJsonBtn');
-    if (saveJsonBtn) {
-        saveJsonBtn.addEventListener('click', () => {
-            saveJSON();
-        });
-    }
-    
     const deleteBtn = document.getElementById('deleteHouseBtn');
     if (deleteBtn) deleteBtn.addEventListener('click', () => deleteHouse());
     
@@ -362,16 +355,14 @@ function renderShortTerm() {
     });
 }
 
-// ========== ГЛАВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ ==========
+// ========== ГЛАВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ (ИСПРАВЛЕНА) ==========
 async function saveHouse() {
     console.log('🔵 Сохранение дома начато');
     
-    // Сохраняем данные из форм
     saveCurrentEntranceData();
     saveCurrentProgramsData();
     saveCurrentShortTermData();
     
-    // Собираем данные
     const id = parseInt(document.getElementById('houseId').value);
     const address = document.getElementById('houseAddress').value.trim();
     if (!address) {
@@ -388,7 +379,6 @@ async function saveHouse() {
         }
     }
     
-    // Собираем подъезды и лифты
     const entrances = [];
     for (let i = 0; i < window.entrancesData.length; i++) {
         const lifts = window[`liftsData_${i}`] || [];
@@ -398,7 +388,6 @@ async function saveHouse() {
         });
     }
     
-    // Формируем объект дома
     const houseData = {
         id: id,
         address: address,
@@ -422,19 +411,39 @@ async function saveHouse() {
         housesData = [];
     }
     
-    // Добавляем дом в массив
-    housesData.push(houseData);
-    console.log('✅ Дом добавлен. Всего домов:', housesData.length);
+    // ========== ГЛАВНОЕ ИСПРАВЛЕНИЕ ==========
+    if (isNewHouse) {
+        // Новый дом — добавляем в конец
+        housesData.push(houseData);
+        console.log('✅ Новый дом ДОБАВЛЕН. Всего домов:', housesData.length);
+    } else {
+        // Редактирование существующего — заменяем по ID
+        const index = housesData.findIndex(h => h.id === houseId);
+        if (index !== -1) {
+            housesData[index] = houseData;
+            console.log('✅ Дом ОБНОВЛЁН (ID ' + houseId + '). Всего домов:', housesData.length);
+        } else {
+            // На всякий случай, если не нашли — добавляем
+            housesData.push(houseData);
+            console.log('⚠️ Дом с ID ' + houseId + ' не найден, добавлен как новый');
+        }
+    }
     
     // Сохраняем в localStorage
     localStorage.setItem('housesDataBackup', JSON.stringify(housesData));
     
-    // Сохраняем в history.json (запись о добавлении)
+    // Сохраняем в history.json
     try {
-        await addHistoryRecord('add', houseData.id, houseData.address, {
-            summary: `${houseData.entrances.length} подъездов, ${houseData.entrances.reduce((sum, e) => sum + (e.lifts?.length || 0), 0)} лифтов, ${houseData.programWorks?.length || 0} программ`
-        });
-        console.log('📜 Запись в историю добавлена');
+        if (isNewHouse) {
+            await addHistoryRecord('add', houseData.id, houseData.address, {
+                summary: `${houseData.entrances.length} подъездов, ${houseData.entrances.reduce((sum, e) => sum + (e.lifts?.length || 0), 0)} лифтов, ${houseData.programWorks?.length || 0} программ`
+            });
+            console.log('📜 Запись о добавлении в историю');
+        } else {
+            const changes = compareHouses(oldHouseData, houseData);
+            await addHistoryRecord('update', houseData.id, houseData.address, { changes: changes });
+            console.log('📜 Запись об изменении в историю');
+        }
     } catch(e) {
         console.error('Ошибка записи в историю:', e);
     }
@@ -453,7 +462,7 @@ async function saveHouse() {
     
     alert(`✅ Дом "${address}" сохранён! JSON скачан. Всего домов: ${housesData.length}`);
     
-    // ПРИНУДИТЕЛЬНОЕ ПЕРЕНАПРАВЛЕНИЕ НА СПИСОК
+    // Перенаправление на список
     console.log('🔄 Перенаправление на страницу списка...');
     window.location.href = 'index.html';
 }
@@ -464,13 +473,12 @@ async function deleteHouse() {
         
         housesData = housesData.filter(h => h.id !== houseId);
         
-        // Сохраняем в history.json (запись об удалении)
         if (deletedHouse) {
             try {
                 await addHistoryRecord('delete', houseId, deletedHouse.address, {
                     deletedData: deletedHouse
                 });
-                console.log('📜 Запись об удалении добавлена в историю');
+                console.log('📜 Запись об удалении добавлена');
             } catch(e) {
                 console.error('Ошибка записи в историю:', e);
             }
