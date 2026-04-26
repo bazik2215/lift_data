@@ -7,6 +7,29 @@ let currentPlacemarks = [];
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Карта загружена');
     
+    // ========== ТЁМНАЯ ТЕМА ==========
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        if (themeToggle) themeToggle.textContent = '☀️';
+    } else {
+        if (themeToggle) themeToggle.textContent = '🌙';
+    }
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-theme');
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+                themeToggle.textContent = '☀️';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggle.textContent = '🌙';
+            }
+        });
+    }
+    // ========== КОНЕЦ БЛОКА ТЕМЫ ==========
+    
     const addressInput = document.getElementById('addressInput');
     const suggestionsDiv = document.getElementById('suggestions');
     const planTypeSelect = document.getElementById('planType');
@@ -114,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '<ul style="margin: 5px 0 0 20px; padding: 0; list-style-type: disc;">';
         liftsWithYears.forEach(function(lift) {
             const yearText = lift.year ? ` (${lift.year})` : '';
-            html += `<li style="margin: 2px 0;">Лифт №${lift.number}${yearText}</li>`;
+            html += '<li style="margin: 2px 0;">Лифт №' + lift.number + yearText + '</li>';
         });
         html += '</ul>';
         return html;
@@ -139,21 +162,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (planType === 'program') {
             const liftsListHtml = getLiftsListForProgram(house, selectedTime);
-            return `<b>${address}</b><br>${district}<br><b>Лифты:</b>${liftsListHtml}<br><br><a href="house.html?id=${house.id}" class="balloon-link">Подробнее о доме →</a>`;
+            return '<b>' + address + '</b><br>' + district + '<br><b>Лифты:</b>' + liftsListHtml + '<br><br><a href="house.html?id=' + house.id + '" class="balloon-link">Подробнее о доме →</a>';
         } else {
             let tableHtml = '<table style="width:100%; border-collapse: collapse; margin-top: 5px; border: 1px solid #ccc;">';
             if (house.shortTermWorks && house.shortTermWorks.length > 0) {
                 const work = house.shortTermWorks[0];
-                tableHtml += `
-                    <tr><td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">Тип ремонта</td><td style="padding: 6px 8px; border: 1px solid #ccc;">${work.type || '—'}</td></tr>
-                    <tr><td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">Подрядчик</td><td style="padding: 6px 8px; border: 1px solid #ccc;">${work.contractor || '—'}</td></tr>
-                    <tr><td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">Срок выполнения</td><td style="padding: 6px 8px; border: 1px solid #ccc;">${work.period || '—'}</td></tr>
-                `;
+                tableHtml += '<tr><td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">Тип ремонта</td><td style="padding: 6px 8px; border: 1px solid #ccc;">' + (work.type || '—') + '</td></tr>';
+                tableHtml += '<tr><td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">Подрядчик</td><td style="padding: 6px 8px; border: 1px solid #ccc;">' + (work.contractor || '—') + '</td></tr>';
+                tableHtml += '<tr><td style="padding: 6px 8px; font-weight: 600; border: 1px solid #ccc;">Срок выполнения</td><td style="padding: 6px 8px; border: 1px solid #ccc;">' + (work.period || '—') + '</td></tr>';
             } else {
-                tableHtml += `<tr><td style="padding: 6px 8px;">Нет информации</td></tr>`;
+                tableHtml += '<tr><td style="padding: 6px 8px;">Нет информации</td></tr>';
             }
             tableHtml += '</table>';
-            return `<b>${address}</b><br>${district}${tableHtml}<br><br><a href="house.html?id=${house.id}" class="balloon-link">Подробнее о доме →</a>`;
+            return '<b>' + address + '</b><br>' + district + tableHtml + '<br><br><a href="house.html?id=' + house.id + '" class="balloon-link">Подробнее о доме →</a>';
         }
     }
     
@@ -198,6 +219,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentMap.geoObjects.add(placemark);
             }
         });
+        
+        console.log('Отображаем домов после фильтра:', filteredHouses.length);
     }
     
     // Поиск с алфавитной сортировкой

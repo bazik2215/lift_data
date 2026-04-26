@@ -3,6 +3,29 @@ let housesData = [];
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Страница дома загружена');
     
+    // ========== ТЁМНАЯ ТЕМА ==========
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        if (themeToggle) themeToggle.textContent = '☀️';
+    } else {
+        if (themeToggle) themeToggle.textContent = '🌙';
+    }
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-theme');
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+                themeToggle.textContent = '☀️';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggle.textContent = '🌙';
+            }
+        });
+    }
+    // ========== КОНЕЦ БЛОКА ТЕМЫ ==========
+    
     // Получаем ID дома из URL
     const urlParams = new URLSearchParams(window.location.search);
     const houseId = parseInt(urlParams.get('id'));

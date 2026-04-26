@@ -3,6 +3,29 @@ let housesData = [];
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Список домов загружен');
     
+    // ========== ТЁМНАЯ ТЕМА ==========
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        if (themeToggle) themeToggle.textContent = '☀️';
+    } else {
+        if (themeToggle) themeToggle.textContent = '🌙';
+    }
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-theme');
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+                themeToggle.textContent = '☀️';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggle.textContent = '🌙';
+            }
+        });
+    }
+    // ========== КОНЕЦ БЛОКА ТЕМЫ ==========
+    
     const searchInput = document.getElementById('searchInput');
     const housesList = document.getElementById('housesList');
     
@@ -47,12 +70,12 @@ document.addEventListener('DOMContentLoaded', function() {
         housesList.innerHTML = '';
         filtered.forEach(function(house) {
             const row = housesList.insertRow();
-            row.insertCell(0).innerHTML = `<strong>${house.address}</strong>`;
+            row.insertCell(0).innerHTML = '<strong>' + house.address + '</strong>';
             row.insertCell(1).textContent = house.district || '—';
             row.insertCell(2).textContent = house.buildYear || '—';
             row.insertCell(3).textContent = house.floors || '—';
             row.insertCell(4).textContent = getLiftsCount(house);
-            row.insertCell(5).innerHTML = `<a href="house.html?id=${house.id}" class="details-link">Подробнее →</a>`;
+            row.insertCell(5).innerHTML = '<a href="house.html?id=' + house.id + '" class="details-link">Подробнее →</a>';
         });
         
         if (filtered.length === 0) {
