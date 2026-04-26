@@ -49,8 +49,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let count = 0;
         if (house.entrances) {
             house.entrances.forEach(function(entrance) {
-                if (entrance.lifts && entrance.lifts.length > 0) count += entrance.lifts.length;
-                else if (entrance.lift) count += 1;
+                if (entrance.lifts && entrance.lifts.length > 0) {
+                    count += entrance.lifts.length;
+                } else if (entrance.lift) {
+                    count += 1;
+                }
             });
         }
         return count;
@@ -98,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return match;
         });
         
+        // СОРТИРОВКА
         filtered.sort(function(a, b) {
             let valA, valB;
             switch (currentSort.column) {
@@ -155,10 +159,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function initSorting() {
-        document.querySelectorAll('#housesTable th').forEach(function(th) {
+        const headers = document.querySelectorAll('#housesTable th');
+        console.log('Найдено заголовков:', headers.length);
+        headers.forEach(function(th) {
             th.style.cursor = 'pointer';
             th.addEventListener('click', function() {
                 const column = th.dataset.sort;
+                console.log('Клик по:', column);
                 if (currentSort.column === column) {
                     currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
                 } else {
@@ -175,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 housesData = data;
+                console.log('Загружено домов:', housesData.length);
                 updateDistrictFilter();
                 updateHeaderStats();
                 renderList();
@@ -182,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(function(error) {
                 console.error('Ошибка:', error);
-                housesList.innerHTML = '<tr><td colspan="6">Ошибка загрузки данных<\/td><\/tr>';
+                housesList.innerHTML = '<tr><td colspan="6">Ошибка загрузки данных</td><\/tr>';
             });
     }
     
