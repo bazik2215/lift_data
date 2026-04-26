@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Админ-панель — редактирование дома</title>
     <link rel="stylesheet" href="admin.css">
-    <!-- Подключаем Яндекс.Карты для мини-карты -->
     <script src="https://api-maps.yandex.ru/2.1/?apikey=b45543af-a624-4ee6-bef2-7f2e8e8498fd&lang=ru_RU"></script>
 </head>
 <body>
     <div class="admin-wrapper">
-        <!-- Шапка -->
         <div class="admin-header">
             <div class="admin-header-left">
                 <div class="admin-logo">🔐 Админ-панель</div>
@@ -27,15 +25,12 @@
             </div>
         </div>
 
-        <!-- Основной контент -->
         <div class="admin-container">
-            <!-- Хлебные крошки -->
             <div class="breadcrumbs">
                 <a href="index.html">← Назад к списку</a>
                 <span id="pageTitle">Редактирование дома</span>
             </div>
 
-            <!-- Форма редактирования -->
             <div id="editForm">
                 <!-- Основная информация -->
                 <div class="form-section">
@@ -106,14 +101,12 @@
                 <!-- Кнопки сохранения -->
                 <div class="form-actions">
                     <button id="saveHouseBtn" class="btn btn-primary">💾 Сохранить дом</button>
-                    <button id="saveJsonBtn" class="btn btn-success">💾 Сохранить JSON</button>
-                    <button id="deleteHouseBtn" class="btn btn-danger">🗑️ Удалить дом</button>
+                    <button id="deleteHouseBtn" class="btn btn-danger" style="display: none;">🗑️ Удалить дом</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Индикатор последнего сохранения -->
     <div id="lastSaveIndicator" class="last-save-indicator">
         <div class="last-save-icon">💾</div>
         <div class="last-save-text">
