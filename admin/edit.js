@@ -382,11 +382,16 @@ function renderShortTerm() {
     });
 }
 
+// ========== ГЛАВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ (ИСПРАВЛЕНА) ==========
 async function saveHouse() {
+    console.log('🔵 saveHouse() начал выполнение');
+    
+    // Сохраняем данные из форм в глобальные переменные
     saveCurrentEntranceData();
     saveCurrentProgramsData();
     saveCurrentShortTermData();
     
+    // Собираем данные из формы
     const id = parseInt(document.getElementById('houseId').value);
     const address = document.getElementById('houseAddress').value.trim();
     if (!address) {
@@ -406,14 +411,17 @@ async function saveHouse() {
         }
     }
     
+    // Собираем подъезды и лифты
     const entrances = [];
     for (let i = 0; i < window.entrancesData.length; i++) {
+        const lifts = window[`liftsData_${i}`] || [];
         entrances.push({
-            name: window.entrancesData[i].name,
-            lifts: window[`liftsData_${i}`] || []
+            name: window.entrancesData[i].name || '',
+            lifts: lifts
         });
     }
     
+    // Формируем объект дома
     const houseData = {
         id: id,
         address: address,
@@ -429,18 +437,47 @@ async function saveHouse() {
         shortTermWorks: window.shortTermData
     };
     
-    if (isNewHouse) {
-        housesData.push(houseData);
-        showToast(`✅ Дом "${address}" добавлен в память`);
-    } else {
-        const index = housesData.findIndex(h => h.id === houseId);
-        if (index !== -1) {
-            housesData[index] = houseData;
-            showToast(`✅ Дом "${address}" сохранён в память`);
-        }
+    console.log('🏠 Сохраняемый дом:', houseData);
+    
+    // ========== ГЛАВНОЕ ИСПРАВЛЕНИЕ ==========
+    // Проверяем, загружена ли глобальная переменная housesData
+    if (typeof housesData === 'undefined') {
+        console.error('❌ housesData не определена! Пытаемся загрузить...');
+        await loadData();
     }
     
-    window.location.href = 'index.html';
+    if (housesData && Array.isArray(housesData)) {
+        if (isNewHouse) {
+            // Новый дом — добавляем в массив
+            housesData.push(houseData);
+            console.log('✅ Новый дом ДОБАВЛЕН в housesData. Всего домов:', housesData.length);
+            showToast(`✅ Дом "${address}" добавлен в список (всего: ${housesData.length} домов)`);
+        } else {
+            // Существующий дом — обновляем
+            const index = housesData.findIndex(h => h.id === houseId);
+            if (index !== -1) {
+                housesData[index] = houseData;
+                console.log('✅ Дом ОБНОВЛЁН в housesData');
+                showToast(`✅ Дом "${address}" обновлён`);
+            } else {
+                console.warn('⚠️ Дом с id', houseId, 'не найден, добавляем как новый');
+                housesData.push(houseData);
+                showToast(`✅ Дом "${address}" добавлен (id не найден)`);
+            }
+        }
+        
+        // Дополнительно сохраняем в localStorage для надёжности
+        localStorage.setItem('housesDataBackup', JSON.stringify(housesData));
+        console.log('💾 Данные также сохранены в localStorage');
+        
+        // Небольшая задержка перед переходом
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 500);
+    } else {
+        console.error('❌ Ошибка: housesData не загружена или не является массивом');
+        showToast('❌ Ошибка: не удалось сохранить дом. Попробуйте обновить страницу и повторить.');
+    }
 }
 
 async function deleteHouse() {
