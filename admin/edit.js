@@ -151,12 +151,14 @@ function getNextId() {
 // ========== ПРЕДПРОСМОТР КООРДИНАТ ==========
 let miniMap = null;
 let miniMapInitialized = false;
+let isMapVisible = false;
 
 function previewCoordinates() {
     const coordsInput = document.getElementById('houseCoords');
     const miniMapDiv = document.getElementById('miniMap');
+    const previewBtn = document.getElementById('previewCoordsBtn');
     
-    if (!coordsInput || !miniMapDiv) return;
+    if (!coordsInput || !miniMapDiv || !previewBtn) return;
     
     const coordsStr = coordsInput.value.trim();
     if (!coordsStr) {
@@ -170,15 +172,22 @@ function previewCoordinates() {
         return;
     }
     
-    if (miniMapDiv.style.display === 'none') {
+    if (miniMapDiv.style.display === 'none' || !isMapVisible) {
+        // Показываем карту
         miniMapDiv.style.display = 'block';
+        previewBtn.textContent = '🗺️ Скрыть карту';
+        isMapVisible = true;
+        
         if (!miniMapInitialized) {
             initMiniMap(parts[0], parts[1]);
         } else if (miniMap) {
             miniMap.setCenter(parts);
         }
     } else {
+        // Скрываем карту
         miniMapDiv.style.display = 'none';
+        previewBtn.textContent = '🗺️ Показать на карте';
+        isMapVisible = false;
     }
 }
 

@@ -435,7 +435,12 @@ body {
     margin-bottom: 12px;
 }
 
-/* ========== ТЁМНАЯ ТЕМА ========== */
+/* ========== ТЁМНАЯ ТЕМА (ИСПРАВЛЕНА) ========== */
+body.dark-theme {
+    background: #1a1e2c;
+    color: #e0e0e0;
+}
+
 body.dark-theme .admin-header {
     background: #0a0e1a;
 }
@@ -524,6 +529,26 @@ body.dark-theme .pagination .active-page {
 
 body.dark-theme .breadcrumbs a {
     color: #6ab0d6;
+}
+
+/* ========== КНОПКИ ДЕЙСТВИЙ В ТАБЛИЦЕ ========== */
+.action-icon {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.action-icon:hover {
+    background: #eef2f6;
+    transform: scale(1.05);
+}
+
+body.dark-theme .action-icon:hover {
+    background: #4a4e5d;
 }
 
 /* ========== АДАПТИВ ========== */
