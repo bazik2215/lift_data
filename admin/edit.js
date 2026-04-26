@@ -13,13 +13,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         houseId = parseInt(idParam);
         isNewHouse = false;
         const titleEl = document.getElementById('pageTitle');
-        if (titleEl) titleEl.textContent = 'Редактирование дома';
+        if (titleEl) titleEl.textContent = '✏️ Редактирование дома';
         const deleteBtn = document.getElementById('deleteHouseBtn');
         if (deleteBtn) deleteBtn.style.display = 'inline-block';
     } else {
         isNewHouse = true;
         const titleEl = document.getElementById('pageTitle');
-        if (titleEl) titleEl.textContent = 'Добавление дома';
+        if (titleEl) titleEl.textContent = '➕ Добавление дома';
         const deleteBtn = document.getElementById('deleteHouseBtn');
         if (deleteBtn) deleteBtn.style.display = 'none';
     }
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             oldHouseData = JSON.parse(JSON.stringify(house));
             fillForm(house);
         } else {
-            showToast('Дом не найден');
+            showToast('❌ Дом не найден');
             window.location.href = 'index.html';
         }
     }
@@ -49,7 +49,6 @@ function setupEventListeners() {
     const saveJsonBtn = document.getElementById('saveJsonBtn');
     if (saveJsonBtn) {
         saveJsonBtn.addEventListener('click', () => {
-            console.log('Save JSON clicked');
             saveJSON();
         });
     }
@@ -65,23 +64,17 @@ function setupEventListeners() {
     
     const addEntranceBtn = document.getElementById('addEntranceBtn');
     if (addEntranceBtn) {
-        addEntranceBtn.addEventListener('click', function() {
-            addEntrance();
-        });
+        addEntranceBtn.addEventListener('click', () => addEntrance());
     }
     
     const addProgramBtn = document.getElementById('addProgramBtn');
     if (addProgramBtn) {
-        addProgramBtn.addEventListener('click', function() {
-            addProgram();
-        });
+        addProgramBtn.addEventListener('click', () => addProgram());
     }
     
     const addShortTermBtn = document.getElementById('addShortTermBtn');
     if (addShortTermBtn) {
-        addShortTermBtn.addEventListener('click', function() {
-            addShortTerm();
-        });
+        addShortTermBtn.addEventListener('click', () => addShortTerm());
     }
     
     const previewCoordsBtn = document.getElementById('previewCoordsBtn');
@@ -157,19 +150,19 @@ function previewCoordinates() {
     
     const coordsStr = coordsInput.value.trim();
     if (!coordsStr) {
-        showToast('Введите координаты');
+        showToast('❌ Введите координаты');
         return;
     }
     
     const parts = coordsStr.split(',').map(s => parseFloat(s.trim()));
     if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
-        showToast('Неверный формат координат. Пример: 48.560115, 39.310170');
+        showToast('❌ Неверный формат координат. Пример: 48.560115, 39.310170');
         return;
     }
     
     if (!isMapVisible) {
         miniMapDiv.style.display = 'block';
-        previewBtn.textContent = 'Скрыть карту';
+        previewBtn.textContent = '🗺️ Скрыть карту';
         isMapVisible = true;
         
         if (!miniMapInitialized) {
@@ -179,99 +172,99 @@ function previewCoordinates() {
         }
     } else {
         miniMapDiv.style.display = 'none';
-        previewBtn.textContent = 'Показать на карте';
+        previewBtn.textContent = '🗺️ Показать на карте';
         isMapVisible = false;
     }
 }
 
 function initMiniMap(lat, lon) {
     if (typeof ymaps === 'undefined') {
-        showToast('Карты не загрузились');
+        showToast('❌ Карты не загрузились');
         return;
     }
     
-    ymaps.ready(function() {
+    ymaps.ready(() => {
         miniMap = new ymaps.Map('miniMap', {
             center: [lat, lon],
             zoom: 17,
             controls: ['zoomControl']
         });
-        var placemark = new ymaps.Placemark([lat, lon], {}, { preset: 'islands#blueHomeIcon' });
+        const placemark = new ymaps.Placemark([lat, lon], {}, { preset: 'islands#blueHomeIcon' });
         miniMap.geoObjects.add(placemark);
         miniMapInitialized = true;
     });
 }
 
 function renderEntrances() {
-    var container = document.getElementById('entrancesContainer');
+    const container = document.getElementById('entrancesContainer');
     if (!container) return;
     container.innerHTML = '';
     
-    window.entrancesData.forEach(function(entrance, idx) {
-        var div = document.createElement('div');
+    window.entrancesData.forEach((entrance, idx) => {
+        const div = document.createElement('div');
         div.className = 'subgroup';
         div.innerHTML = `
             <div class="subgroup-header">
-                <strong>Podiezd ${idx + 1}</strong>
+                <strong>🚪 Подъезд ${idx + 1}</strong>
                 <button class="action-icon" onclick="removeEntrance(${idx})">🗑️</button>
             </div>
             <div class="form-field">
-                <label>Nazvanie podiezda</label>
+                <label>Название подъезда</label>
                 <input type="text" id="entrance_name_${idx}" value="${escapeHtml(entrance.name || '')}">
             </div>
             <div id="lifts_${idx}_container"></div>
-            <button class="btn-add" onclick="addLift(${idx})">Dobavit lift</button>
+            <button class="btn-add" onclick="addLift(${idx})">➕ Добавить лифт</button>
         `;
         container.appendChild(div);
         
-        var lifts = entrance.lifts || (entrance.lift ? [entrance.lift] : []);
-        window['liftsData_' + idx] = JSON.parse(JSON.stringify(lifts));
+        const lifts = entrance.lifts || (entrance.lift ? [entrance.lift] : []);
+        window[`liftsData_${idx}`] = JSON.parse(JSON.stringify(lifts));
         renderLifts(idx);
     });
 }
 
 function renderLifts(entranceIdx) {
-    var container = document.getElementById('lifts_' + entranceIdx + '_container');
+    const container = document.getElementById(`lifts_${entranceIdx}_container`);
     if (!container) return;
-    var lifts = window['liftsData_' + entranceIdx] || [];
+    const lifts = window[`liftsData_${entranceIdx}`] || [];
     container.innerHTML = '';
     
-    lifts.forEach(function(lift, liftIdx) {
-        var liftDiv = document.createElement('div');
+    lifts.forEach((lift, liftIdx) => {
+        const liftDiv = document.createElement('div');
         liftDiv.className = 'lift-group';
         liftDiv.innerHTML = `
             <div class="lift-header">
-                <strong>Lift ${liftIdx + 1}</strong>
+                <strong>🛗 Лифт ${liftIdx + 1}</strong>
                 <button class="action-icon" onclick="removeLift(${entranceIdx}, ${liftIdx})">🗑️</button>
             </div>
             <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                <div class="form-field"><label>Reg nomer</label><input type="text" id="lift_regNumber_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.registrationNumber || '')}"></div>
-                <div class="form-field"><label>Nazvanie</label><input type="text" id="lift_name_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.name || '')}"></div>
-                <div class="form-field"><label>Model</label><input type="text" id="lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.model || '')}"></div>
-                <div class="form-field"><label>God izgotovleniya</label><input type="number" id="lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.yearMade || ''}"></div>
-                <div class="form-field"><label>God vvoda</label><input type="number" id="lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.yearOper || ''}"></div>
-                <div class="form-field"><label>Skorost</label><input type="text" id="lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.speed || '')}"></div>
-                <div class="form-field"><label>Gruzopodemnost</label><input type="text" id="lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.loadCapacity || '')}"></div>
-                <div class="form-field"><label>Tip lifta</label><input type="text" id="lift_type_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.type || '')}"></div>
-                <div class="form-field"><label>Ostanovok</label><input type="number" id="lift_stops_${entranceIdx}_${liftIdx}" value="${lift.stops || ''}"></div>
-                <div class="form-field"><label>Dvigatel</label><input type="text" id="lift_engine_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.engine || '')}"></div>
-                <div class="form-field"><label>Sostoyanie</label><input type="text" id="lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.condition || '')}"></div>
-                <div class="form-field"><label>Primechanie</label><input type="text" id="lift_note_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.note || '')}"></div>
+                <div class="form-field"><label>Рег. номер</label><input type="text" id="lift_regNumber_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.registrationNumber || '')}"></div>
+                <div class="form-field"><label>Название</label><input type="text" id="lift_name_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.name || '')}"></div>
+                <div class="form-field"><label>Модель</label><input type="text" id="lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.model || '')}"></div>
+                <div class="form-field"><label>Год изготовления</label><input type="number" id="lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.yearMade || ''}"></div>
+                <div class="form-field"><label>Год ввода</label><input type="number" id="lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.yearOper || ''}"></div>
+                <div class="form-field"><label>Скорость</label><input type="text" id="lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.speed || '')}"></div>
+                <div class="form-field"><label>Грузоподъемность</label><input type="text" id="lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.loadCapacity || '')}"></div>
+                <div class="form-field"><label>Тип лифта</label><input type="text" id="lift_type_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.type || '')}"></div>
+                <div class="form-field"><label>Остановок</label><input type="number" id="lift_stops_${entranceIdx}_${liftIdx}" value="${lift.stops || ''}"></div>
+                <div class="form-field"><label>Двигатель</label><input type="text" id="lift_engine_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.engine || '')}"></div>
+                <div class="form-field"><label>Состояние</label><input type="text" id="lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.condition || '')}"></div>
+                <div class="form-field"><label>Примечание</label><input type="text" id="lift_note_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.note || '')}"></div>
             </div>
             <details style="margin-top: 12px;">
-                <summary>Predydushiy lift (do zameny)</summary>
+                <summary>📜 Предыдущий лифт (до замены)</summary>
                 <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px;">
-                    <div class="form-field"><label>Model</label><input type="text" id="prev_lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.model : '')}"></div>
-                    <div class="form-field"><label>God izgotovleniya</label><input type="number" id="prev_lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearMade : ''}"></div>
-                    <div class="form-field"><label>God vvoda</label><input type="number" id="prev_lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearOper : ''}"></div>
-                    <div class="form-field"><label>God vyvoda</label><input type="number" id="prev_lift_yearRemoved_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearRemoved : ''}"></div>
-                    <div class="form-field"><label>Gruzopodemnost</label><input type="text" id="prev_lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.loadCapacity : '')}"></div>
-                    <div class="form-field"><label>Skorost</label><input type="text" id="prev_lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.speed : '')}"></div>
-                    <div class="form-field"><label>Tip lifta</label><input type="text" id="prev_lift_type_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.type : '')}"></div>
-                    <div class="form-field"><label>Ostanovok</label><input type="number" id="prev_lift_stops_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.stops : ''}"></div>
-                    <div class="form-field"><label>Dvigatel</label><input type="text" id="prev_lift_engine_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.engine : '')}"></div>
-                    <div class="form-field"><label>Sostoyanie</label><input type="text" id="prev_lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.condition : '')}"></div>
-                    <div class="form-field"><label>Primechanie</label><textarea id="prev_lift_note_${entranceIdx}_${liftIdx}" rows="2">${escapeHtml(lift.previousLift ? lift.previousLift.note : '')}</textarea></div>
+                    <div class="form-field"><label>Модель</label><input type="text" id="prev_lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.model : '')}"></div>
+                    <div class="form-field"><label>Год изготовления</label><input type="number" id="prev_lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearMade : ''}"></div>
+                    <div class="form-field"><label>Год ввода</label><input type="number" id="prev_lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearOper : ''}"></div>
+                    <div class="form-field"><label>Год вывода</label><input type="number" id="prev_lift_yearRemoved_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearRemoved : ''}"></div>
+                    <div class="form-field"><label>Грузоподъемность</label><input type="text" id="prev_lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.loadCapacity : '')}"></div>
+                    <div class="form-field"><label>Скорость</label><input type="text" id="prev_lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.speed : '')}"></div>
+                    <div class="form-field"><label>Тип лифта</label><input type="text" id="prev_lift_type_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.type : '')}"></div>
+                    <div class="form-field"><label>Остановок</label><input type="number" id="prev_lift_stops_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.stops : ''}"></div>
+                    <div class="form-field"><label>Двигатель</label><input type="text" id="prev_lift_engine_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.engine : '')}"></div>
+                    <div class="form-field"><label>Состояние</label><input type="text" id="prev_lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.condition : '')}"></div>
+                    <div class="form-field"><label>Примечание</label><textarea id="prev_lift_note_${entranceIdx}_${liftIdx}" rows="2">${escapeHtml(lift.previousLift ? lift.previousLift.note : '')}</textarea></div>
                 </div>
             </details>
         `;
@@ -293,14 +286,14 @@ function removeEntrance(idx) {
 
 function addLift(entranceIdx) {
     saveCurrentEntranceData();
-    if (!window['liftsData_' + entranceIdx]) window['liftsData_' + entranceIdx] = [];
-    window['liftsData_' + entranceIdx].push({});
+    if (!window[`liftsData_${entranceIdx}`]) window[`liftsData_${entranceIdx}`] = [];
+    window[`liftsData_${entranceIdx}`].push({});
     renderLifts(entranceIdx);
 }
 
 function removeLift(entranceIdx, liftIdx) {
     saveCurrentEntranceData();
-    window['liftsData_' + entranceIdx].splice(liftIdx, 1);
+    window[`liftsData_${entranceIdx}`].splice(liftIdx, 1);
     renderLifts(entranceIdx);
 }
 
@@ -329,84 +322,84 @@ function removeShortTerm(idx) {
 }
 
 function renderPrograms() {
-    var container = document.getElementById('programsContainer');
+    const container = document.getElementById('programsContainer');
     if (!container) return;
     container.innerHTML = '';
     
-    window.programsData.forEach(function(prog, idx) {
-        var div = document.createElement('div');
+    window.programsData.forEach((prog, idx) => {
+        const div = document.createElement('div');
         div.className = 'subgroup';
         div.innerHTML = `
             <div class="subgroup-header">
-                <strong>Programma ${idx + 1}</strong>
+                <strong>📅 Программа ${idx + 1}</strong>
                 <button class="action-icon" onclick="removeProgram(${idx})">🗑️</button>
             </div>
-            <div class="form-field"><label>God</label><input type="text" id="prog_year_${idx}" value="${escapeHtml(prog.year || '')}"></div>
-            <div class="form-field"><label>Opisanie</label><textarea id="prog_desc_${idx}" rows="2">${escapeHtml(prog.description || '')}</textarea></div>
+            <div class="form-field"><label>Год</label><input type="text" id="prog_year_${idx}" value="${escapeHtml(prog.year || '')}"></div>
+            <div class="form-field"><label>Описание</label><textarea id="prog_desc_${idx}" rows="2">${escapeHtml(prog.description || '')}</textarea></div>
         `;
         container.appendChild(div);
     });
 }
 
 function renderShortTerm() {
-    var container = document.getElementById('shortTermContainer');
+    const container = document.getElementById('shortTermContainer');
     if (!container) return;
     container.innerHTML = '';
     
-    window.shortTermData.forEach(function(term, idx) {
-        var div = document.createElement('div');
+    window.shortTermData.forEach((term, idx) => {
+        const div = document.createElement('div');
         div.className = 'subgroup';
         div.innerHTML = `
             <div class="subgroup-header">
-                <strong>Plan ${idx + 1}</strong>
+                <strong>⚡ План ${idx + 1}</strong>
                 <button class="action-icon" onclick="removeShortTerm(${idx})">🗑️</button>
             </div>
-            <div class="form-field"><label>Tip remonta</label><textarea id="term_type_${idx}" rows="2">${escapeHtml(term.type || '')}</textarea></div>
-            <div class="form-field"><label>Podryadchik</label><textarea id="term_contractor_${idx}" rows="2">${escapeHtml(term.contractor || '')}</textarea></div>
-            <div class="form-field"><label>Period</label><input type="text" id="term_period_${idx}" value="${escapeHtml(term.period || '')}"></div>
+            <div class="form-field"><label>Тип ремонта</label><textarea id="term_type_${idx}" rows="2">${escapeHtml(term.type || '')}</textarea></div>
+            <div class="form-field"><label>Подрядчик</label><textarea id="term_contractor_${idx}" rows="2">${escapeHtml(term.contractor || '')}</textarea></div>
+            <div class="form-field"><label>Период</label><input type="text" id="term_period_${idx}" value="${escapeHtml(term.period || '')}"></div>
         `;
         container.appendChild(div);
     });
 }
 
-// ========== СОХРАНЕНИЕ ДОМА (ИСПРАВЛЕНА) ==========
+// ========== СОХРАНЕНИЕ ДОМА ==========
 async function saveHouse() {
-    console.log('saveHouse() started');
+    console.log('Сохранение дома начато');
     
     saveCurrentEntranceData();
     saveCurrentProgramsData();
     saveCurrentShortTermData();
     
-    var id = parseInt(document.getElementById('houseId').value);
-    var address = document.getElementById('houseAddress').value.trim();
+    const id = parseInt(document.getElementById('houseId').value);
+    const address = document.getElementById('houseAddress').value.trim();
     if (!address) {
-        alert('Vvedite adres doma');
+        alert('❌ Введите адрес дома');
         return;
     }
     
-    var coordsStr = document.getElementById('houseCoords').value.trim();
-    var coords = null;
+    const coordsStr = document.getElementById('houseCoords').value.trim();
+    let coords = null;
     if (coordsStr) {
-        var parts = coordsStr.split(',').map(function(s) { return parseFloat(s.trim()); });
+        const parts = coordsStr.split(',').map(s => parseFloat(s.trim()));
         if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
             coords = parts;
         }
     }
     
-    var entrances = [];
-    for (var i = 0; i < window.entrancesData.length; i++) {
-        var lifts = window['liftsData_' + i] || [];
+    const entrances = [];
+    for (let i = 0; i < window.entrancesData.length; i++) {
+        const lifts = window[`liftsData_${i}`] || [];
         entrances.push({
             name: window.entrancesData[i].name || '',
             lifts: lifts
         });
     }
     
-    var houseData = {
+    const houseData = {
         id: id,
         address: address,
         district: document.getElementById('houseDistrict').value || '',
-        buildingType: document.getElementById('houseBuildingType').value || 'Mnogokvartirny dom',
+        buildingType: document.getElementById('houseBuildingType').value || 'Многоквартирный дом',
         buildYear: parseInt(document.getElementById('houseBuildYear').value) || 0,
         constructionYear: parseInt(document.getElementById('houseConstructionYear').value) || 0,
         floors: parseInt(document.getElementById('houseFloors').value) || 0,
@@ -417,27 +410,27 @@ async function saveHouse() {
         shortTermWorks: window.shortTermData
     };
     
-    console.log('House data:', houseData);
-    console.log('Current housesData:', housesData);
+    console.log('Сохраняемый дом:', houseData);
+    console.log('Текущий housesData до сохранения:', housesData);
     
-    // Proveryaem housesData
+    // Проверяем housesData
     if (!housesData || !Array.isArray(housesData)) {
-        console.error('housesData is not an array!');
+        console.error('Ошибка: housesData не является массивом!');
         housesData = [];
     }
     
-    // Dobavlyaem dom
+    // Добавляем дом в массив
     housesData.push(houseData);
-    console.log('Dom dobavlen. Vsego domov:', housesData.length);
+    console.log('✅ Дом добавлен. Всего домов:', housesData.length);
     
-    // Sohranyaem v localStorage
+    // Сохраняем в localStorage как резервную копию
     localStorage.setItem('housesDataBackup', JSON.stringify(housesData));
     
-    // Sohranyaem JSON
-    var jsonStr = JSON.stringify(housesData, null, 2);
-    var blob = new Blob([jsonStr], {type: 'application/json'});
-    var link = document.createElement('a');
-    var url = URL.createObjectURL(blob);
+    // Автоматически скачиваем JSON
+    const jsonStr = JSON.stringify(housesData, null, 2);
+    const blob = new Blob([jsonStr], {type: 'application/json'});
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
     link.href = url;
     link.download = 'data.json';
     document.body.appendChild(link);
@@ -445,21 +438,21 @@ async function saveHouse() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    alert('Dom "' + address + '" sohranen! Vsego domov: ' + housesData.length);
+    alert(`✅ Дом "${address}" сохранён! JSON скачан. Всего домов: ${housesData.length}`);
     
-    // Perehodim k spisku
+    // Переходим к списку домов
     window.location.href = 'index.html';
 }
 
 async function deleteHouse() {
-    if (confirm('Udalit dom?')) {
-        housesData = housesData.filter(function(h) { return h.id !== houseId; });
-        alert('Dom udalen');
+    if (confirm('🗑️ Удалить дом? Это действие нельзя отменить.')) {
+        housesData = housesData.filter(h => h.id !== houseId);
+        alert('✅ Дом удалён');
         window.location.href = 'index.html';
     }
 }
 
-// Binding functions to window
+// Привязываем функции к window
 window.addEntrance = addEntrance;
 window.removeEntrance = removeEntrance;
 window.addLift = addLift;
