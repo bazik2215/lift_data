@@ -204,12 +204,34 @@ function escapeHtml(str) {
     });
 }
 
-// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ==========
+// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ (с поддержкой тёмной темы) ==========
 function showConfirmModal(options) {
     return new Promise((resolve) => {
         // Удаляем существующее окно, если есть
         const existingModal = document.querySelector('.custom-confirm-modal');
         if (existingModal) existingModal.remove();
+        
+        // Определяем, тёмная ли тема сейчас
+        const isDarkTheme = document.body.classList.contains('dark-theme');
+        
+        // Цвета для тёмной и светлой темы
+        const colors = isDarkTheme ? {
+            background: '#252a38',
+            textColor: '#e0e0e0',
+            titleColor: '#a0c4e8',
+            messageColor: '#b0b4c0',
+            cancelBg: '#3a3e4d',
+            cancelHover: '#4a4e5d',
+            cancelText: '#e0e0e0'
+        } : {
+            background: '#ffffff',
+            textColor: '#1a2a3a',
+            titleColor: '#0b3b5f',
+            messageColor: '#4a627a',
+            cancelBg: '#eef2f6',
+            cancelHover: '#dce5ec',
+            cancelText: '#1a2a3a'
+        };
         
         // Создаём контейнер
         const modal = document.createElement('div');
@@ -220,7 +242,7 @@ function showConfirmModal(options) {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -231,13 +253,13 @@ function showConfirmModal(options) {
         // Создаём контент
         const content = document.createElement('div');
         content.style.cssText = `
-            background: white;
+            background: ${colors.background};
             border-radius: 20px;
             padding: 28px;
             max-width: 400px;
             width: 90%;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             animation: slideIn 0.2s ease-out;
         `;
         
@@ -255,11 +277,11 @@ function showConfirmModal(options) {
         
         content.innerHTML = `
             <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
-            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #0b3b5f;">${title}</div>
-            <div style="margin-bottom: 24px; color: #4a627a; line-height: 1.5;">${message}</div>
+            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: ${colors.titleColor};">${title}</div>
+            <div style="margin-bottom: 24px; color: ${colors.messageColor}; line-height: 1.5;">${message}</div>
             <div style="display: flex; gap: 12px; justify-content: center;">
                 <button id="confirmYes" class="confirm-btn-yes" style="background: ${confirmColor}; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${confirmText}</button>
-                <button id="confirmNo" class="confirm-btn-no" style="background: #eef2f6; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${cancelText}</button>
+                <button id="confirmNo" class="confirm-btn-no" style="background: ${colors.cancelBg}; color: ${colors.cancelText}; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${cancelText}</button>
             </div>
         `;
         
@@ -281,22 +303,6 @@ function showConfirmModal(options) {
                 }
                 .confirm-btn-yes:hover, .confirm-btn-no:hover {
                     transform: scale(0.98);
-                }
-                body.dark-theme .custom-confirm-modal > div {
-                    background: #252a38;
-                }
-                body.dark-theme .custom-confirm-modal .confirm-btn-yes {
-                    background: #dc2626 !important;
-                }
-                body.dark-theme .custom-confirm-modal .confirm-btn-no {
-                    background: #3a3e4d !important;
-                    color: #e0e0e0 !important;
-                }
-                body.dark-theme .custom-confirm-modal div[style*="color: #0b3b5f"] {
-                    color: #a0c4e8 !important;
-                }
-                body.dark-theme .custom-confirm-modal div[style*="color: #4a627a"] {
-                    color: #b0b4c0 !important;
                 }
             `;
             document.head.appendChild(style);
@@ -338,23 +344,6 @@ function showConfirmModal(options) {
         };
         document.addEventListener('keydown', handleEsc);
     });
-}
-
-// ========== ВЫХОД С КАСТОМНЫМ ОКНОМ ==========
-async function logout() {
-    const confirmed = await showConfirmModal({
-        icon: '🚪',
-        title: 'Выход из админ-панели',
-        message: 'Точно выйти? Все несохранённые изменения будут потеряны.',
-        confirmText: 'Да, выйти',
-        cancelText: 'Отмена',
-        confirmColor: '#dc2626'
-    });
-    
-    if (confirmed) {
-        sessionStorage.removeItem('adminLoggedIn');
-        window.location.href = 'login.html';
-    }
 }
 
 // ========== СОХРАНЕНИЕ ТЕКУЩИХ ДАННЫХ ПОДЪЕЗДОВ (для edit.js) ==========
@@ -451,5 +440,22 @@ function toggleAdminTheme() {
         localStorage.setItem('adminTheme', 'dark');
         const themeBtn = document.getElementById('themeToggle');
         if (themeBtn) themeBtn.textContent = '☀️';
+    }
+}
+
+// ========== ВЫХОД С КАСТОМНЫМ ОКНОМ ==========
+async function logout() {
+    const confirmed = await showConfirmModal({
+        icon: '🚪',
+        title: 'Выход из админ-панели',
+        message: 'Точно выйти? Все несохранённые изменения будут потеряны.',
+        confirmText: 'Да, выйти',
+        cancelText: 'Отмена',
+        confirmColor: '#dc2626'
+    });
+    
+    if (confirmed) {
+        sessionStorage.removeItem('adminLoggedIn');
+        window.location.href = 'login.html';
     }
 }
