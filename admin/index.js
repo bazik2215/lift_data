@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadData();
     updateStatsCards();
     applyFiltersAndRender();
-    updateTempDataIndicator();
 });
 
 function setupEventListeners() {
@@ -42,12 +41,6 @@ function setupEventListeners() {
     document.getElementById('logoutBtn')?.addEventListener('click', logout);
     document.getElementById('themeToggle')?.addEventListener('click', toggleAdminTheme);
     document.getElementById('deleteSelectedBtn')?.addEventListener('click', () => deleteSelectedHouses());
-    document.getElementById('clearLocalStorageBtn')?.addEventListener('click', () => {
-        if (confirm('Очистить все временные данные? (Данные на GitHub не пострадают)')) {
-            clearTempHouses();
-            location.reload();
-        }
-    });
     
     document.getElementById('selectAllCheckbox')?.addEventListener('change', (e) => {
         const start = (currentPage - 1) * itemsPerPage;
@@ -60,31 +53,10 @@ function setupEventListeners() {
     });
 }
 
-function getDisplayData() {
-    return getAllHouses();
-}
-
 function updateStatsCards() {
-    const allHouses = getAllHouses();
-    document.getElementById('totalHouses').textContent = allHouses.length;
+    document.getElementById('totalHouses').textContent = housesData.length;
     document.getElementById('totalLifts').textContent = getTotalLiftsCount();
     document.getElementById('totalPrograms').textContent = getTotalProgramsCount();
-}
-
-function updateTempDataIndicator() {
-    const tempHouses = loadTempHouses();
-    const indicator = document.getElementById('tempDataIndicator');
-    const clearBtn = document.getElementById('clearLocalStorageBtn');
-    if (tempHouses.length > 0) {
-        if (indicator) {
-            indicator.style.display = 'inline-block';
-            indicator.textContent = `⚠️ ${tempHouses.length} временных домов (не сохранены на GitHub)`;
-        }
-        if (clearBtn) clearBtn.style.display = 'inline-block';
-    } else {
-        if (indicator) indicator.style.display = 'none';
-        if (clearBtn) clearBtn.style.display = 'none';
-    }
 }
 
 function updateDeleteButtonVisibility() {
@@ -110,14 +82,12 @@ function updateDeleteButtonVisibility() {
 }
 
 function applyFiltersAndRender() {
-    const displayData = getDisplayData();
-    filteredData = currentSearchQuery ? displayData.filter(house => house.address.toLowerCase().includes(currentSearchQuery.toLowerCase())) : [...displayData];
+    filteredData = currentSearchQuery ? housesData.filter(house => house.address.toLowerCase().includes(currentSearchQuery.toLowerCase())) : [...housesData];
     filteredData = sortHouses(filteredData, currentSort.column, currentSort.direction);
     updateSortInfo();
     renderTable();
     renderPagination();
     updateDeleteButtonVisibility();
-    updateTempDataIndicator();
 }
 
 function updateSortInfo() {
@@ -212,30 +182,25 @@ window.goToPage = function(page) {
 window.editHouse = function(id) { window.location.href = `edit.html?id=${id}`; };
 
 window.duplicateHouseHandler = async function(id) {
-    const allHouses = getAllHouses();
-    const originalHouse = allHouses.find(h => h.id === id);
+    const originalHouse = housesData.find(h => h.id === id);
     if (!originalHouse) return;
     const newHouse = duplicateHouse(originalHouse);
-    addHouseToTemp(newHouse);
+    housesData.push(newHouse);
     applyFiltersAndRender();
     updateStatsCards();
-    showToast(`✅ Дом "${newHouse.address}" скопирован во временное хранилище`);
+    showToast(`✅ Дом "${newHouse.address}" скопирован`);
     await addHistoryRecord('duplicate', newHouse.id, newHouse.address, { sourceHouseId: originalHouse.id });
 };
 
 window.deleteHouseHandler = async function(id) {
-    const allHouses = getAllHouses();
-    const house = allHouses.find(h => h.id === id);
+    const house = housesData.find(h => h.id === id);
     if (!house) return;
     if (confirm(`🗑️ Удалить дом "${house.address}"?`)) {
-        const tempHouses = loadTempHouses();
-        const newTempHouses = tempHouses.filter(h => h.id !== id);
-        saveTempHouses(newTempHouses);
+        housesData = housesData.filter(h => h.id !== id);
         selectedHouses.delete(id);
         applyFiltersAndRender();
         updateStatsCards();
-        updateTempDataIndicator();
-        showToast(`✅ Дом "${house.address}" удалён из временного хранилища`);
+        showToast(`✅ Дом "${house.address}" удалён`);
         await addHistoryRecord('delete', id, house.address, { summary: 'Удалён через админ-панель' });
     }
 };
@@ -243,13 +208,13 @@ window.deleteHouseHandler = async function(id) {
 async function deleteSelectedHouses() {
     if (selectedHouses.size === 0) return;
     if (confirm(`🗑️ Удалить ${selectedHouses.size} дом(ов)?`)) {
-        let tempHouses = loadTempHouses();
-        tempHouses = tempHouses.filter(h => !selectedHouses.has(h.id));
-        saveTempHouses(tempHouses);
+        housesData = housesData.filter(house => !selectedHouses.has(house.id));
         selectedHouses.clear();
         applyFiltersAndRender();
         updateStatsCards();
-        updateTempDataIndicator();
         showToast(`✅ Удалено ${selectedHouses.size} дом(ов)`);
+        for (const id of selectedHouses) {
+            await addHistoryRecord('delete', id, 'Несколько домов', { summary: 'Массовое удаление' });
+        }
     }
 }

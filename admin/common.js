@@ -2,44 +2,7 @@
 let housesData = [];
 let currentEditingHouseId = null;
 
-// ========== РАБОТА С LOCALSTORAGE ==========
-const STORAGE_KEY = 'lift_data_houses_temp';
-
-function saveTempHouses(tempHouses) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tempHouses));
-}
-
-function loadTempHouses() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        try {
-            return JSON.parse(saved);
-        } catch(e) { return []; }
-    }
-    return [];
-}
-
-function clearTempHouses() {
-    localStorage.removeItem(STORAGE_KEY);
-}
-
-function getAllHouses() {
-    const mainHouses = housesData || [];
-    const tempHouses = loadTempHouses();
-    
-    const allIds = new Set(mainHouses.map(h => h.id));
-    const combined = [...mainHouses];
-    
-    tempHouses.forEach(tempHouse => {
-        if (!allIds.has(tempHouse.id)) {
-            combined.push(tempHouse);
-        }
-    });
-    
-    return combined.sort((a, b) => a.id - b.id);
-}
-
-// ========== ЗАГРУЗКА ДАННЫХ С GITHUB ==========
+// ========== ЗАГРУЗКА ДАННЫХ ==========
 function loadData() {
     return fetch('../data.json?t=' + Date.now())
         .then(response => {
@@ -57,10 +20,9 @@ function loadData() {
         });
 }
 
-// ========== СОХРАНЕНИЕ JSON НА ДИСК ==========
+// ========== СОХРАНЕНИЕ JSON ==========
 function saveJSON() {
-    const allHouses = getAllHouses();
-    const jsonStr = JSON.stringify(allHouses, null, 2);
+    const jsonStr = JSON.stringify(housesData, null, 2);
     const blob = new Blob([jsonStr], {type: 'application/json'});
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -73,13 +35,6 @@ function saveJSON() {
     
     saveLastSaveTimestamp();
     showToast('✅ JSON сохранён! Загрузите файл на GitHub.');
-    
-    setTimeout(() => {
-        if (confirm('JSON сохранён! Очистить временные данные из браузера?')) {
-            clearTempHouses();
-            location.reload();
-        }
-    }, 500);
 }
 
 // ========== ПОДСЧЁТ СТАТИСТИКИ ==========
@@ -98,43 +53,30 @@ function getLiftsCount(house) {
 }
 
 function getTotalLiftsCount() {
-    const allHouses = getAllHouses();
     let total = 0;
-    allHouses.forEach(house => total += getLiftsCount(house));
+    housesData.forEach(house => total += getLiftsCount(house));
     return total;
 }
 
 function getTotalProgramsCount() {
-    const allHouses = getAllHouses();
     let total = 0;
-    allHouses.forEach(house => {
+    housesData.forEach(house => {
         if (house.programWorks) total += house.programWorks.length;
     });
     return total;
 }
 
 function getNextId() {
-    const allHouses = getAllHouses();
-    const maxId = Math.max(...allHouses.map(h => h.id), 0);
+    const maxId = Math.max(...housesData.map(h => h.id), 0);
     return maxId + 1;
 }
 
 function duplicateHouse(house) {
     const newHouse = JSON.parse(JSON.stringify(house));
-    newHouse.id = getNextId();
+    const maxId = Math.max(...housesData.map(h => h.id), 0);
+    newHouse.id = maxId + 1;
     newHouse.address = `${newHouse.address} (копия)`;
     return newHouse;
-}
-
-function addHouseToTemp(houseData) {
-    const tempHouses = loadTempHouses();
-    const existingIndex = tempHouses.findIndex(h => h.id === houseData.id);
-    if (existingIndex !== -1) {
-        tempHouses[existingIndex] = houseData;
-    } else {
-        tempHouses.push(houseData);
-    }
-    saveTempHouses(tempHouses);
 }
 
 // ========== УВЕДОМЛЕНИЯ ==========

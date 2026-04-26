@@ -25,8 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (isNewHouse) {
         initEmptyForm();
     } else {
-        const allHouses = getAllHouses();
-        const house = allHouses.find(h => h.id === houseId);
+        const house = housesData.find(h => h.id === houseId);
         if (house) {
             oldHouseData = JSON.parse(JSON.stringify(house));
             fillForm(house);
@@ -41,7 +40,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 function setupEventListeners() {
     document.getElementById('saveHouseBtn')?.addEventListener('click', () => saveHouse());
-    document.getElementById('saveJsonBtn')?.addEventListener('click', () => saveJSON());
     document.getElementById('deleteHouseBtn')?.addEventListener('click', () => deleteHouse());
     document.getElementById('logoutBtn')?.addEventListener('click', logout);
     document.getElementById('themeToggle')?.addEventListener('click', toggleAdminTheme);
@@ -270,23 +268,34 @@ async function saveHouse() {
         shortTermWorks: window.shortTermData
     };
     
-    addHouseToTemp(houseData);
-    showToast(`✅ Дом "${address}" добавлен во временное хранилище`);
-    await addHistoryRecord('add', houseData.id, houseData.address, { summary: `Добавлен через админ-панель` });
+    if (isNewHouse) {
+        housesData.push(houseData);
+        showToast(`✅ Дом "${address}" добавлен в память`);
+        await addHistoryRecord('add', houseData.id, houseData.address, { summary: `${houseData.entrances?.length || 0} подъездов, ${getLiftsCount(houseData)} лифтов` });
+    } else {
+        const index = housesData.findIndex(h => h.id === houseId);
+        if (index !== -1) {
+            housesData[index] = houseData;
+            showToast(`✅ Дом "${address}" сохранён в памяти`);
+            if (oldHouseData) {
+                const changes = compareHouses(oldHouseData, houseData);
+                if (changes.length > 0) {
+                    await addHistoryRecord('update', houseData.id, houseData.address, { changes });
+                }
+            }
+        }
+    }
     
     window.location.href = 'index.html';
 }
 
 async function deleteHouse() {
     if (confirm('🗑️ Удалить дом? Это действие нельзя отменить.')) {
-        const allHouses = getAllHouses();
-        const house = allHouses.find(h => h.id === houseId);
-        if (house) {
-            const tempHouses = loadTempHouses();
-            const newTempHouses = tempHouses.filter(h => h.id !== houseId);
-            saveTempHouses(newTempHouses);
-            showToast(`✅ Дом "${house.address}" удалён из временного хранилища`);
-            await addHistoryRecord('delete', house.id, house.address, { summary: 'Удалён через админ-панель' });
+        const deletedHouse = housesData.find(h => h.id === houseId);
+        housesData = housesData.filter(h => h.id !== houseId);
+        showToast('✅ Дом удалён из памяти');
+        if (deletedHouse) {
+            await addHistoryRecord('delete', deletedHouse.id, deletedHouse.address, { summary: 'Удалён через админ-панель' });
         }
         window.location.href = 'index.html';
     }
