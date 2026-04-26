@@ -1,4 +1,5 @@
 let housesData = [];
+let currentHouse = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Страница дома загружена');
@@ -42,7 +43,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 housesData = data;
                 const house = housesData.find(function(h) { return h.id === houseId; });
                 if (house) {
+                    currentHouse = house;
                     showHouseInfo(house);
+                    initActionButtons(house);
                 } else {
                     document.getElementById('houseContent').innerHTML = '<div class="info-card">Дом не найден. <a href="index.html">Вернуться на карту</a></div>';
                 }
@@ -51,6 +54,84 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Ошибка:', error);
                 alert('Не удалось загрузить данные');
             });
+    }
+    
+    function initActionButtons(house) {
+        // Кнопка "Показать на карте"
+        const showOnMapBtn = document.getElementById('showOnMapBtn');
+        if (showOnMapBtn) {
+            showOnMapBtn.addEventListener('click', function() {
+                if (house.coords && house.coords.length === 2) {
+                    const [lat, lon] = house.coords;
+                    const url = `https://yandex.ru/maps/?ll=${lon},${lat}&z=18`;
+                    window.open(url, '_blank');
+                } else {
+                    alert('Координаты этого дома пока не добавлены');
+                }
+            });
+        }
+        
+        // Кнопка "Поделиться ссылкой"
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function() {
+                const shareUrl = window.location.href;
+                navigator.clipboard.writeText(shareUrl).then(function() {
+                    showToast('✅ Ссылка скопирована в буфер обмена!');
+                }).catch(function() {
+                    showToast('❌ Не удалось скопировать ссылку');
+                });
+            });
+        }
+        
+        // Кнопка "Экспорт в PDF"
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        if (exportPdfBtn) {
+            exportPdfBtn.addEventListener('click', function() {
+                exportToPDF();
+            });
+        }
+    }
+    
+    function showToast(message) {
+        const existingToast = document.querySelector('.toast-notification');
+        if (existingToast) existingToast.remove();
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(function() {
+            toast.remove();
+        }, 2000);
+    }
+    
+    function exportToPDF() {
+        const element = document.getElementById('houseContent');
+        if (!element) return;
+        
+        const originalTitle = document.title;
+        const address = document.getElementById('fullAddress').textContent;
+        document.title = address + ' - информация о лифтах';
+        
+        const opt = {
+            margin: [10, 10, 10, 10],
+            filename: address.replace(/[^а-яА-Яa-zA-Z0-9]/g, '_') + '.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        showToast('📄 Генерация PDF, подождите...');
+        
+        html2pdf().set(opt).from(element).save().then(function() {
+            document.title = originalTitle;
+        }).catch(function(error) {
+            console.error('PDF error:', error);
+            showToast('❌ Ошибка при создании PDF');
+            document.title = originalTitle;
+        });
     }
     
     function showHouseInfo(house) {
@@ -117,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(1).textContent = work.description || '—';
             });
         } else {
-            programTbody.innerHTML = '<tr><td colspan="2">Нет данных</td></tr>';
+            programTbody.innerHTML = '<tr><td colspan="2">Нет данных</td><\/tr>';
         }
         
         const shortTbody = document.querySelector('#shortTermWorks tbody');
@@ -130,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.insertCell(2).textContent = work.period || '—';
             });
         } else {
-            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных</td></tr>';
+            shortTbody.innerHTML = '<tr><td colspan="3">Нет данных</td><\/tr>';
         }
     }
     

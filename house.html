@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Лифты — детальная информация</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Подключаем библиотеку html2pdf для экспорта в PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
     <div class="page">
@@ -24,6 +26,12 @@
                 <div class="address-block">
                     <div class="full-address" id="fullAddress"></div>
                     <div class="district" id="district"></div>
+                    <!-- Блок с кнопками действий -->
+                    <div class="action-buttons">
+                        <button id="showOnMapBtn" class="action-btn" title="Показать дом на карте">🗺️ Показать на карте</button>
+                        <button id="shareBtn" class="action-btn" title="Поделиться ссылкой на дом">🔗 Поделиться ссылкой</button>
+                        <button id="exportPdfBtn" class="action-btn" title="Экспортировать информацию в PDF">📄 Экспорт в PDF</button>
+                    </div>
                 </div>
 
                 <div class="info-card">

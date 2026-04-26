@@ -185,6 +185,71 @@ body {
     transition: color 0.3s ease;
 }
 
+/* ========== КНОПКИ ДЕЙСТВИЙ ========== */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    background: #eef2f6;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #1a2a3a;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.action-btn:hover {
+    background: #dce5ec;
+    transform: translateY(-1px);
+}
+
+/* Тёмная тема для кнопок действий */
+body.dark-theme .action-btn {
+    background: #3a3e4d;
+    color: #e0e0e0;
+}
+
+body.dark-theme .action-btn:hover {
+    background: #4a4e5d;
+}
+
+/* Уведомление о копировании ссылки */
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0b5e7e;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    z-index: 1000;
+    animation: fadeInOut 2s ease-in-out;
+    pointer-events: none;
+}
+
+body.dark-theme .toast-notification {
+    background: #2c6e8e;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+
 /* Блок фильтров */
 .filters-block {
     background: white;
@@ -209,7 +274,7 @@ body {
 
 .filter-label {
     font-weight: 600;
-    color: #2c3e4e;
+    color: #0b3b5f;
     font-size: 0.9rem;
     transition: color 0.3s ease;
 }
@@ -419,7 +484,7 @@ body.dark-theme #searchInput::placeholder {
 }
 
 body.dark-theme .filter-label {
-    color: #c0c4d0 !important;
+    color: #c0c4d0;
 }
 
 body.dark-theme .suggestions {
@@ -575,6 +640,15 @@ body.dark-theme .balloon-link {
         min-width: 100%;
     }
     
+    .action-buttons {
+        justify-content: center;
+    }
+    
+    .action-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+    
     #programWorks {
         min-width: auto;
         font-size: 0.8rem;
@@ -639,5 +713,10 @@ body.dark-theme .balloon-link {
     
     .nav-link {
         font-size: 0.75rem;
+    }
+    
+    .action-btn {
+        padding: 5px 10px;
+        font-size: 0.7rem;
     }
 }
