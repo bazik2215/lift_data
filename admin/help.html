@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Админ-панель — справка</title>
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        /* Дополнительные стили для страницы справки */
+        .help-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .help-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e2edf2;
+        }
+        
+        .help-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #cbdbe0;
+            color: #0b3b5f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .help-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        
+        .help-card-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #0b5e7e;
+            font-size: 1rem;
+        }
+        
+        .help-card-content {
+            font-size: 0.85rem;
+            color: #4a627a;
+            line-height: 1.5;
+        }
+        
+        .help-card-content code {
+            background: #e9edf2;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+        
+        .keyboard-shortcut {
+            display: inline-block;
+            background: #e9edf2;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        
+        .warning-box strong {
+            color: #e65100;
+        }
+        
+        body.dark-theme .help-section {
+            background: #252a38;
+            border-color: #3a3e4d;
+        }
+        
+        body.dark-theme .help-section-title {
+            color: #a0c4e8;
+            border-bottom-color: #3a3e4d;
+        }
+        
+        body.dark-theme .help-card {
+            background: #2a2e3d;
+        }
+        
+        body.dark-theme .help-card-title {
+            color: #6ab0d6;
+        }
+        
+        body.dark-theme .help-card-content {
+            color: #b0b4c0;
+        }
+        
+        body.dark-theme .help-card-content code {
+            background: #3a3e4d;
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .keyboard-shortcut {
+            background: #3a3e4d;
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .warning-box {
+            background: #2a2a1a;
+            border-left-color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Шапка -->
+        <div class="admin-header">
+            <div class="admin-header-left">
+                <div class="admin-logo">🔐 Админ-панель</div>
+                <div class="admin-nav">
+                    <a href="index.html" class="nav-link">📋 Список</a>
+                    <a href="stats.html" class="nav-link">📊 Статистика</a>
+                    <a href="help.html" class="nav-link active">❓ Справка</a>
+                </div>
+            </div>
+            <div class="admin-header-right">
+                <button id="themeToggle" class="theme-toggle" title="Сменить тему">🌙</button>
+                <button id="logoutBtn" class="logout-btn" title="Выход">✖️ Выход</button>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="admin-container help-container">
+            <!-- Введение -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>❓</span> Добро пожаловать в админ-панель
+                </div>
+                <div class="help-card-content" style="margin-bottom: 0;">
+                    Админ-панель предназначена для управления домами, лифтами, программами ремонта и краткосрочными планами. 
+                    Все изменения сохраняются в файл <code>data.json</code>, который затем нужно загрузить на GitHub.
+                </div>
+                <div class="warning-box">
+                    <strong>⚠️ ВАЖНО:</strong> После любых изменений не забудьте нажать <strong>«💾 Сохранить JSON»</strong> 
+                    и загрузить полученный файл на GitHub. Без этого изменения не попадут на сайт!
+                </div>
+            </div>
+
+            <!-- Раздел: Список домов -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>📋</span> Раздел «Список»
+                </div>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <div class="help-card-title">🔍 Поиск</div>
+                        <div class="help-card-content">
+                            Введите адрес в поле поиска — таблица автоматически отфильтруется. Поиск работает в реальном времени.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">⬆️⬇️ Сортировка</div>
+                        <div class="help-card-content">
+                            Кликните на заголовок таблицы (ID, Адрес, Район, Год) — таблица отсортируется. Повторный клик меняет направление.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">✏️ Редактировать</div>
+                        <div class="help-card-content">
+                            Нажмите <strong>✏️</strong> — откроется страница редактирования дома.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">📋 Дублировать</div>
+                        <div class="help-card-content">
+                            Нажмите <strong>📋</strong> — создастся копия дома с новым ID. Данные останутся те же.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">🗑️ Удалить</div>
+                        <div class="help-card-content">
+                            Нажмите <strong>🗑️</strong> — дом будет удалён после подтверждения.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">➕ Добавить дом</div>
+                        <div class="help-card-content">
+                            Нажмите кнопку <strong>«➕ Добавить дом»</strong> — откроется форма для создания нового дома.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Раздел: Редактирование дома -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>✏️</span> Раздел «Редактирование дома»
+                </div>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <div class="help-card-title">📋 Основная информация</div>
+                        <div class="help-card-content">
+                            Заполните адрес, район, годы постройки, этажность, серию дома, координаты.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">🗺️ Координаты</div>
+                        <div class="help-card-content">
+                            Формат: <code>48.560115, 39.310170</code> (широта, долгота). Нажмите <strong>«🗺️ Показать на карте»</strong> 
+                            для проверки правильности координат.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">🛗 Подъезды и лифты</div>
+                        <div class="help-card-content">
+                            Добавляйте подъезды и внутри них — лифты. У каждого лифта можно указать рег. номер, модель, год изготовления, 
+                            типы, состояние и предыдущий лифт (если был заменён).
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">📅 Программа работ</div>
+                        <div class="help-card-content">
+                            Укажите год (например, «2024-2025») и описание ремонта.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">⚡ Краткосрочный план</div>
+                        <div class="help-card-content">
+                            Укажите тип ремонта, подрядчика и период выполнения (например, «09.2025 - 12.2025»).
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">💾 Сохранение</div>
+                        <div class="help-card-content">
+                            Нажмите <strong>«💾 Сохранить дом»</strong> — данные сохранятся в памяти. Затем на главной странице нажмите 
+                            <strong>«💾 Сохранить JSON»</strong> и загрузите файл на GitHub.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Раздел: Статистика -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>📊</span> Раздел «Статистика»
+                </div>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <div class="help-card-title">📈 Общие показатели</div>
+                        <div class="help-card-content">
+                            Количество домов, лифтов, программ ремонта.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">📍 Распределение по районам</div>
+                        <div class="help-card-content">
+                            Сколько домов в каждом районе.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">🔧 Модели лифтов</div>
+                        <div class="help-card-content">
+                            Статистика по текущим и заменённым моделям лифтов.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">🏭 Подрядчики</div>
+                        <div class="help-card-content">
+                            Анализ подрядчиков из краткосрочного плана.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Раздел: Сохранение и GitHub -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>💾</span> Сохранение и загрузка на GitHub
+                </div>
+                <div class="help-card-content" style="margin-bottom: 16px;">
+                    <strong>Пошаговая инструкция:</strong>
+                </div>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <div class="help-card-title">1. Сохраните JSON</div>
+                        <div class="help-card-content">
+                            На странице <strong>«Список»</strong> нажмите кнопку <strong>«💾 Сохранить JSON»</strong>. 
+                            Браузер скачает файл <code>data.json</code>.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">2. Зайдите на GitHub</div>
+                        <div class="help-card-content">
+                            Откройте ваш репозиторий на GitHub.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">3. Откройте data.json</div>
+                        <div class="help-card-content">
+                            Нажмите на файл <code>data.json</code>, затем на значок карандаша ✏️ (Edit).
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">4. Вставьте новые данные</div>
+                        <div class="help-card-content">
+                            Скопируйте содержимое скачанного <code>data.json</code> и вставьте вместо старого.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">5. Сохраните</div>
+                        <div class="help-card-content">
+                            Нажмите <strong>«Commit changes»</strong> (зелёная кнопка).
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">6. Подождите</div>
+                        <div class="help-card-content">
+                            Через 1-2 минуты сайт обновится с новыми данными.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Раздел: Горячие клавиши -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>⌨️</span> Горячие клавиши
+                </div>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <div class="help-card-title">Везде</div>
+                        <div class="help-card-content">
+                            <span class="keyboard-shortcut">Ctrl + S</span> — сохранение формы (на странице редактирования)<br>
+                            <span class="keyboard-shortcut">Esc</span> — закрыть модальное окно (если есть)
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">На странице входа</div>
+                        <div class="help-card-content">
+                            <span class="keyboard-shortcut">Enter</span> — войти
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Раздел: Частые ошибки -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>⚠️</span> Частые ошибки и их решение
+                </div>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <div class="help-card-title">❌ Не загружается data.json</div>
+                        <div class="help-card-content">
+                            Убедитесь, что файл <code>data.json</code> лежит в корне репозитория, а не в папке <code>admin</code>.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">❌ Карта не показывает дом</div>
+                        <div class="help-card-content">
+                            Проверьте координаты в формате: <code>48.560115, 39.310170</code> (широта, долгота через запятую).
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">❌ Не отображаются лифты</div>
+                        <div class="help-card-content">
+                            Убедитесь, что у лифта заполнено поле «Рег. номер лифта» или «Название».
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">❌ Изменения не видны на сайте</div>
+                        <div class="help-card-content">
+                            Возможно, вы забыли нажать «💾 Сохранить JSON» или загрузить файл на GitHub.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Контакты -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>📞</span> Контакты
+                </div>
+                <div class="help-card-content">
+                    По вопросам работы с админ-панелью обращайтесь к администратору.<br>
+                    Пароль доступа: <code>admin123</code> (можно изменить в файле <code>login.html</code>).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        // Тёмная тема для страницы справки
+        function initTheme() {
+            const savedTheme = localStorage.getItem('adminTheme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = '☀️';
+            } else {
+                document.body.classList.remove('dark-theme');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = '🌙';
+            }
+        }
+        
+        function toggleTheme() {
+            if (document.body.classList.contains('dark-theme')) {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('adminTheme', 'light');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = '🌙';
+            } else {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('adminTheme', 'dark');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = '☀️';
+            }
+        }
+        
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            sessionStorage.removeItem('adminLoggedIn');
+            window.location.href = 'login.html';
+        });
+        
+        initTheme();
+        
+        // Проверка авторизации
+        if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

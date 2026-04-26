@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Админ-панель — редактирование дома</title>
+    <link rel="stylesheet" href="admin.css">
+    <!-- Подключаем Яндекс.Карты для мини-карты -->
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=b45543af-a624-4ee6-bef2-7f2e8e8498fd&lang=ru_RU"></script>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Шапка -->
+        <div class="admin-header">
+            <div class="admin-header-left">
+                <div class="admin-logo">🔐 Админ-панель</div>
+                <div class="admin-nav">
+                    <a href="index.html" class="nav-link">📋 Список</a>
+                    <a href="stats.html" class="nav-link">📊 Статистика</a>
+                    <a href="help.html" class="nav-link">❓ Справка</a>
+                </div>
+            </div>
+            <div class="admin-header-right">
+                <button id="themeToggle" class="theme-toggle" title="Сменить тему">🌙</button>
+                <button id="logoutBtn" class="logout-btn" title="Выход">✖️ Выход</button>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="admin-container">
+            <!-- Хлебные крошки -->
+            <div class="breadcrumbs">
+                <a href="index.html">← Назад к списку</a>
+                <span id="pageTitle">Редактирование дома</span>
+            </div>
+
+            <!-- Форма редактирования -->
+            <div id="editForm">
+                <!-- Основная информация -->
+                <div class="form-section">
+                    <div class="section-title">📋 Основная информация</div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label>ID (уникальный номер)</label>
+                            <input type="number" id="houseId" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>Адрес *</label>
+                            <input type="text" id="houseAddress" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Район</label>
+                            <input type="text" id="houseDistrict">
+                        </div>
+                        <div class="form-field">
+                            <label>Тип здания</label>
+                            <input type="text" id="houseBuildingType" value="Многоквартирный дом">
+                        </div>
+                        <div class="form-field">
+                            <label>Год постройки</label>
+                            <input type="number" id="houseBuildYear">
+                        </div>
+                        <div class="form-field">
+                            <label>Год ввода в эксплуатацию</label>
+                            <input type="number" id="houseConstructionYear">
+                        </div>
+                        <div class="form-field">
+                            <label>Этажность</label>
+                            <input type="number" id="houseFloors">
+                        </div>
+                        <div class="form-field">
+                            <label>Проект / серия дома</label>
+                            <input type="text" id="houseSeries">
+                        </div>
+                        <div class="form-field">
+                            <label>Координаты</label>
+                            <input type="text" id="houseCoords" placeholder="48.560115, 39.310170">
+                            <button type="button" id="previewCoordsBtn" class="btn-small">🗺️ Показать на карте</button>
+                            <div id="miniMap" class="mini-map" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Подъезды и лифты -->
+                <div class="form-section">
+                    <div class="section-title">🛗 Подъезды и лифты</div>
+                    <div id="entrancesContainer"></div>
+                    <button type="button" id="addEntranceBtn" class="btn-add">➕ Добавить подъезд</button>
+                </div>
+
+                <!-- Программа работ -->
+                <div class="form-section">
+                    <div class="section-title">📅 Программа работ</div>
+                    <div id="programsContainer"></div>
+                    <button type="button" id="addProgramBtn" class="btn-add">➕ Добавить программу</button>
+                </div>
+
+                <!-- Краткосрочный план -->
+                <div class="form-section">
+                    <div class="section-title">⚡ Краткосрочный план</div>
+                    <div id="shortTermContainer"></div>
+                    <button type="button" id="addShortTermBtn" class="btn-add">➕ Добавить план</button>
+                </div>
+
+                <!-- Кнопки сохранения -->
+                <div class="form-actions">
+                    <button id="saveHouseBtn" class="btn btn-primary">💾 Сохранить дом</button>
+                    <button id="deleteHouseBtn" class="btn btn-danger">🗑️ Удалить дом</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="edit.js"></script>
+</body>
+</html>

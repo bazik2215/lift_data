@@ -1,0 +1,561 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #f0f7fc;
+    color: #1a2a3a;
+    line-height: 1.45;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ========== ОБЩАЯ СТРУКТУРА ========== */
+.admin-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    flex: 1;
+}
+
+/* ========== ШАПКА ========== */
+.admin-header {
+    background: #0b3b5f;
+    color: white;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.admin-header-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.admin-logo {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.admin-nav {
+    display: flex;
+    gap: 24px;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding: 6px 0;
+    border-bottom: 2px solid transparent;
+    transition: 0.2s;
+}
+
+.nav-link:hover {
+    border-bottom-color: rgba(255,255,255,0.5);
+}
+
+.nav-link.active {
+    border-bottom-color: white;
+}
+
+.admin-header-right {
+    display: flex;
+    gap: 12px;
+}
+
+.theme-toggle, .logout-btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.theme-toggle:hover, .logout-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(0.98);
+}
+
+/* ========== КАРТОЧКИ СТАТИСТИКИ ========== */
+.stats-cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px 28px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e2edf2;
+    min-width: 120px;
+}
+
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0b5e7e;
+}
+
+.stat-card-label {
+    font-size: 0.85rem;
+    color: #4a627a;
+    margin-top: 4px;
+}
+
+/* ========== КНОПКИ ========== */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #0b5e7e;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0b3b5f;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: #2c6e2c;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #1e551e;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+
+.btn-add {
+    background: #eef2f6;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    transition: 0.2s;
+}
+
+.btn-add:hover {
+    background: #dce5ec;
+}
+
+.btn-small {
+    background: #eef2f6;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-left: 8px;
+    transition: 0.2s;
+}
+
+.btn-small:hover {
+    background: #dce5ec;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+/* ========== ПОИСК ========== */
+.search-bar {
+    margin-bottom: 24px;
+}
+
+.search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 16px;
+    border: 2px solid #cbdbe0;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #0b5e7e;
+    box-shadow: 0 0 0 3px rgba(11,94,126,0.15);
+}
+
+.sort-info {
+    font-size: 0.75rem;
+    color: #8aa0b5;
+    margin-top: 8px;
+}
+
+/* ========== ТАБЛИЦЫ ========== */
+.table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 24px;
+}
+
+.houses-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.houses-table th {
+    background: #eef2f6;
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #0b3b5f;
+    border-bottom: 1px solid #cbdbe0;
+}
+
+.houses-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e9edf2;
+    vertical-align: middle;
+}
+
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable:hover {
+    background: #e2e8f0;
+}
+
+.sort-arrow {
+    display: inline-block;
+    width: 16px;
+    margin-left: 4px;
+    font-size: 0.7rem;
+}
+
+/* ========== ПАГИНАЦИЯ ========== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.pagination button {
+    background: #eef2f6;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.pagination button:hover {
+    background: #dce5ec;
+}
+
+.pagination .active-page {
+    background: #0b5e7e;
+    color: white;
+}
+
+/* ========== ФОРМА РЕДАКТИРОВАНИЯ ========== */
+.breadcrumbs {
+    margin-bottom: 24px;
+}
+
+.breadcrumbs a {
+    color: #0b5e7e;
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.form-section {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #e2edf2;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #cbdbe0;
+    color: #0b3b5f;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-field label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #2c3e4e;
+}
+
+.form-field input, .form-field select, .form-field textarea {
+    padding: 10px 12px;
+    border: 1px solid #cbdbe0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: 0.2s;
+}
+
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    border-color: #0b5e7e;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(11,94,126,0.1);
+}
+
+.form-field textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.form-field input[readonly] {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.mini-map {
+    margin-top: 10px;
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #cbdbe0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e2edf2;
+}
+
+/* ========== ГРУППА ПОДЪЕЗДОВ ========== */
+.subgroup {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.subgroup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2edf2;
+}
+
+.subgroup-header strong {
+    font-size: 1rem;
+    color: #0b3b5f;
+}
+
+.lift-group {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e2edf2;
+}
+
+.lift-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* ========== ТЁМНАЯ ТЕМА ========== */
+body.dark-theme .admin-header {
+    background: #0a0e1a;
+}
+
+body.dark-theme .stat-card,
+body.dark-theme .form-section,
+body.dark-theme .houses-table {
+    background: #252a38;
+    border-color: #3a3e4d;
+}
+
+body.dark-theme .stat-card-value {
+    color: #6ab0d6;
+}
+
+body.dark-theme .stat-card-label {
+    color: #8a8e9d;
+}
+
+body.dark-theme .houses-table th {
+    background: #3a3e4d;
+    color: #a0c4e8;
+    border-bottom-color: #4a4e5d;
+}
+
+body.dark-theme .houses-table td {
+    border-bottom-color: #3a3e4d;
+}
+
+body.dark-theme .sortable:hover {
+    background: #4a4e5d;
+}
+
+body.dark-theme .search-input,
+body.dark-theme .form-field input,
+body.dark-theme .form-field select,
+body.dark-theme .form-field textarea {
+    background: #2a2e3d;
+    border-color: #4a4e5d;
+    color: #e0e0e0;
+}
+
+body.dark-theme .form-field input[readonly] {
+    background: #1e2230;
+}
+
+body.dark-theme .form-field label {
+    color: #b0b4c0;
+}
+
+body.dark-theme .section-title {
+    color: #a0c4e8;
+    border-bottom-color: #3a3e4d;
+}
+
+body.dark-theme .subgroup {
+    background: #2a2e3d;
+}
+
+body.dark-theme .lift-group {
+    background: #222638;
+    border-color: #3a3e4d;
+}
+
+body.dark-theme .subgroup-header strong {
+    color: #a0c4e8;
+}
+
+body.dark-theme .btn-add,
+body.dark-theme .btn-small,
+body.dark-theme .pagination button {
+    background: #3a3e4d;
+    color: #e0e0e0;
+}
+
+body.dark-theme .btn-add:hover,
+body.dark-theme .btn-small:hover,
+body.dark-theme .pagination button:hover {
+    background: #4a4e5d;
+}
+
+body.dark-theme .pagination .active-page {
+    background: #2c6e8e;
+    color: white;
+}
+
+body.dark-theme .breadcrumbs a {
+    color: #6ab0d6;
+}
+
+/* ========== АДАПТИВ ========== */
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .admin-header-left {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .stats-cards {
+        justify-content: center;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+    }
+    
+    .houses-table {
+        font-size: 0.75rem;
+        min-width: 600px;
+    }
+}

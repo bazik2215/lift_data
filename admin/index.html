@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Админ-панель — список домов</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Шапка -->
+        <div class="admin-header">
+            <div class="admin-header-left">
+                <div class="admin-logo">🔐 Админ-панель</div>
+                <div class="admin-nav">
+                    <a href="index.html" class="nav-link active">📋 Список</a>
+                    <a href="stats.html" class="nav-link">📊 Статистика</a>
+                    <a href="help.html" class="nav-link">❓ Справка</a>
+                </div>
+            </div>
+            <div class="admin-header-right">
+                <button id="themeToggle" class="theme-toggle" title="Сменить тему">🌙</button>
+                <button id="logoutBtn" class="logout-btn" title="Выход">✖️ Выход</button>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="admin-container">
+            <!-- Верхняя панель -->
+            <div class="top-panel">
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-card-value" id="totalHouses">0</div>
+                        <div class="stat-card-label">🏘️ Домов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value" id="totalLifts">0</div>
+                        <div class="stat-card-label">🛗 Лифтов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value" id="totalPrograms">0</div>
+                        <div class="stat-card-label">📅 Программ</div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button id="addHouseBtn" class="btn btn-primary">➕ Добавить дом</button>
+                    <button id="saveJsonBtn" class="btn btn-success">💾 Сохранить JSON</button>
+                </div>
+            </div>
+
+            <!-- Поиск и фильтры -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="🔍 Поиск по адресу..." class="search-input">
+                <div class="sort-info" id="sortInfo">Сортировка: по ID ↑</div>
+            </div>
+
+            <!-- Таблица домов -->
+            <div class="table-wrapper">
+                <table class="houses-table">
+                    <thead>
+                        <tr>
+                            <th data-sort="id" class="sortable">ID <span class="sort-arrow"></span></th>
+                            <th data-sort="address" class="sortable">🏠 Адрес <span class="sort-arrow"></span></th>
+                            <th data-sort="district" class="sortable">📍 Район <span class="sort-arrow"></span></th>
+                            <th data-sort="buildYear" class="sortable">📅 Год <span class="sort-arrow"></span></th>
+                            <th>🛗 Лифтов</th>
+                            <th>📋 Программ</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="housesTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Админ-панель — статистика</title>
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        /* Дополнительные стили для страницы статистики */
+        .stats-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e2edf2;
+        }
+        
+        .stats-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #cbdbe0;
+            color: #0b3b5f;
+        }
+        
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .overview-item {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .overview-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0b5e7e;
+        }
+        
+        .overview-label {
+            font-size: 0.85rem;
+            color: #4a627a;
+            margin-top: 4px;
+        }
+        
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        .stats-table th, .stats-table td {
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 1px solid #e9edf2;
+        }
+        
+        .stats-table th {
+            font-weight: 600;
+            color: #0b3b5f;
+        }
+        
+        .progress-bar {
+            background: #e9edf2;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #0b5e7e;
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 6px;
+            color: white;
+            font-size: 0.7rem;
+        }
+        
+        body.dark-theme .stats-card {
+            background: #252a38;
+            border-color: #3a3e4d;
+        }
+        
+        body.dark-theme .stats-card-title {
+            color: #a0c4e8;
+            border-bottom-color: #3a3e4d;
+        }
+        
+        body.dark-theme .overview-item {
+            background: #2a2e3d;
+        }
+        
+        body.dark-theme .overview-value {
+            color: #6ab0d6;
+        }
+        
+        body.dark-theme .overview-label {
+            color: #8a8e9d;
+        }
+        
+        body.dark-theme .stats-table th {
+            color: #a0c4e8;
+        }
+        
+        body.dark-theme .stats-table td {
+            border-bottom-color: #3a3e4d;
+        }
+        
+        body.dark-theme .progress-bar {
+            background: #3a3e4d;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Шапка -->
+        <div class="admin-header">
+            <div class="admin-header-left">
+                <div class="admin-logo">🔐 Админ-панель</div>
+                <div class="admin-nav">
+                    <a href="index.html" class="nav-link">📋 Список</a>
+                    <a href="stats.html" class="nav-link active">📊 Статистика</a>
+                    <a href="help.html" class="nav-link">❓ Справка</a>
+                </div>
+            </div>
+            <div class="admin-header-right">
+                <button id="themeToggle" class="theme-toggle" title="Сменить тему">🌙</button>
+                <button id="logoutBtn" class="logout-btn" title="Выход">✖️ Выход</button>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="admin-container">
+            <div class="stats-dashboard">
+                <!-- Общая статистика -->
+                <div class="stats-card">
+                    <div class="stats-card-title">📊 Общая статистика</div>
+                    <div class="overview-stats">
+                        <div class="overview-item">
+                            <div class="overview-value" id="totalHouses">0</div>
+                            <div class="overview-label">🏘️ Домов</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-value" id="totalLifts">0</div>
+                            <div class="overview-label">🛗 Лифтов (всего)</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-value" id="totalPrograms">0</div>
+                            <div class="overview-label">📅 Программ ремонта</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Распределение по районам -->
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-card-title">📍 Распределение по районам</div>
+                        <div id="districtsStats"></div>
+                    </div>
+
+                    <!-- Замена лифтов по годам -->
+                    <div class="stats-card">
+                        <div class="stats-card-title">📅 Замена лифтов по годам</div>
+                        <div id="yearsStats"></div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <!-- Модели лифтов (текущие) -->
+                    <div class="stats-card">
+                        <div class="stats-card-title">🔧 Текущие модели лифтов</div>
+                        <div id="currentModelsStats"></div>
+                    </div>
+
+                    <!-- Модели лифтов (заменённые) -->
+                    <div class="stats-card">
+                        <div class="stats-card-title">📜 Заменённые модели лифтов</div>
+                        <div id="replacedModelsStats"></div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <!-- Типы лифтов -->
+                    <div class="stats-card">
+                        <div class="stats-card-title">🏷️ Типы лифтов</div>
+                        <div id="typesStats"></div>
+                    </div>
+
+                    <!-- Грузоподъемность -->
+                    <div class="stats-card">
+                        <div class="stats-card-title">⚖️ Грузоподъемность</div>
+                        <div id="capacityStats"></div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <!-- Скорость лифтов -->
+                    <div class="stats-card">
+                        <div class="stats-card-title">⏱️ Скорость лифтов</div>
+                        <div id="speedStats"></div>
+                    </div>
+
+                    <!-- Подрядчики -->
+                    <div class="stats-card">
+                        <div class="stats-card-title">🏭 Подрядчики (краткосрочный план)</div>
+                        <div id="contractorsStats"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="stats.js"></script>
+</body>
+</html>
