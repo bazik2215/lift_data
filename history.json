@@ -1,16 +1,3 @@
 {
-  "records": [
-    {
-      "id": "1777219750085_t7a1flq9",
-      "timestamp": "2026-04-26T16:09:10.085Z",
-      "action": "add",
-      "houseId": 6,
-      "houseAddress": "г.Луганск, Советская улица, д. 3",
-      "user": "admin",
-      "role": "admin",
-      "details": {
-        "summary": "1 подъездов, 1 лифтов, 1 программ"
-      }
-    }
-  ]
+  "records": []
 }
