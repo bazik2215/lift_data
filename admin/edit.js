@@ -12,12 +12,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (idParam) {
         houseId = parseInt(idParam);
         isNewHouse = false;
-        document.getElementById('pageTitle').textContent = '✏️ Редактирование дома';
-        document.getElementById('deleteHouseBtn').style.display = 'inline-block';
+        const titleEl = document.getElementById('pageTitle');
+        if (titleEl) titleEl.textContent = '✏️ Редактирование дома';
+        const deleteBtn = document.getElementById('deleteHouseBtn');
+        if (deleteBtn) deleteBtn.style.display = 'inline-block';
     } else {
         isNewHouse = true;
-        document.getElementById('pageTitle').textContent = '➕ Добавление дома';
-        document.getElementById('deleteHouseBtn').style.display = 'none';
+        const titleEl = document.getElementById('pageTitle');
+        if (titleEl) titleEl.textContent = '➕ Добавление дома';
+        const deleteBtn = document.getElementById('deleteHouseBtn');
+        if (deleteBtn) deleteBtn.style.display = 'none';
     }
     
     await loadData();
@@ -42,6 +46,14 @@ function setupEventListeners() {
     const saveBtn = document.getElementById('saveHouseBtn');
     if (saveBtn) saveBtn.addEventListener('click', () => saveHouse());
     
+    const saveJsonBtn = document.getElementById('saveJsonBtn');
+    if (saveJsonBtn) {
+        saveJsonBtn.addEventListener('click', () => {
+            console.log('💾 Сохранить JSON нажат');
+            saveJSON();
+        });
+    }
+    
     const deleteBtn = document.getElementById('deleteHouseBtn');
     if (deleteBtn) deleteBtn.addEventListener('click', () => deleteHouse());
     
@@ -52,16 +64,35 @@ function setupEventListeners() {
     if (themeToggle) themeToggle.addEventListener('click', toggleAdminTheme);
     
     const addEntranceBtn = document.getElementById('addEntranceBtn');
-    if (addEntranceBtn) addEntranceBtn.addEventListener('click', () => addEntrance());
+    if (addEntranceBtn) {
+        addEntranceBtn.addEventListener('click', function() {
+            console.log('➕ Добавить подъезд НАЖАТ');
+            addEntrance();
+        });
+    } else {
+        console.error('addEntranceBtn не найдена');
+    }
     
     const addProgramBtn = document.getElementById('addProgramBtn');
-    if (addProgramBtn) addProgramBtn.addEventListener('click', () => addProgram());
+    if (addProgramBtn) {
+        addProgramBtn.addEventListener('click', function() {
+            console.log('➕ Добавить программу НАЖАТ');
+            addProgram();
+        });
+    }
     
     const addShortTermBtn = document.getElementById('addShortTermBtn');
-    if (addShortTermBtn) addShortTermBtn.addEventListener('click', () => addShortTerm());
+    if (addShortTermBtn) {
+        addShortTermBtn.addEventListener('click', function() {
+            console.log('➕ Добавить план НАЖАТ');
+            addShortTerm();
+        });
+    }
     
     const previewCoordsBtn = document.getElementById('previewCoordsBtn');
-    if (previewCoordsBtn) previewCoordsBtn.addEventListener('click', () => previewCoordinates());
+    if (previewCoordsBtn) {
+        previewCoordsBtn.addEventListener('click', () => previewCoordinates());
+    }
     
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -72,8 +103,10 @@ function setupEventListeners() {
 }
 
 function initEmptyForm() {
-    document.getElementById('houseId').value = getNextId();
-    document.getElementById('houseBuildingType').value = 'Многоквартирный дом';
+    const idField = document.getElementById('houseId');
+    if (idField) idField.value = getNextId();
+    const buildingTypeField = document.getElementById('houseBuildingType');
+    if (buildingTypeField) buildingTypeField.value = 'Многоквартирный дом';
     
     window.entrancesData = [];
     window.programsData = [];
@@ -85,17 +118,26 @@ function initEmptyForm() {
 }
 
 function fillForm(house) {
-    document.getElementById('houseId').value = house.id;
-    document.getElementById('houseAddress').value = house.address || '';
-    document.getElementById('houseDistrict').value = house.district || '';
-    document.getElementById('houseBuildingType').value = house.buildingType || 'Многоквартирный дом';
-    document.getElementById('houseBuildYear').value = house.buildYear || '';
-    document.getElementById('houseConstructionYear').value = house.constructionYear || '';
-    document.getElementById('houseFloors').value = house.floors || '';
-    document.getElementById('houseSeries').value = house.series || '';
+    const idField = document.getElementById('houseId');
+    if (idField) idField.value = house.id;
+    const addressField = document.getElementById('houseAddress');
+    if (addressField) addressField.value = house.address || '';
+    const districtField = document.getElementById('houseDistrict');
+    if (districtField) districtField.value = house.district || '';
+    const buildingTypeField = document.getElementById('houseBuildingType');
+    if (buildingTypeField) buildingTypeField.value = house.buildingType || 'Многоквартирный дом';
+    const buildYearField = document.getElementById('houseBuildYear');
+    if (buildYearField) buildYearField.value = house.buildYear || '';
+    const constructionYearField = document.getElementById('houseConstructionYear');
+    if (constructionYearField) constructionYearField.value = house.constructionYear || '';
+    const floorsField = document.getElementById('houseFloors');
+    if (floorsField) floorsField.value = house.floors || '';
+    const seriesField = document.getElementById('houseSeries');
+    if (seriesField) seriesField.value = house.series || '';
     
-    if (house.coords && house.coords.length === 2) {
-        document.getElementById('houseCoords').value = house.coords.join(', ');
+    const coordsField = document.getElementById('houseCoords');
+    if (coordsField && house.coords && house.coords.length === 2) {
+        coordsField.value = house.coords.join(', ');
     }
     
     window.entrancesData = JSON.parse(JSON.stringify(house.entrances || []));
@@ -176,14 +218,14 @@ function renderEntrances() {
         div.innerHTML = `
             <div class="subgroup-header">
                 <strong>🚪 Подъезд ${idx + 1}</strong>
-                <button class="action-icon" onclick="window.removeEntrance(${idx})">🗑️</button>
+                <button class="action-icon" onclick="removeEntrance(${idx})">🗑️</button>
             </div>
             <div class="form-field">
                 <label>Название подъезда</label>
                 <input type="text" id="entrance_name_${idx}" value="${escapeHtml(entrance.name || '')}">
             </div>
             <div id="lifts_${idx}_container"></div>
-            <button class="btn-add" onclick="window.addLift(${idx})">➕ Добавить лифт</button>
+            <button class="btn-add" onclick="addLift(${idx})">➕ Добавить лифт</button>
         `;
         container.appendChild(div);
         
@@ -205,7 +247,7 @@ function renderLifts(entranceIdx) {
         liftDiv.innerHTML = `
             <div class="lift-header">
                 <strong>🛗 Лифт ${liftIdx + 1}</strong>
-                <button class="action-icon" onclick="window.removeLift(${entranceIdx}, ${liftIdx})">🗑️</button>
+                <button class="action-icon" onclick="removeLift(${entranceIdx}, ${liftIdx})">🗑️</button>
             </div>
             <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px;">
                 <div class="form-field"><label>Рег. номер</label><input type="text" id="lift_regNumber_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.registrationNumber || '')}"></div>
@@ -243,18 +285,21 @@ function renderLifts(entranceIdx) {
 }
 
 function addEntrance() {
+    console.log('addEntrance: добавляем подъезд');
     saveCurrentEntranceData();
     window.entrancesData.push({ name: '', lifts: [] });
     renderEntrances();
 }
 
 function removeEntrance(idx) {
+    console.log('removeEntrance: удаляем подъезд', idx);
     saveCurrentEntranceData();
     window.entrancesData.splice(idx, 1);
     renderEntrances();
 }
 
 function addLift(entranceIdx) {
+    console.log('addLift: добавляем лифт в подъезд', entranceIdx);
     saveCurrentEntranceData();
     if (!window[`liftsData_${entranceIdx}`]) window[`liftsData_${entranceIdx}`] = [];
     window[`liftsData_${entranceIdx}`].push({});
@@ -262,30 +307,35 @@ function addLift(entranceIdx) {
 }
 
 function removeLift(entranceIdx, liftIdx) {
+    console.log('removeLift: удаляем лифт', entranceIdx, liftIdx);
     saveCurrentEntranceData();
     window[`liftsData_${entranceIdx}`].splice(liftIdx, 1);
     renderLifts(entranceIdx);
 }
 
 function addProgram() {
+    console.log('addProgram: добавляем программу');
     saveCurrentProgramsData();
     window.programsData.push({ year: '', description: '' });
     renderPrograms();
 }
 
 function removeProgram(idx) {
+    console.log('removeProgram: удаляем программу', idx);
     saveCurrentProgramsData();
     window.programsData.splice(idx, 1);
     renderPrograms();
 }
 
 function addShortTerm() {
+    console.log('addShortTerm: добавляем план');
     saveCurrentShortTermData();
     window.shortTermData.push({ type: '', contractor: '', period: '' });
     renderShortTerm();
 }
 
 function removeShortTerm(idx) {
+    console.log('removeShortTerm: удаляем план', idx);
     saveCurrentShortTermData();
     window.shortTermData.splice(idx, 1);
     renderShortTerm();
@@ -302,7 +352,7 @@ function renderPrograms() {
         div.innerHTML = `
             <div class="subgroup-header">
                 <strong>📅 Программа ${idx + 1}</strong>
-                <button class="action-icon" onclick="window.removeProgram(${idx})">🗑️</button>
+                <button class="action-icon" onclick="removeProgram(${idx})">🗑️</button>
             </div>
             <div class="form-field"><label>Год</label><input type="text" id="prog_year_${idx}" value="${escapeHtml(prog.year || '')}"></div>
             <div class="form-field"><label>Описание</label><textarea id="prog_desc_${idx}" rows="2">${escapeHtml(prog.description || '')}</textarea></div>
@@ -322,7 +372,7 @@ function renderShortTerm() {
         div.innerHTML = `
             <div class="subgroup-header">
                 <strong>⚡ План ${idx + 1}</strong>
-                <button class="action-icon" onclick="window.removeShortTerm(${idx})">🗑️</button>
+                <button class="action-icon" onclick="removeShortTerm(${idx})">🗑️</button>
             </div>
             <div class="form-field"><label>Тип ремонта</label><textarea id="term_type_${idx}" rows="2">${escapeHtml(term.type || '')}</textarea></div>
             <div class="form-field"><label>Подрядчик</label><textarea id="term_contractor_${idx}" rows="2">${escapeHtml(term.contractor || '')}</textarea></div>
@@ -386,7 +436,7 @@ async function saveHouse() {
         const index = housesData.findIndex(h => h.id === houseId);
         if (index !== -1) {
             housesData[index] = houseData;
-            showToast(`✅ Дом "${address}" сохранён в памяти`);
+            showToast(`✅ Дом "${address}" сохранён в память`);
         }
     }
     
@@ -401,7 +451,7 @@ async function deleteHouse() {
     }
 }
 
-// ========== ПРИВЯЗКА ВСЕХ ФУНКЦИЙ К WINDOW ==========
+// Привязываем все функции к window
 window.addEntrance = addEntrance;
 window.removeEntrance = removeEntrance;
 window.addLift = addLift;
