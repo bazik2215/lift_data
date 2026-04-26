@@ -66,6 +66,7 @@ body {
     font-weight: 500;
 }
 
+/* ========== СЧЁТЧИК В ШАПКЕ ========== */
 .header-stats {
     display: flex;
     gap: 12px;
@@ -80,6 +81,11 @@ body {
     white-space: nowrap;
 }
 
+body.dark-theme .stat-badge {
+    background: rgba(255,255,255,0.08);
+}
+
+/* Кнопка переключения темы */
 .theme-toggle {
     background: rgba(255,255,255,0.2);
     border: 1px solid rgba(255,255,255,0.3);
@@ -163,8 +169,7 @@ body {
     padding: 12px 18px;
     cursor: pointer;
     border-bottom: 1px solid #eef2f6;
-    background: white;
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .suggestions div:hover {
@@ -200,6 +205,7 @@ body {
     transition: color 0.3s ease;
 }
 
+/* ========== КНОПКИ ДЕЙСТВИЙ ========== */
 .action-buttons {
     display: flex;
     gap: 12px;
@@ -232,6 +238,22 @@ body {
     color: white;
 }
 
+/* Тёмная тема для кнопок действий */
+body.dark-theme .action-btn {
+    background: #3a3e4d;
+    color: #e0e0e0;
+}
+
+body.dark-theme .action-btn:hover {
+    background: #4a4e5d;
+}
+
+body.dark-theme .action-btn.active-map {
+    background: #2c6e8e;
+    color: white;
+}
+
+/* ========== КАРТА НА СТРАНИЦЕ ДОМА ========== */
 .house-map-container {
     width: 100%;
     height: 350px;
@@ -242,6 +264,11 @@ body {
     transition: all 0.3s ease;
 }
 
+body.dark-theme .house-map-container {
+    border-color: #3a3e4d;
+}
+
+/* Уведомление о копировании ссылки */
 .toast-notification {
     position: fixed;
     bottom: 30px;
@@ -257,6 +284,10 @@ body {
     pointer-events: none;
 }
 
+body.dark-theme .toast-notification {
+    background: #2c6e8e;
+}
+
 @keyframes fadeInOut {
     0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
     15% { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -264,6 +295,7 @@ body {
     100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
 }
 
+/* ========== КНОПКА НАВЕРХ ========== */
 .scroll-to-top {
     position: fixed;
     bottom: 30px;
@@ -293,6 +325,15 @@ body {
     transform: scale(1.05);
 }
 
+body.dark-theme .scroll-to-top {
+    background: #2c6e8e;
+}
+
+body.dark-theme .scroll-to-top:hover {
+    background: #1a4e6e;
+}
+
+/* Блок фильтров */
 .filters-block {
     background: white;
     border-radius: 20px;
@@ -338,6 +379,7 @@ body {
     box-shadow: 0 0 0 2px rgba(11,94,126,0.2);
 }
 
+/* Карта */
 .map-container {
     width: 100%;
     height: 420px;
@@ -349,6 +391,7 @@ body {
     transition: border-color 0.3s ease;
 }
 
+/* Информационные карточки */
 .info-card {
     background: white;
     border-radius: 20px;
@@ -429,6 +472,7 @@ body {
     background: #dce5ec;
 }
 
+/* Таблицы */
 .table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -486,6 +530,7 @@ body {
     min-width: 500px;
 }
 
+/* ========== ФИЛЬТРЫ НА СТРАНИЦЕ СПИСКА ========== */
 .houses-filters {
     display: flex;
     gap: 16px;
@@ -509,6 +554,13 @@ body {
     outline: none;
 }
 
+body.dark-theme .filter-input {
+    background: #2a2e3d;
+    border-color: #4a4e5d;
+    color: #e0e0e0;
+}
+
+/* Сортировка */
 .sort-arrow {
     display: inline-block;
     width: 16px;
@@ -523,6 +575,10 @@ body {
 
 #housesTable th:hover {
     background: #e2e8f0;
+}
+
+body.dark-theme #housesTable th:hover {
+    background: #4a4e5d;
 }
 
 /* ========== ТЁМНАЯ ТЕМА ========== */
@@ -565,6 +621,7 @@ body.dark-theme .filter-label {
     color: #c0c4d0;
 }
 
+/* ========== ПОДСКАЗКИ В ТЁМНОЙ ТЕМЕ (ИСПРАВЛЕНО) ========== */
 body.dark-theme .suggestions {
     background: #2a2e3d;
 }
@@ -576,8 +633,8 @@ body.dark-theme .suggestions div {
 }
 
 body.dark-theme .suggestions div:hover {
-    background: #0b5e7e;
-    color: white;
+    background: #1a1e2c;
+    color: #e0e0e0;
 }
 
 body.dark-theme .address-block,
@@ -622,36 +679,6 @@ body.dark-theme .entrance-btn:hover:not(.active) {
     background: #4a4e5d;
 }
 
-body.dark-theme .action-btn {
-    background: #3a3e4d;
-    color: #e0e0e0;
-}
-
-body.dark-theme .action-btn:hover {
-    background: #4a4e5d;
-}
-
-body.dark-theme .action-btn.active-map {
-    background: #2c6e8e;
-    color: white;
-}
-
-body.dark-theme .house-map-container {
-    border-color: #3a3e4d;
-}
-
-body.dark-theme .toast-notification {
-    background: #2c6e8e;
-}
-
-body.dark-theme .scroll-to-top {
-    background: #2c6e8e;
-}
-
-body.dark-theme .scroll-to-top:hover {
-    background: #1a4e6e;
-}
-
 body.dark-theme .info-table th,
 body.dark-theme .houses-table th {
     background: #3a3e4d;
@@ -676,21 +703,7 @@ body.dark-theme .balloon-link {
     color: #6ab0d6;
 }
 
-body.dark-theme .filter-input {
-    background: #2a2e3d;
-    border-color: #4a4e5d;
-    color: #e0e0e0;
-}
-
-body.dark-theme #housesTable th:hover {
-    background: #4a4e5d;
-}
-
-body.dark-theme .stat-badge {
-    background: rgba(255,255,255,0.08);
-}
-
-/* Адаптив */
+/* Адаптив для телефонов */
 @media (max-width: 700px) {
     .container {
         padding: 0 16px;
