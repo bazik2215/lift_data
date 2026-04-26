@@ -5,41 +5,34 @@ let currentEditingHouseId = null;
 // ========== РАБОТА С LOCALSTORAGE ==========
 const STORAGE_KEY = 'lift_data_houses_temp';
 
-// Сохранить временные дома в localStorage
 function saveTempHouses(tempHouses) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tempHouses));
 }
 
-// Загрузить временные дома из localStorage
 function loadTempHouses() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-        return JSON.parse(saved);
+        try {
+            return JSON.parse(saved);
+        } catch(e) { return []; }
     }
     return [];
 }
 
-// Очистить временные дома
 function clearTempHouses() {
     localStorage.removeItem(STORAGE_KEY);
 }
 
-// Получить все дома (постоянные + временные)
 function getAllHouses() {
     const mainHouses = housesData || [];
     const tempHouses = loadTempHouses();
     
-    // Объединяем, удаляя дубликаты по id (приоритет у временных)
     const allIds = new Set(mainHouses.map(h => h.id));
     const combined = [...mainHouses];
     
     tempHouses.forEach(tempHouse => {
         if (!allIds.has(tempHouse.id)) {
             combined.push(tempHouse);
-        } else {
-            // Если есть в основных, заменяем временным (более свежие данные)
-            const index = combined.findIndex(h => h.id === tempHouse.id);
-            if (index !== -1) combined[index] = tempHouse;
         }
     });
     
@@ -59,13 +52,13 @@ function loadData() {
         })
         .catch(error => {
             console.error('Ошибка загрузки:', error);
+            alert('Не удалось загрузить data.json. Убедитесь, что файл существует в корне репозитория.');
             return [];
         });
 }
 
 // ========== СОХРАНЕНИЕ JSON НА ДИСК ==========
 function saveJSON() {
-    // Берём все дома (постоянные + временные)
     const allHouses = getAllHouses();
     const jsonStr = JSON.stringify(allHouses, null, 2);
     const blob = new Blob([jsonStr], {type: 'application/json'});
@@ -81,7 +74,6 @@ function saveJSON() {
     saveLastSaveTimestamp();
     showToast('✅ JSON сохранён! Загрузите файл на GitHub.');
     
-    // Предлагаем очистить временные данные
     setTimeout(() => {
         if (confirm('JSON сохранён! Очистить временные данные из браузера?')) {
             clearTempHouses();
@@ -121,14 +113,12 @@ function getTotalProgramsCount() {
     return total;
 }
 
-// ========== ID ДЛЯ НОВОГО ДОМА ==========
 function getNextId() {
     const allHouses = getAllHouses();
     const maxId = Math.max(...allHouses.map(h => h.id), 0);
     return maxId + 1;
 }
 
-// ========== ДУБЛИРОВАНИЕ ==========
 function duplicateHouse(house) {
     const newHouse = JSON.parse(JSON.stringify(house));
     newHouse.id = getNextId();
@@ -136,16 +126,6 @@ function duplicateHouse(house) {
     return newHouse;
 }
 
-// ========== УДАЛЕНИЕ ДОМА ==========
-function deleteHouseById(id) {
-    const allHouses = getAllHouses();
-    const tempHouses = loadTempHouses();
-    const newTempHouses = tempHouses.filter(h => h.id !== id);
-    saveTempHouses(newTempHouses);
-    return true;
-}
-
-// ========== ДОБАВЛЕНИЕ ДОМА ВО ВРЕМЕННОЕ ХРАНИЛИЩЕ ==========
 function addHouseToTemp(houseData) {
     const tempHouses = loadTempHouses();
     const existingIndex = tempHouses.findIndex(h => h.id === houseData.id);
@@ -331,7 +311,67 @@ async function logout() {
     }
 }
 
-// Сохранение текущих данных из форм (для edit.js)
-window.saveCurrentEntranceData = function() { /* полная функция */ };
-window.saveCurrentProgramsData = function() { /* полная функция */ };
-window.saveCurrentShortTermData = function() { /* полная функция */ };
+// ========== СОХРАНЕНИЕ ДАННЫХ ИЗ ФОРМ (ДЛЯ EDIT.JS) ==========
+window.saveCurrentEntranceData = function() {
+    if (!window.entrancesData) return;
+    for (let i = 0; i < window.entrancesData.length; i++) {
+        window.entrancesData[i].name = document.getElementById(`entrance_name_${i}`)?.value || '';
+        const lifts = window[`liftsData_${i}`] || [];
+        for (let j = 0; j < lifts.length; j++) {
+            lifts[j].registrationNumber = document.getElementById(`lift_regNumber_${i}_${j}`)?.value || '';
+            lifts[j].name = document.getElementById(`lift_name_${i}_${j}`)?.value || '';
+            lifts[j].model = document.getElementById(`lift_model_${i}_${j}`)?.value || '';
+            lifts[j].yearMade = document.getElementById(`lift_yearMade_${i}_${j}`)?.value || '';
+            lifts[j].yearOper = document.getElementById(`lift_yearOper_${i}_${j}`)?.value || '';
+            lifts[j].speed = document.getElementById(`lift_speed_${i}_${j}`)?.value || '';
+            lifts[j].loadCapacity = document.getElementById(`lift_loadCapacity_${i}_${j}`)?.value || '';
+            lifts[j].type = document.getElementById(`lift_type_${i}_${j}`)?.value || '';
+            lifts[j].stops = document.getElementById(`lift_stops_${i}_${j}`)?.value || '';
+            lifts[j].engine = document.getElementById(`lift_engine_${i}_${j}`)?.value || '';
+            lifts[j].condition = document.getElementById(`lift_condition_${i}_${j}`)?.value || '';
+            lifts[j].note = document.getElementById(`lift_note_${i}_${j}`)?.value || '';
+            
+            const prevModel = document.getElementById(`prev_lift_model_${i}_${j}`)?.value;
+            if (prevModel) {
+                lifts[j].previousLift = {
+                    model: prevModel,
+                    yearMade: document.getElementById(`prev_lift_yearMade_${i}_${j}`)?.value || '',
+                    yearOper: document.getElementById(`prev_lift_yearOper_${i}_${j}`)?.value || '',
+                    yearRemoved: document.getElementById(`prev_lift_yearRemoved_${i}_${j}`)?.value || '',
+                    loadCapacity: document.getElementById(`prev_lift_loadCapacity_${i}_${j}`)?.value || '',
+                    speed: document.getElementById(`prev_lift_speed_${i}_${j}`)?.value || '',
+                    type: document.getElementById(`prev_lift_type_${i}_${j}`)?.value || '',
+                    stops: document.getElementById(`prev_lift_stops_${i}_${j}`)?.value || '',
+                    engine: document.getElementById(`prev_lift_engine_${i}_${j}`)?.value || '',
+                    condition: document.getElementById(`prev_lift_condition_${i}_${j}`)?.value || '',
+                    note: document.getElementById(`prev_lift_note_${i}_${j}`)?.value || ''
+                };
+            } else if (lifts[j].previousLift) {
+                delete lifts[j].previousLift;
+            }
+        }
+        window[`liftsData_${i}`] = lifts;
+        window.entrancesData[i].lifts = lifts;
+    }
+};
+
+window.saveCurrentProgramsData = function() {
+    if (!window.programsData) return;
+    for (let i = 0; i < window.programsData.length; i++) {
+        window.programsData[i].year = document.getElementById(`prog_year_${i}`)?.value || '';
+        window.programsData[i].description = document.getElementById(`prog_desc_${i}`)?.value || '';
+    }
+};
+
+window.saveCurrentShortTermData = function() {
+    if (!window.shortTermData) return;
+    for (let i = 0; i < window.shortTermData.length; i++) {
+        window.shortTermData[i].type = document.getElementById(`term_type_${i}`)?.value || '';
+        window.shortTermData[i].contractor = document.getElementById(`term_contractor_${i}`)?.value || '';
+        window.shortTermData[i].period = document.getElementById(`term_period_${i}`)?.value || '';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateLastSaveIndicator();
+});
