@@ -256,7 +256,6 @@
             gap: 10px;
         }
         
-        /* Закреплённая кнопка сохранения */
         .sticky-save {
             position: sticky;
             bottom: 0;
@@ -268,7 +267,6 @@
             border-radius: 0 0 20px 20px;
         }
         
-        /* Стили для страницы входа */
         .login-panel {
             min-height: 100vh;
             display: flex;
@@ -354,7 +352,6 @@
             border-top-color: #3a3e4d;
         }
         
-        /* Кнопка переключения темы в админке */
         .admin-theme-toggle {
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
@@ -458,7 +455,6 @@
         </div>
     </div>
     
-    <!-- Модальное окно редактирования дома -->
     <div id="houseModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -473,13 +469,11 @@
     </div>
     
     <script>
-        // Пароль для входа (можете поменять на свой)
         const ADMIN_PASSWORD = 'admin123';
         
         let housesData = [];
         let editingHouseId = null;
         
-        // ========== ТЁМНАЯ ТЕМА ДЛЯ АДМИНКИ ==========
         function initTheme() {
             const savedTheme = localStorage.getItem('adminTheme');
             if (savedTheme === 'dark') {
@@ -510,7 +504,6 @@
             }
         }
         
-        // ========== ВХОД ==========
         document.getElementById('loginBtn').addEventListener('click', function() {
             const password = document.getElementById('adminPassword').value;
             if (password === ADMIN_PASSWORD) {
@@ -522,14 +515,12 @@
             }
         });
         
-        // ========== ВЫХОД ==========
         document.getElementById('logoutBtn').addEventListener('click', function() {
             document.getElementById('loginPanel').style.display = 'block';
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('adminPassword').value = '';
         });
         
-        // ========== ЗАГРУЗКА ДАННЫХ ==========
         function loadData() {
             fetch('data.json?t=' + Date.now())
                 .then(function(response) {
@@ -547,7 +538,6 @@
                 });
         }
         
-        // ========== ПОДСЧЁТ СТАТИСТИКИ ==========
         function getLiftsCount(house) {
             let count = 0;
             if (house.entrances) {
@@ -579,13 +569,10 @@
             document.getElementById('totalPrograms').textContent = totalPrograms;
         }
         
-        // ========== ОТОБРАЖЕНИЕ ТАБЛИЦЫ ==========
         function renderHousesTable() {
             const tbody = document.getElementById('housesTableBody');
             tbody.innerHTML = '';
-            
             housesData.sort(function(a, b) { return a.id - b.id; });
-            
             housesData.forEach(function(house) {
                 const row = tbody.insertRow();
                 row.insertCell(0).textContent = house.id;
@@ -604,7 +591,6 @@
             });
         }
         
-        // ========== УДАЛЕНИЕ ДОМА ==========
         window.deleteHouse = function(id) {
             if (confirm('Удалить дом? Это действие нельзя отменить.')) {
                 housesData = housesData.filter(function(house) { return house.id !== id; });
@@ -613,19 +599,59 @@
             }
         };
         
-        // ========== ДОБАВЛЕНИЕ НОВОГО ДОМА ==========
         document.getElementById('addHouseBtn').addEventListener('click', function() {
             editingHouseId = null;
             document.getElementById('modalTitle').textContent = '➕ Добавление дома';
             showHouseForm(null);
         });
         
-        // ========== РЕДАКТИРОВАНИЕ ДОМА ==========
         window.editHouse = function(id) {
             editingHouseId = id;
             document.getElementById('modalTitle').textContent = '✏️ Редактирование дома';
             const house = housesData.find(function(h) { return h.id === id; });
             showHouseForm(house);
+        };
+        
+        function saveCurrentLiftData(entranceIdx) {
+            const lifts = window[`liftsData_${entranceIdx}`] || [];
+            for (let j = 0; j < lifts.length; j++) {
+                lifts[j].registrationNumber = document.getElementById(`lift_regNumber_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].name = document.getElementById(`lift_name_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].model = document.getElementById(`lift_model_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].yearMade = document.getElementById(`lift_yearMade_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].yearOper = document.getElementById(`lift_yearOper_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].speed = document.getElementById(`lift_speed_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].loadCapacity = document.getElementById(`lift_loadCapacity_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].type = document.getElementById(`lift_type_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].stops = document.getElementById(`lift_stops_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].engine = document.getElementById(`lift_engine_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].condition = document.getElementById(`lift_condition_${entranceIdx}_${j}`)?.value || '';
+                lifts[j].note = document.getElementById(`lift_note_${entranceIdx}_${j}`)?.value || '';
+                
+                lifts[j].previousLift = {
+                    model: document.getElementById(`prev_lift_model_${entranceIdx}_${j}`)?.value || '',
+                    yearMade: document.getElementById(`prev_lift_yearMade_${entranceIdx}_${j}`)?.value || '',
+                    yearOper: document.getElementById(`prev_lift_yearOper_${entranceIdx}_${j}`)?.value || '',
+                    yearRemoved: document.getElementById(`prev_lift_yearRemoved_${entranceIdx}_${j}`)?.value || '',
+                    loadCapacity: document.getElementById(`prev_lift_loadCapacity_${entranceIdx}_${j}`)?.value || '',
+                    speed: document.getElementById(`prev_lift_speed_${entranceIdx}_${j}`)?.value || '',
+                    note: document.getElementById(`prev_lift_note_${entranceIdx}_${j}`)?.value || ''
+                };
+            }
+            window[`liftsData_${entranceIdx}`] = lifts;
+        }
+        
+        window.addLift = function(entranceIdx) {
+            saveCurrentLiftData(entranceIdx);
+            if (!window[`liftsData_${entranceIdx}`]) window[`liftsData_${entranceIdx}`] = [];
+            window[`liftsData_${entranceIdx}`].push({ registrationNumber: '', name: '', model: '', yearMade: '', yearOper: '', speed: '', loadCapacity: '', type: '', stops: '', engine: '', condition: '', note: '' });
+            renderLifts(entranceIdx);
+        };
+        
+        window.removeLift = function(entranceIdx, liftIdx) {
+            saveCurrentLiftData(entranceIdx);
+            window[`liftsData_${entranceIdx}`].splice(liftIdx, 1);
+            renderLifts(entranceIdx);
         };
         
         function showHouseForm(house) {
@@ -835,17 +861,6 @@
             renderEntrances();
         };
         
-        window.addLift = function(entranceIdx) {
-            if (!window[`liftsData_${entranceIdx}`]) window[`liftsData_${entranceIdx}`] = [];
-            window[`liftsData_${entranceIdx}`].push({ registrationNumber: '', name: '', model: '', yearMade: '', yearOper: '', speed: '', loadCapacity: '', type: '', stops: '', engine: '', condition: '', note: '' });
-            renderLifts(entranceIdx);
-        };
-        
-        window.removeLift = function(entranceIdx, liftIdx) {
-            window[`liftsData_${entranceIdx}`].splice(liftIdx, 1);
-            renderLifts(entranceIdx);
-        };
-        
         window.renderPrograms = function() {
             const container = document.getElementById('programsContainer');
             if (!container) return;
@@ -1013,7 +1028,6 @@
             });
         }
         
-        // ========== СОХРАНЕНИЕ JSON ==========
         document.getElementById('saveJsonBtn').addEventListener('click', function() {
             const jsonStr = JSON.stringify(housesData, null, 2);
             const blob = new Blob([jsonStr], {type: 'application/json'});
@@ -1028,7 +1042,6 @@
             alert('JSON сохранён! Загрузите файл data.json в ваш репозиторий на GitHub.');
         });
         
-        // Инициализация темы
         initTheme();
         document.getElementById('loginThemeToggle')?.addEventListener('click', toggleTheme);
         document.getElementById('adminThemeToggle')?.addEventListener('click', toggleTheme);
