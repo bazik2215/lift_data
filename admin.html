@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Админ-панель — управление домами</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Специальные стили для админ-панели */
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .admin-header {
+            background: #0b3b5f;
+            color: white;
+            padding: 16px 24px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            border-radius: 20px;
+        }
+        
+        .admin-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .admin-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .admin-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .admin-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.98);
+        }
+        
+        .admin-btn-danger {
+            background: rgba(220,53,69,0.7);
+            border-color: rgba(220,53,69,0.5);
+        }
+        
+        .admin-btn-danger:hover {
+            background: rgba(220,53,69,0.9);
+        }
+        
+        .admin-btn-success {
+            background: rgba(40,167,69,0.7);
+            border-color: rgba(40,167,69,0.5);
+        }
+        
+        .admin-btn-success:hover {
+            background: rgba(40,167,69,0.9);
+        }
+        
+        .houses-table-admin {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .houses-table-admin th {
+            background: #eef2f6;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #0b3b5f;
+        }
+        
+        .houses-table-admin td {
+            padding: 12px;
+            border-bottom: 1px solid #e9edf2;
+            vertical-align: middle;
+        }
+        
+        .action-icons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .action-icon {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        
+        .action-icon:hover {
+            background: #eef2f6;
+            transform: scale(1.05);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #cbdbe0;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0b3b5f;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2c3e4e;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbdbe0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .subgroup {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .subgroup-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #0b3b5f;
+        }
+        
+        .btn-save {
+            background: #0b5e7e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .btn-save:hover {
+            background: #0b3b5f;
+        }
+        
+        .btn-add {
+            background: #eef2f6;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .stats-bar {
+            background: #eef2f6;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        body.dark-theme .houses-table-admin {
+            background: #252a38;
+        }
+        
+        body.dark-theme .houses-table-admin th {
+            background: #3a3e4d;
+            color: #a0c4e8;
+        }
+        
+        body.dark-theme .houses-table-admin td {
+            border-bottom-color: #3a3e4d;
+        }
+        
+        body.dark-theme .modal-content {
+            background: #252a38;
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .form-group label {
+            color: #b0b4c0;
+        }
+        
+        body.dark-theme .form-group input,
+        body.dark-theme .form-group select,
+        body.dark-theme .form-group textarea {
+            background: #2a2e3d;
+            border-color: #4a4e5d;
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .subgroup {
+            background: #2a2e3d;
+        }
+        
+        body.dark-theme .stats-bar {
+            background: #2a2e3d;
+        }
+        
+        body.dark-theme .btn-add {
+            background: #3a3e4d;
+            color: #e0e0e0;
+        }
+        
+        @media (max-width: 700px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .houses-table-admin {
+                font-size: 0.75rem;
+                min-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="container admin-container">
+            <div id="loginPanel" class="login-panel">
+                <div style="max-width: 400px; margin: 100px auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                    <h2 style="text-align: center; margin-bottom: 20px;">🔐 Админ-панель</h2>
+                    <div class="form-group">
+                        <label>Введите пароль</label>
+                        <input type="password" id="adminPassword" placeholder="Пароль" style="width: 100%;">
+                    </div>
+                    <button id="loginBtn" class="btn-save">Войти</button>
+                    <p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #999;">Подсказка: пароль admin123</p>
+                </div>
+            </div>
+            
+            <div id="adminPanel" style="display: none;">
+                <div class="admin-header">
+                    <div class="admin-title">🔐 Админ-панель управления домами</div>
+                    <div class="admin-buttons">
+                        <button id="saveJsonBtn" class="admin-btn admin-btn-success">💾 Сохранить JSON</button>
+                        <button id="logoutBtn" class="admin-btn admin-btn-danger">✖️ Выход</button>
+                    </div>
+                </div>
+                
+                <div class="stats-bar">
+                    <span>🏘️ <span id="totalHouses">0</span> домов</span>
+                    <span>🛗 <span id="totalLifts">0</span> лифтов</span>
+                    <span>📅 <span id="totalPrograms">0</span> программ ремонта</span>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="addHouseBtn" class="admin-btn" style="background: #0b5e7e; color: white;">➕ Добавить дом</button>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="houses-table-admin">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Адрес</th>
+                                <th>Район</th>
+                                <th>Этажей</th>
+                                <th>Год</th>
+                                <th>Лифтов</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="housesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно редактирования дома -->
+    <div id="houseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Редактирование дома</div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Пароль для входа (можете поменять на свой)
+        const ADMIN_PASSWORD = 'admin123';
+        
+        let housesData = [];
+        let editingHouseId = null;
+        
+        // ========== ВХОД ==========
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('loginPanel').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadData();
+            } else {
+                alert('Неверный пароль');
+            }
+        });
+        
+        // ========== ВЫХОД ==========
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            document.getElementById('loginPanel').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        });
+        
+        // ========== ЗАГРУЗКА ДАННЫХ ==========
+        function loadData() {
+            fetch('data.json?t=' + Date.now())
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Ошибка загрузки');
+                    return response.json();
+                })
+                .then(function(data) {
+                    housesData = data;
+                    renderHousesTable();
+                    updateStats();
+                })
+                .catch(function(error) {
+                    console.error('Ошибка:', error);
+                    alert('Не удалось загрузить data.json. Убедитесь, что файл существует.');
+                });
+        }
+        
+        // ========== ПОДСЧЁТ СТАТИСТИКИ ==========
+        function getLiftsCount(house) {
+            let count = 0;
+            if (house.entrances) {
+                house.entrances.forEach(function(entrance) {
+                    if (entrance.lifts && entrance.lifts.length > 0) {
+                        count += entrance.lifts.length;
+                    } else if (entrance.lift) {
+                        count += 1;
+                    }
+                });
+            }
+            return count;
+        }
+        
+        function getProgramsCount(house) {
+            return (house.programWorks ? house.programWorks.length : 0);
+        }
+        
+        function updateStats() {
+            const totalHouses = housesData.length;
+            let totalLifts = 0;
+            let totalPrograms = 0;
+            housesData.forEach(function(house) {
+                totalLifts += getLiftsCount(house);
+                totalPrograms += getProgramsCount(house);
+            });
+            document.getElementById('totalHouses').textContent = totalHouses;
+            document.getElementById('totalLifts').textContent = totalLifts;
+            document.getElementById('totalPrograms').textContent = totalPrograms;
+        }
+        
+        // ========== ОТОБРАЖЕНИЕ ТАБЛИЦЫ ==========
+        function renderHousesTable() {
+            const tbody = document.getElementById('housesTableBody');
+            tbody.innerHTML = '';
+            
+            housesData.sort(function(a, b) { return a.id - b.id; });
+            
+            housesData.forEach(function(house) {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = house.id;
+                row.insertCell(1).textContent = house.address;
+                row.insertCell(2).textContent = house.district || '—';
+                row.insertCell(3).textContent = house.floors || '—';
+                row.insertCell(4).textContent = house.buildYear || '—';
+                row.insertCell(5).textContent = getLiftsCount(house);
+                const actionsCell = row.insertCell(6);
+                actionsCell.innerHTML = `
+                    <div class="action-icons">
+                        <button class="action-icon" onclick="editHouse(${house.id})" title="Редактировать">✏️</button>
+                        <button class="action-icon" onclick="deleteHouse(${house.id})" title="Удалить">🗑️</button>
+                    </div>
+                `;
+            });
+        }
+        
+        // ========== УДАЛЕНИЕ ДОМА ==========
+        window.deleteHouse = function(id) {
+            if (confirm('Удалить дом? Это действие нельзя отменить.')) {
+                housesData = housesData.filter(function(house) { return house.id !== id; });
+                renderHousesTable();
+                updateStats();
+            }
+        };
+        
+        // ========== ДОБАВЛЕНИЕ НОВОГО ДОМА ==========
+        document.getElementById('addHouseBtn').addEventListener('click', function() {
+            editingHouseId = null;
+            document.getElementById('modalTitle').textContent = '➕ Добавление дома';
+            showHouseForm(null);
+        });
+        
+        // ========== РЕДАКТИРОВАНИЕ ДОМА ==========
+        window.editHouse = function(id) {
+            editingHouseId = id;
+            document.getElementById('modalTitle').textContent = '✏️ Редактирование дома';
+            const house = housesData.find(function(h) { return h.id === id; });
+            showHouseForm(house);
+        };
+        
+        function showHouseForm(house) {
+            const modalBody = document.getElementById('modalBody');
+            
+            const isNew = !house;
+            const defaultHouse = {
+                id: isNew ? (Math.max(...housesData.map(h => h.id), 0) + 1) : house.id,
+                address: house ? (house.address || '') : '',
+                district: house ? (house.district || '') : '',
+                buildingType: house ? (house.buildingType || 'Многоквартирный дом') : 'Многоквартирный дом',
+                buildYear: house ? (house.buildYear || '') : '',
+                constructionYear: house ? (house.constructionYear || '') : '',
+                floors: house ? (house.floors || '') : '',
+                series: house ? (house.series || '') : '',
+                coords: house ? (house.coords ? house.coords.join(', ') : '') : '',
+                entrances: house ? house.entrances : [],
+                programWorks: house ? house.programWorks : [],
+                shortTermWorks: house ? house.shortTermWorks : []
+            };
+            
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>ID (уникальный номер)</label>
+                    <input type="number" id="houseId" value="${defaultHouse.id}" ${!isNew ? 'readonly' : ''}>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Адрес *</label>
+                        <input type="text" id="houseAddress" value="${escapeHtml(defaultHouse.address)}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Район</label>
+                        <input type="text" id="houseDistrict" value="${escapeHtml(defaultHouse.district)}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Тип здания</label>
+                        <input type="text" id="houseBuildingType" value="${escapeHtml(defaultHouse.buildingType)}">
+                    </div>
+                    <div class="form-group">
+                        <label>Серия/проект</label>
+                        <input type="text" id="houseSeries" value="${escapeHtml(defaultHouse.series)}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Год постройки</label>
+                        <input type="number" id="houseBuildYear" value="${defaultHouse.buildYear}">
+                    </div>
+                    <div class="form-group">
+                        <label>Год ввода в эксплуатацию</label>
+                        <input type="number" id="houseConstructionYear" value="${defaultHouse.constructionYear}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Этажность</label>
+                        <input type="number" id="houseFloors" value="${defaultHouse.floors}">
+                    </div>
+                    <div class="form-group">
+                        <label>Координаты (широта, долгота)</label>
+                        <input type="text" id="houseCoords" value="${defaultHouse.coords}" placeholder="48.560115, 39.310170">
+                    </div>
+                </div>
+                
+                <div class="subgroup">
+                    <div class="subgroup-title">🛗 Подъезды и лифты</div>
+                    <div id="entrancesContainer"></div>
+                    <button type="button" class="btn-add" onclick="addEntrance()">➕ Добавить подъезд</button>
+                </div>
+                
+                <div class="subgroup">
+                    <div class="subgroup-title">📅 Программа работ</div>
+                    <div id="programsContainer"></div>
+                    <button type="button" class="btn-add" onclick="addProgram()">➕ Добавить программу</button>
+                </div>
+                
+                <div class="subgroup">
+                    <div class="subgroup-title">⚡ Краткосрочный план</div>
+                    <div id="shortTermContainer"></div>
+                    <button type="button" class="btn-add" onclick="addShortTerm()">➕ Добавить план</button>
+                </div>
+                
+                <button class="btn-save" onclick="saveHouse(${isNew ? 'null' : editingHouseId})">💾 Сохранить дом</button>
+            `;
+            
+            // Заполняем подъезды
+            window.entrancesData = defaultHouse.entrances ? JSON.parse(JSON.stringify(defaultHouse.entrances)) : [];
+            window.programsData = defaultHouse.programWorks ? JSON.parse(JSON.stringify(defaultHouse.programWorks)) : [];
+            window.shortTermData = defaultHouse.shortTermWorks ? JSON.parse(JSON.stringify(defaultHouse.shortTermWorks)) : [];
+            
+            renderEntrances();
+            renderPrograms();
+            renderShortTerm();
+            
+            document.getElementById('houseModal').style.display = 'flex';
+        }
+        
+        window.renderEntrances = function() {
+            const container = document.getElementById('entrancesContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            window.entrancesData.forEach(function(entrance, idx) {
+                const div = document.createElement('div');
+                div.className = 'subgroup';
+                div.style.marginBottom = '12px';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong>Подъезд ${idx + 1}</strong>
+                        <button class="action-icon" onclick="removeEntrance(${idx})" style="color: red;">🗑️</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Название подъезда</label>
+                        <input type="text" id="entrance_name_${idx}" value="${escapeHtml(entrance.name || '')}">
+                    </div>
+                    <div id="lifts_${idx}_container"></div>
+                    <button class="btn-add" onclick="addLift(${idx})">➕ Добавить лифт</button>
+                `;
+                container.appendChild(div);
+                
+                // Заполняем лифты
+                const liftsContainer = document.getElementById(`lifts_${idx}_container`);
+                const lifts = entrance.lifts || (entrance.lift ? [entrance.lift] : []);
+                window[`liftsData_${idx}`] = JSON.parse(JSON.stringify(lifts));
+                renderLifts(idx);
+            });
+        };
+        
+        window.renderLifts = function(entranceIdx) {
+            const container = document.getElementById(`lifts_${entranceIdx}_container`);
+            if (!container) return;
+            
+            const lifts = window[`liftsData_${entranceIdx}`] || [];
+            container.innerHTML = '';
+            lifts.forEach(function(lift, liftIdx) {
+                const liftDiv = document.createElement('div');
+                liftDiv.className = 'subgroup';
+                liftDiv.style.marginBottom = '8px';
+                liftDiv.style.padding = '8px';
+                liftDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong>Лифт ${liftIdx + 1}</strong>
+                        <button class="action-icon" onclick="removeLift(${entranceIdx}, ${liftIdx})" style="color: red;">🗑️</button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Название</label><input type="text" id="lift_name_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.name || '')}"></div>
+                        <div class="form-group"><label>Модель</label><input type="text" id="lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.model || '')}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Год изготовления</label><input type="number" id="lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.yearMade || ''}"></div>
+                        <div class="form-group"><label>Год ввода</label><input type="number" id="lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.yearOper || ''}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Скорость</label><input type="text" id="lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.speed || '')}"></div>
+                        <div class="form-group"><label>Грузоподъемность</label><input type="text" id="lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.loadCapacity || '')}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Тип лифта</label><input type="text" id="lift_type_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.type || '')}"></div>
+                        <div class="form-group"><label>Остановок</label><input type="number" id="lift_stops_${entranceIdx}_${liftIdx}" value="${lift.stops || ''}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Двигатель</label><input type="text" id="lift_engine_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.engine || '')}"></div>
+                        <div class="form-group"><label>Состояние</label><input type="text" id="lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.condition || '')}"></div>
+                    </div>
+                    <div class="form-group"><label>Примечание</label><textarea id="lift_note_${entranceIdx}_${liftIdx}">${escapeHtml(lift.note || '')}</textarea></div>
+                    
+                    <div style="margin-top: 10px;">
+                        <details><summary>📜 Предыдущий лифт (до замены)</summary>
+                            <div class="form-row">
+                                <div class="form-group"><label>Модель</label><input type="text" id="prev_lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.model : '')}"></div>
+                                <div class="form-group"><label>Год изготовления</label><input type="number" id="prev_lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearMade : ''}"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Год ввода</label><input type="number" id="prev_lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearOper : ''}"></div>
+                                <div class="form-group"><label>Год вывода</label><input type="number" id="prev_lift_yearRemoved_${entranceIdx}_${liftIdx}" value="${lift.previousLift ? lift.previousLift.yearRemoved : ''}"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Грузоподъемность</label><input type="text" id="prev_lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.loadCapacity : '')}"></div>
+                                <div class="form-group"><label>Скорость</label><input type="text" id="prev_lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.previousLift ? lift.previousLift.speed : '')}"></div>
+                            </div>
+                            <div class="form-group"><label>Примечание</label><textarea id="prev_lift_note_${entranceIdx}_${liftIdx}">${escapeHtml(lift.previousLift ? lift.previousLift.note : '')}</textarea></div>
+                        </details>
+                    </div>
+                `;
+                container.appendChild(liftDiv);
+            });
+        };
+        
+        window.addEntrance = function() {
+            window.entrancesData.push({ name: '', lifts: [] });
+            renderEntrances();
+        };
+        
+        window.removeEntrance = function(idx) {
+            window.entrancesData.splice(idx, 1);
+            renderEntrances();
+        };
+        
+        window.addLift = function(entranceIdx) {
+            if (!window[`liftsData_${entranceIdx}`]) window[`liftsData_${entranceIdx}`] = [];
+            window[`liftsData_${entranceIdx}`].push({ model: '', yearMade: '', yearOper: '', speed: '', type: '', stops: '', condition: '', engine: '', loadCapacity: '', note: '' });
+            renderLifts(entranceIdx);
+        };
+        
+        window.removeLift = function(entranceIdx, liftIdx) {
+            window[`liftsData_${entranceIdx}`].splice(liftIdx, 1);
+            renderLifts(entranceIdx);
+        };
+        
+        window.renderPrograms = function() {
+            const container = document.getElementById('programsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            window.programsData.forEach(function(prog, idx) {
+                const div = document.createElement('div');
+                div.className = 'subgroup';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Программа ${idx + 1}</strong>
+                        <button class="action-icon" onclick="removeProgram(${idx})">🗑️</button>
+                    </div>
+                    <div class="form-group"><label>Год</label><input type="text" id="prog_year_${idx}" value="${escapeHtml(prog.year || '')}"></div>
+                    <div class="form-group"><label>Описание</label><textarea id="prog_desc_${idx}">${escapeHtml(prog.description || '')}</textarea></div>
+                `;
+                container.appendChild(div);
+            });
+        };
+        
+        window.addProgram = function() {
+            window.programsData.push({ year: '', description: '' });
+            renderPrograms();
+        };
+        
+        window.removeProgram = function(idx) {
+            window.programsData.splice(idx, 1);
+            renderPrograms();
+        };
+        
+        window.renderShortTerm = function() {
+            const container = document.getElementById('shortTermContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            window.shortTermData.forEach(function(term, idx) {
+                const div = document.createElement('div');
+                div.className = 'subgroup';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>План ${idx + 1}</strong>
+                        <button class="action-icon" onclick="removeShortTerm(${idx})">🗑️</button>
+                    </div>
+                    <div class="form-group"><label>Тип ремонта</label><textarea id="term_type_${idx}">${escapeHtml(term.type || '')}</textarea></div>
+                    <div class="form-group"><label>Подрядчик</label><input type="text" id="term_contractor_${idx}" value="${escapeHtml(term.contractor || '')}"></div>
+                    <div class="form-group"><label>Период</label><input type="text" id="term_period_${idx}" value="${escapeHtml(term.period || '')}"></div>
+                `;
+                container.appendChild(div);
+            });
+        };
+        
+        window.addShortTerm = function() {
+            window.shortTermData.push({ type: '', contractor: '', period: '' });
+            renderShortTerm();
+        };
+        
+        window.removeShortTerm = function(idx) {
+            window.shortTermData.splice(idx, 1);
+            renderShortTerm();
+        };
+        
+        window.saveHouse = function(houseId) {
+            const newId = parseInt(document.getElementById('houseId').value);
+            
+            // Собираем подъезды
+            const entrances = [];
+            for (let i = 0; i < window.entrancesData.length; i++) {
+                const entranceName = document.getElementById(`entrance_name_${i}`)?.value || '';
+                const lifts = [];
+                const liftsData = window[`liftsData_${i}`] || [];
+                for (let j = 0; j < liftsData.length; j++) {
+                    const lift = {
+                        name: document.getElementById(`lift_name_${i}_${j}`)?.value || '',
+                        model: document.getElementById(`lift_model_${i}_${j}`)?.value || '',
+                        yearMade: document.getElementById(`lift_yearMade_${i}_${j}`)?.value || '',
+                        yearOper: document.getElementById(`lift_yearOper_${i}_${j}`)?.value || '',
+                        speed: document.getElementById(`lift_speed_${i}_${j}`)?.value || '',
+                        loadCapacity: document.getElementById(`lift_loadCapacity_${i}_${j}`)?.value || '',
+                        type: document.getElementById(`lift_type_${i}_${j}`)?.value || '',
+                        stops: document.getElementById(`lift_stops_${i}_${j}`)?.value || '',
+                        engine: document.getElementById(`lift_engine_${i}_${j}`)?.value || '',
+                        condition: document.getElementById(`lift_condition_${i}_${j}`)?.value || '',
+                        note: document.getElementById(`lift_note_${i}_${j}`)?.value || ''
+                    };
+                    
+                    const prevModel = document.getElementById(`prev_lift_model_${i}_${j}`)?.value;
+                    if (prevModel) {
+                        lift.previousLift = {
+                            model: prevModel,
+                            yearMade: document.getElementById(`prev_lift_yearMade_${i}_${j}`)?.value || '',
+                            yearOper: document.getElementById(`prev_lift_yearOper_${i}_${j}`)?.value || '',
+                            yearRemoved: document.getElementById(`prev_lift_yearRemoved_${i}_${j}`)?.value || '',
+                            loadCapacity: document.getElementById(`prev_lift_loadCapacity_${i}_${j}`)?.value || '',
+                            speed: document.getElementById(`prev_lift_speed_${i}_${j}`)?.value || '',
+                            note: document.getElementById(`prev_lift_note_${i}_${j}`)?.value || ''
+                        };
+                    }
+                    lifts.push(lift);
+                }
+                entrances.push({ name: entranceName, lifts: lifts });
+            }
+            
+            // Собираем программы
+            const programWorks = [];
+            for (let i = 0; i < window.programsData.length; i++) {
+                programWorks.push({
+                    year: document.getElementById(`prog_year_${i}`)?.value || '',
+                    description: document.getElementById(`prog_desc_${i}`)?.value || ''
+                });
+            }
+            
+            // Собираем краткосрочные планы
+            const shortTermWorks = [];
+            for (let i = 0; i < window.shortTermData.length; i++) {
+                shortTermWorks.push({
+                    type: document.getElementById(`term_type_${i}`)?.value || '',
+                    contractor: document.getElementById(`term_contractor_${i}`)?.value || '',
+                    period: document.getElementById(`term_period_${i}`)?.value || ''
+                });
+            }
+            
+            const coordsStr = document.getElementById('houseCoords')?.value || '';
+            let coords = null;
+            if (coordsStr) {
+                const parts = coordsStr.split(',').map(function(s) { return parseFloat(s.trim()); });
+                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                    coords = parts;
+                }
+            }
+            
+            const houseData = {
+                id: newId,
+                address: document.getElementById('houseAddress')?.value || '',
+                district: document.getElementById('houseDistrict')?.value || '',
+                buildingType: document.getElementById('houseBuildingType')?.value || 'Многоквартирный дом',
+                buildYear: parseInt(document.getElementById('houseBuildYear')?.value) || 0,
+                constructionYear: parseInt(document.getElementById('houseConstructionYear')?.value) || 0,
+                floors: parseInt(document.getElementById('houseFloors')?.value) || 0,
+                series: document.getElementById('houseSeries')?.value || '',
+                coords: coords,
+                entrances: entrances,
+                programWorks: programWorks,
+                shortTermWorks: shortTermWorks
+            };
+            
+            if (houseId === null) {
+                housesData.push(houseData);
+            } else {
+                const index = housesData.findIndex(function(h) { return h.id === houseId; });
+                if (index !== -1) housesData[index] = houseData;
+            }
+            
+            closeModal();
+            renderHousesTable();
+            updateStats();
+        };
+        
+        window.closeModal = function() {
+            document.getElementById('houseModal').style.display = 'none';
+        };
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // ========== СОХРАНЕНИЕ JSON ==========
+        document.getElementById('saveJsonBtn').addEventListener('click', function() {
+            const jsonStr = JSON.stringify(housesData, null, 2);
+            const blob = new Blob([jsonStr], {type: 'application/json'});
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = 'data.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            alert('JSON сохранён! Загрузите файл data.json в ваш репозиторий на GitHub.');
+        });
+        
+        // Тёмная тема для админки
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    </script>
+</body>
+</html>
