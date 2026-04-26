@@ -50,13 +50,21 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // ========== НАСТРОЙКА ОБРАБОТЧИКОВ ==========
 function setupEventListeners() {
-    // Кнопка сохранения
+    // Кнопка сохранения дома
     const saveBtn = document.getElementById('saveHouseBtn');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => saveHouse());
     }
     
-    // Кнопка удаления
+    // Кнопка сохранения JSON (скачивание data.json)
+    const saveJsonBtn = document.getElementById('saveJsonBtn');
+    if (saveJsonBtn) {
+        saveJsonBtn.addEventListener('click', () => {
+            saveJSON();
+        });
+    }
+    
+    // Кнопка удаления дома
     const deleteBtn = document.getElementById('deleteHouseBtn');
     if (deleteBtn) {
         deleteBtn.addEventListener('click', () => deleteHouse());
@@ -98,7 +106,7 @@ function setupEventListeners() {
         previewCoordsBtn.addEventListener('click', () => previewCoordinates());
     }
     
-    // Ctrl+S для сохранения
+    // Ctrl+S для сохранения дома
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
@@ -445,7 +453,7 @@ async function saveHouse() {
     // Сохранение в общий массив и логирование
     if (isNewHouse) {
         housesData.push(houseData);
-        showToast(`✅ Дом "${address}" добавлен`);
+        showToast(`✅ Дом "${address}" добавлен в память`);
         
         // Логируем добавление
         await addHistoryRecord('add', houseData.id, houseData.address, {
@@ -455,7 +463,7 @@ async function saveHouse() {
         const index = housesData.findIndex(h => h.id === houseId);
         if (index !== -1) {
             housesData[index] = houseData;
-            showToast(`✅ Дом "${address}" сохранён`);
+            showToast(`✅ Дом "${address}" сохранён в памяти`);
             
             // Логируем изменения (сравниваем со старым домом)
             if (oldHouseData) {
@@ -467,8 +475,9 @@ async function saveHouse() {
         }
     }
     
-    // Возврат к списку
-    window.location.href = 'index.html';
+    // НЕ ПЕРЕХОДИМ НА СТРАНИЦУ СПИСКА АВТОМАТИЧЕСКИ
+    // Пользователь должен сам нажать «Сохранить JSON» и затем загрузить файл
+    showToast('🔔 Не забудьте нажать «Сохранить JSON» и загрузить файл на GitHub!');
 }
 
 // ========== УДАЛЕНИЕ ДОМА ==========
@@ -478,7 +487,7 @@ async function deleteHouse() {
         const deletedHouse = housesData.find(h => h.id === houseId);
         
         housesData = housesData.filter(h => h.id !== houseId);
-        showToast('✅ Дом удалён');
+        showToast('✅ Дом удалён из памяти');
         
         // Логируем удаление
         if (deletedHouse) {
@@ -487,6 +496,7 @@ async function deleteHouse() {
             });
         }
         
-        window.location.href = 'index.html';
+        // НЕ ПЕРЕХОДИМ АВТОМАТИЧЕСКИ
+        showToast('🔔 Нажмите «Сохранить JSON» и загрузите файл на GitHub!');
     }
 }
