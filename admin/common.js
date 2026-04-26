@@ -20,6 +20,21 @@ function loadData() {
         });
 }
 
+// ========== ЗАГРУЗКА ИСТОРИИ ==========
+async function loadHistory() {
+    try {
+        const response = await fetch('../history.json?t=' + Date.now());
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        }
+        return { records: [] };
+    } catch (error) {
+        console.error('Ошибка загрузки истории:', error);
+        return { records: [] };
+    }
+}
+
 // ========== СОХРАНЕНИЕ JSON ==========
 function saveJSON() {
     const jsonStr = JSON.stringify(housesData, null, 2);
@@ -252,7 +267,7 @@ function saveLastSaveTimestamp() {
     updateLastSaveIndicator();
 }
 
-// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ (с поддержкой тёмной темы) ==========
+// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ==========
 function showConfirmModal(options) {
     return new Promise((resolve) => {
         const existingModal = document.querySelector('.custom-confirm-modal');
@@ -375,6 +390,43 @@ async function logout() {
     }
 }
 
+// ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
+function checkAuth() {
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
+}
+
+// ========== ТЁМНАЯ ТЕМА ==========
+function initAdminTheme() {
+    const savedTheme = localStorage.getItem('adminTheme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) themeBtn.textContent = '☀️';
+    } else {
+        document.body.classList.remove('dark-theme');
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) themeBtn.textContent = '🌙';
+    }
+}
+
+function toggleAdminTheme() {
+    if (document.body.classList.contains('dark-theme')) {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('adminTheme', 'light');
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) themeBtn.textContent = '🌙';
+    } else {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('adminTheme', 'dark');
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) themeBtn.textContent = '☀️';
+    }
+}
+
 // ========== СОХРАНЕНИЕ ТЕКУЩИХ ДАННЫХ ПОДЪЕЗДОВ (для edit.js) ==========
 window.saveCurrentEntranceData = function() {
     for (let i = 0; i < window.entrancesData.length; i++) {
@@ -435,40 +487,98 @@ window.saveCurrentShortTermData = function() {
     }
 };
 
-// ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
-function checkAuth() {
-    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
-        window.location.href = 'login.html';
-        return false;
+// ========== СРАВНЕНИЕ ДОМОВ ==========
+function compareHouses(oldHouse, newHouse) {
+    const changes = [];
+    
+    const simpleFields = ['address', 'district', 'buildingType', 'buildYear', 'constructionYear', 'floors', 'series'];
+    simpleFields.forEach(field => {
+        const oldVal = oldHouse[field];
+        const newVal = newHouse[field];
+        if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+            changes.push({
+                field: field,
+                oldValue: oldVal !== undefined && oldVal !== '' ? oldVal : '—',
+                newValue: newVal !== undefined && newVal !== '' ? newVal : '—'
+            });
+        }
+    });
+    
+    if (JSON.stringify(oldHouse.coords) !== JSON.stringify(newHouse.coords)) {
+        changes.push({
+            field: 'coords',
+            oldValue: oldHouse.coords ? oldHouse.coords.join(', ') : '—',
+            newValue: newHouse.coords ? newHouse.coords.join(', ') : '—'
+        });
     }
-    return true;
+    
+    const oldLiftsCount = getLiftsCount(oldHouse);
+    const newLiftsCount = getLiftsCount(newHouse);
+    if (oldLiftsCount !== newLiftsCount) {
+        changes.push({
+            field: 'liftsCount',
+            oldValue: oldLiftsCount,
+            newValue: newLiftsCount
+        });
+    }
+    
+    if (JSON.stringify(oldHouse.programWorks) !== JSON.stringify(newHouse.programWorks)) {
+        changes.push({
+            field: 'programWorks',
+            oldValue: `${oldHouse.programWorks?.length || 0} программ`,
+            newValue: `${newHouse.programWorks?.length || 0} программ`
+        });
+    }
+    
+    if (JSON.stringify(oldHouse.shortTermWorks) !== JSON.stringify(newHouse.shortTermWorks)) {
+        changes.push({
+            field: 'shortTermWorks',
+            oldValue: `${oldHouse.shortTermWorks?.length || 0} планов`,
+            newValue: `${newHouse.shortTermWorks?.length || 0} планов`
+        });
+    }
+    
+    return changes;
 }
 
-// ========== ИНИЦИАЛИЗАЦИЯ ТЁМНОЙ ТЕМЫ ==========
-function initAdminTheme() {
-    const savedTheme = localStorage.getItem('adminTheme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-theme');
-        const themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) themeBtn.textContent = '☀️';
-    } else {
-        document.body.classList.remove('dark-theme');
-        const themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) themeBtn.textContent = '🌙';
-    }
-}
-
-function toggleAdminTheme() {
-    if (document.body.classList.contains('dark-theme')) {
-        document.body.classList.remove('dark-theme');
-        localStorage.setItem('adminTheme', 'light');
-        const themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) themeBtn.textContent = '🌙';
-    } else {
-        document.body.classList.add('dark-theme');
-        localStorage.setItem('adminTheme', 'dark');
-        const themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) themeBtn.textContent = '☀️';
+// ========== ДОБАВЛЕНИЕ ЗАПИСИ В ИСТОРИЮ ==========
+async function addHistoryRecord(action, houseId, houseAddress, details) {
+    try {
+        let history = await loadHistory();
+        
+        const newRecord = {
+            id: Date.now() + '_' + Math.random().toString(36).substr(2, 8),
+            timestamp: new Date().toISOString(),
+            action: action,
+            houseId: houseId,
+            houseAddress: houseAddress,
+            user: 'admin',
+            role: 'admin',
+            details: details || {}
+        };
+        
+        history.records.unshift(newRecord);
+        
+        if (history.records.length > 2000) {
+            history.records = history.records.slice(0, 2000);
+        }
+        
+        const jsonStr = JSON.stringify(history, null, 2);
+        const blob = new Blob([jsonStr], {type: 'application/json'});
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = 'history.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        console.log('📜 Запись в историю добавлена:', newRecord);
+        return newRecord;
+    } catch (error) {
+        console.error('Ошибка записи в историю:', error);
+        return null;
     }
 }
 
