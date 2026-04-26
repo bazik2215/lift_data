@@ -1,3 +1,27 @@
 {
-  "records": []
+  "records": [
+    {
+      "id": "1777230787281_g3t6xx97",
+      "timestamp": "2026-04-26T19:13:07.281Z",
+      "action": "update",
+      "houseId": 6,
+      "houseAddress": "г.Луганск, Советская улица, д. 3",
+      "user": "admin",
+      "role": "admin",
+      "details": {
+        "changes": [
+          {
+            "field": "programWorks",
+            "oldValue": "1 программ",
+            "newValue": "1 программ"
+          },
+          {
+            "field": "shortTermWorks",
+            "oldValue": "1 планов",
+            "newValue": "1 планов"
+          }
+        ]
+      }
+    }
+  ]
 }
