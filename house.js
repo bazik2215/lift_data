@@ -29,6 +29,58 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // ========== КОНЕЦ БЛОКА ТЕМЫ ==========
     
+    // ========== КНОПКА НАВЕРХ ==========
+    const scrollBtn = document.getElementById('scrollToTop');
+    if (scrollBtn) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                scrollBtn.classList.add('visible');
+            } else {
+                scrollBtn.classList.remove('visible');
+            }
+        });
+        scrollBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+    // ========== КОНЕЦ КНОПКИ НАВЕРХ ==========
+    
+    // ========== СЧЁТЧИК В ШАПКЕ ==========
+    function getLiftsCount(house) {
+        let count = 0;
+        if (house.entrances) {
+            house.entrances.forEach(function(entrance) {
+                if (entrance.lifts && entrance.lifts.length > 0) {
+                    count += entrance.lifts.length;
+                } else if (entrance.lift) {
+                    count += 1;
+                }
+            });
+        }
+        return count;
+    }
+    
+    function updateHeaderStats() {
+        fetch('data.json?t=' + Date.now())
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                const totalHouses = data.length;
+                let totalLifts = 0;
+                data.forEach(function(house) {
+                    totalLifts += getLiftsCount(house);
+                });
+                const statsDiv = document.getElementById('headerStats');
+                if (statsDiv) {
+                    statsDiv.innerHTML = '<span class="stat-badge">🏘️ ' + totalHouses + ' домов</span><span class="stat-badge">🛗 ' + totalLifts + ' лифтов</span>';
+                }
+            })
+            .catch(function(error) {
+                console.error('Stats error:', error);
+            });
+    }
+    updateHeaderStats();
+    // ========== КОНЕЦ СЧЁТЧИКА ==========
+    
     // Получаем ID дома из URL
     const urlParams = new URLSearchParams(window.location.search);
     const houseId = parseInt(urlParams.get('id'));
@@ -66,16 +118,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (showOnMapBtn && mapContainer) {
             showOnMapBtn.addEventListener('click', function() {
                 if (mapContainer.style.display === 'none') {
-                    // Показываем карту
                     mapContainer.style.display = 'block';
                     showOnMapBtn.textContent = '🗺️ Скрыть карту';
                     showOnMapBtn.classList.add('active-map');
                     
-                    // Инициализируем карту, если ещё не инициализирована
                     if (!mapInitialized && house.coords && house.coords.length === 2) {
                         initHouseMap(house.coords);
                     } else if (house.coords && house.coords.length === 2 && houseMap) {
-                        // Если карта уже была, просто центрируем
                         houseMap.setCenter(house.coords, 17);
                     } else if (!house.coords) {
                         showToast('❌ Координаты этого дома пока не добавлены');
@@ -84,7 +133,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         showOnMapBtn.classList.remove('active-map');
                     }
                 } else {
-                    // Скрываем карту
                     mapContainer.style.display = 'none';
                     showOnMapBtn.textContent = '🗺️ Показать на карте';
                     showOnMapBtn.classList.remove('active-map');
@@ -127,7 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 controls: ['zoomControl', 'fullscreenControl']
             });
             
-            // Добавляем метку на карту
             const placemark = new ymaps.Placemark(
                 coords,
                 {
@@ -159,7 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const element = document.getElementById('houseContent');
         if (!element) return;
         
-        // Временно скрываем карту, если она открыта, чтобы не мешала
         const mapContainer = document.getElementById('houseMap');
         const wasVisible = mapContainer && mapContainer.style.display === 'block';
         if (wasVisible) {
@@ -182,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         html2pdf().set(opt).from(element).save().then(function() {
             document.title = originalTitle;
-            // Восстанавливаем карту, если она была открыта
             if (wasVisible) {
                 mapContainer.style.display = 'block';
             }
@@ -290,7 +335,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (lift.yearOper && lift.yearOper !== '—') {
             const currentYear = new Date().getFullYear();
             const operYear = parseInt(lift.yearOper);
-            if (!isNaN(operYear)) yearsInService = (currentYear - operYear) + ' лет';
+            if (!isNaN(operYear)) {
+                yearsInService = (currentYear - operYear) + ' лет';
+            }
         }
         
         liftInfo.innerHTML = `
@@ -326,7 +373,9 @@ document.addEventListener('DOMContentLoaded', function() {
             let endYear = previousLift.yearRemoved || new Date().getFullYear();
             if (typeof endYear === 'string') endYear = parseInt(endYear);
             const operYear = parseInt(previousLift.yearOper);
-            if (!isNaN(operYear) && !isNaN(endYear)) yearsInService = (endYear - operYear) + ' лет';
+            if (!isNaN(operYear) && !isNaN(endYear)) {
+                yearsInService = (endYear - operYear) + ' лет';
+            }
         }
         
         previousLiftInfo.innerHTML = `

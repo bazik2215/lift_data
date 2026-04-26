@@ -15,6 +15,10 @@
                     <a href="houses.html" class="nav-link active">📋 Список домов</a>
                 </div>
                 <div class="header-title">Информация о замене лифтов</div>
+                <div class="header-stats" id="headerStats">
+                    <span class="stat-badge">🏘️ Загрузка...</span>
+                    <span class="stat-badge">🛗 ...</span>
+                </div>
                 <button id="themeToggle" class="theme-toggle" title="Сменить тему">🌙</button>
             </div>
         </div>
@@ -24,8 +28,11 @@
                 <h2>Список домов</h2>
             </div>
             
-            <div class="search-section">
-                <input type="text" id="searchInput" placeholder="Фильтр по адресу..." autocomplete="off">
+            <div class="houses-filters">
+                <input type="text" id="searchInput" placeholder="Фильтр по адресу..." autocomplete="off" class="filter-input">
+                <select id="districtFilter" class="filter-select">
+                    <option value="all">📌 Все районы</option>
+                </select>
             </div>
 
             <div class="info-card">
@@ -33,11 +40,11 @@
                     <table class="houses-table" id="housesTable">
                         <thead>
                             <tr>
-                                <th>Адрес</th>
-                                <th>Район</th>
-                                <th>Год постройки</th>
-                                <th>Этажей</th>
-                                <th>Лифтов</th>
+                                <th data-sort="address">🏠 Адрес <span class="sort-arrow"></span></th>
+                                <th data-sort="district">📍 Район <span class="sort-arrow"></span></th>
+                                <th data-sort="buildYear">📅 Год постройки <span class="sort-arrow"></span></th>
+                                <th data-sort="floors">🏢 Этажей <span class="sort-arrow"></span></th>
+                                <th data-sort="liftsCount">🛗 Лифтов <span class="sort-arrow"></span></th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -47,6 +54,8 @@
             </div>
         </div>
     </div>
+
+    <button id="scrollToTop" class="scroll-to-top" title="Наверх">↑</button>
 
     <script src="list.js"></script>
 </body>

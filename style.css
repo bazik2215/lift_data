@@ -66,6 +66,25 @@ body {
     font-weight: 500;
 }
 
+/* ========== СЧЁТЧИК В ШАПКЕ ========== */
+.header-stats {
+    display: flex;
+    gap: 12px;
+}
+
+.stat-badge {
+    background: rgba(255,255,255,0.15);
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+body.dark-theme .stat-badge {
+    background: rgba(255,255,255,0.08);
+}
+
 /* Кнопка переключения темы */
 .theme-toggle {
     background: rgba(255,255,255,0.2);
@@ -275,6 +294,44 @@ body.dark-theme .toast-notification {
     100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
 }
 
+/* ========== КНОПКА НАВЕРХ ========== */
+.scroll-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: #0b5e7e;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-to-top:hover {
+    background: #0b3b5f;
+    transform: scale(1.05);
+}
+
+body.dark-theme .scroll-to-top {
+    background: #2c6e8e;
+}
+
+body.dark-theme .scroll-to-top:hover {
+    background: #1a4e6e;
+}
+
 /* Блок фильтров */
 .filters-block {
     background: white;
@@ -472,6 +529,57 @@ body.dark-theme .toast-notification {
     min-width: 500px;
 }
 
+/* ========== ФИЛЬТРЫ НА СТРАНИЦЕ СПИСКА ========== */
+.houses-filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.filter-input {
+    flex: 2;
+    min-width: 200px;
+    padding: 12px 16px;
+    border: 2px solid #cbdbe0;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    background: white;
+    transition: 0.2s;
+}
+
+.filter-input:focus {
+    border-color: #0b5e7e;
+    outline: none;
+}
+
+body.dark-theme .filter-input {
+    background: #2a2e3d;
+    border-color: #4a4e5d;
+    color: #e0e0e0;
+}
+
+/* Сортировка */
+.sort-arrow {
+    display: inline-block;
+    width: 16px;
+    font-size: 0.8rem;
+    margin-left: 4px;
+}
+
+#housesTable th {
+    cursor: pointer;
+    user-select: none;
+}
+
+#housesTable th:hover {
+    background: #e2e8f0;
+}
+
+body.dark-theme #housesTable th:hover {
+    background: #4a4e5d;
+}
+
 /* ========== ТЁМНАЯ ТЕМА ========== */
 body.dark-theme {
     background: #1a1e2c;
@@ -638,6 +746,13 @@ body.dark-theme .balloon-link {
         font-size: 1rem;
     }
     
+    .header-stats {
+        order: 4;
+        width: 100%;
+        justify-content: center;
+        margin-top: 8px;
+    }
+    
     .nav-link {
         font-size: 0.85rem;
     }
@@ -676,6 +791,22 @@ body.dark-theme .balloon-link {
     
     .house-map-container {
         height: 250px;
+    }
+    
+    .scroll-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    .houses-filters {
+        flex-direction: column;
+    }
+    
+    .filter-input {
+        width: 100%;
     }
     
     #programWorks {

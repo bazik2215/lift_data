@@ -1,13 +1,11 @@
-// Глобальная переменная для данных
 let housesData = [];
 let currentMap = null;
 let currentPlacemarks = [];
 
-// Ждем полной загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Карта загружена');
     
-    // ========== ТЁМНАЯ ТЕМА ==========
+    // Тёмная тема
     const themeToggle = document.getElementById('themeToggle');
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
@@ -28,14 +26,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    // ========== КОНЕЦ БЛОКА ТЕМЫ ==========
+    
+    // Кнопка Наверх
+    const scrollBtn = document.getElementById('scrollToTop');
+    if (scrollBtn) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                scrollBtn.classList.add('visible');
+            } else {
+                scrollBtn.classList.remove('visible');
+            }
+        });
+        scrollBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
     
     const addressInput = document.getElementById('addressInput');
     const suggestionsDiv = document.getElementById('suggestions');
     const planTypeSelect = document.getElementById('planType');
     const timeFilterSelect = document.getElementById('timeFilter');
     
-    // Загружаем данные
+    function getLiftsCount(house) {
+        let count = 0;
+        if (house.entrances) {
+            house.entrances.forEach(function(entrance) {
+                if (entrance.lifts && entrance.lifts.length > 0) count += entrance.lifts.length;
+                else if (entrance.lift) count += 1;
+            });
+        }
+        return count;
+    }
+    
+    function updateHeaderStats() {
+        const totalHouses = housesData.length;
+        let totalLifts = 0;
+        housesData.forEach(function(house) {
+            totalLifts += getLiftsCount(house);
+        });
+        const statsDiv = document.getElementById('headerStats');
+        if (statsDiv) {
+            statsDiv.innerHTML = '<span class="stat-badge">🏘️ ' + totalHouses + ' домов</span><span class="stat-badge">🛗 ' + totalLifts + ' лифтов</span>';
+        }
+    }
+    
     function loadData() {
         fetch('data.json?t=' + Date.now())
             .then(function(response) {
@@ -45,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(data) {
                 housesData = data;
                 console.log('Данные загружены! Количество домов:', housesData.length);
+                updateHeaderStats();
                 updateTimeFilterOptions();
                 initMap();
             })
@@ -54,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Обновление второго выпадающего списка
     function updateTimeFilterOptions() {
         const planType = planTypeSelect.value;
         let timeValues = new Set();
@@ -98,12 +132,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Получение списка лифтов для балуна
     function getLiftsListForProgram(house, selectedYear) {
         let liftsWithYears = [];
-        
         if (!house.entrances) return [];
-        
         house.entrances.forEach(function(entrance) {
             if (entrance.lifts && entrance.lifts.length > 0) {
                 entrance.lifts.forEach(function(lift) {
@@ -125,18 +156,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 liftsWithYears.push({ number: liftNumber, year: liftYear });
             }
         });
-        
         if (selectedYear !== 'all') {
-            liftsWithYears = liftsWithYears.filter(function(lift) {
-                return lift.year === selectedYear;
-            });
+            liftsWithYears = liftsWithYears.filter(function(lift) { return lift.year === selectedYear; });
         }
-        
         if (liftsWithYears.length === 0) return '<i>Нет данных</i>';
-        
         let html = '<ul style="margin: 5px 0 0 20px; padding: 0; list-style-type: disc;">';
         liftsWithYears.forEach(function(lift) {
-            const yearText = lift.year ? ` (${lift.year})` : '';
+            const yearText = lift.year ? ' (' + lift.year + ')' : '';
             html += '<li style="margin: 2px 0;">Лифт №' + lift.number + yearText + '</li>';
         });
         html += '</ul>';
@@ -159,7 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function getBalloonContent(house, planType, selectedTime) {
         const address = house.address;
         const district = house.district || '—';
-        
         if (planType === 'program') {
             const liftsListHtml = getLiftsListForProgram(house, selectedTime);
             return '<b>' + address + '</b><br>' + district + '<br><b>Лифты:</b>' + liftsListHtml + '<br><br><a href="house.html?id=' + house.id + '" class="balloon-link">Подробнее о доме →</a>';
@@ -183,7 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Яндекс.Карты не загрузились');
             return;
         }
-        
         ymaps.ready(function() {
             currentMap = new ymaps.Map('map', {
                 center: [48.574, 39.307],
@@ -196,17 +220,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function applyFilters() {
         if (!currentMap) return;
-        
         const planType = planTypeSelect.value;
         const timeValue = timeFilterSelect.value;
-        
         currentPlacemarks.forEach(function(p) { currentMap.geoObjects.remove(p); });
         currentPlacemarks = [];
-        
         let filteredHouses = housesData.filter(function(house) {
             return isHouseMatchesFilter(house, planType, timeValue);
         });
-        
         filteredHouses.forEach(function(house) {
             if (house.coords && house.coords.length === 2) {
                 const balloonContent = getBalloonContent(house, planType, timeValue);
@@ -219,28 +239,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentMap.geoObjects.add(placemark);
             }
         });
-        
         console.log('Отображаем домов после фильтра:', filteredHouses.length);
     }
     
-    // Поиск с алфавитной сортировкой
     addressInput.addEventListener('input', function() {
         const query = addressInput.value.trim().toLowerCase();
-        
         if (query.length === 0 || housesData.length === 0) {
             suggestionsDiv.classList.add('hidden');
             return;
         }
-        
         const filtered = housesData
             .filter(function(house) { return house.address.toLowerCase().includes(query); })
             .sort(function(a, b) { return a.address.localeCompare(b.address); });
-        
         if (filtered.length === 0) {
             suggestionsDiv.classList.add('hidden');
             return;
         }
-        
         suggestionsDiv.innerHTML = '';
         filtered.forEach(function(house) {
             const div = document.createElement('div');
@@ -262,11 +276,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTimeFilterOptions();
         applyFilters();
     });
-    
     timeFilterSelect.addEventListener('change', function() {
         applyFilters();
     });
-    
     document.addEventListener('click', function(e) {
         if (e.target !== addressInput && !suggestionsDiv.contains(e.target)) {
             suggestionsDiv.classList.add('hidden');

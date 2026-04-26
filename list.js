@@ -1,9 +1,10 @@
 let housesData = [];
+let currentSort = { column: 'address', direction: 'asc' };
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Список домов загружен');
     
-    // ========== ТЁМНАЯ ТЕМА ==========
+    // Тёмная тема
     const themeToggle = document.getElementById('themeToggle');
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
@@ -24,23 +25,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    // ========== КОНЕЦ БЛОКА ТЕМЫ ==========
+    
+    // Кнопка Наверх
+    const scrollBtn = document.getElementById('scrollToTop');
+    if (scrollBtn) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                scrollBtn.classList.add('visible');
+            } else {
+                scrollBtn.classList.remove('visible');
+            }
+        });
+        scrollBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
     
     const searchInput = document.getElementById('searchInput');
+    const districtFilter = document.getElementById('districtFilter');
     const housesList = document.getElementById('housesList');
-    
-    function loadData() {
-        fetch('data.json?t=' + Date.now())
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
-                housesData = data;
-                renderList();
-            })
-            .catch(function(error) {
-                console.error('Ошибка:', error);
-                housesList.innerHTML = '<tr><td colspan="6">Ошибка загрузки данных</td></tr>';
-            });
-    }
     
     function getLiftsCount(house) {
         let count = 0;
@@ -53,18 +56,74 @@ document.addEventListener('DOMContentLoaded', function() {
         return count;
     }
     
+    function updateHeaderStats() {
+        const totalHouses = housesData.length;
+        let totalLifts = 0;
+        housesData.forEach(function(house) {
+            totalLifts += getLiftsCount(house);
+        });
+        const statsDiv = document.getElementById('headerStats');
+        if (statsDiv) {
+            statsDiv.innerHTML = '<span class="stat-badge">🏘️ ' + totalHouses + ' домов</span><span class="stat-badge">🛗 ' + totalLifts + ' лифтов</span>';
+        }
+    }
+    
+    function updateDistrictFilter() {
+        const districts = new Set();
+        housesData.forEach(function(house) {
+            if (house.district) districts.add(house.district);
+        });
+        const sortedDistricts = Array.from(districts).sort();
+        districtFilter.innerHTML = '<option value="all">📌 Все районы</option>';
+        sortedDistricts.forEach(function(district) {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            districtFilter.appendChild(option);
+        });
+    }
+    
     function renderList() {
         const searchQuery = searchInput.value.trim().toLowerCase();
+        const selectedDistrict = districtFilter.value;
         
-        let filtered = housesData;
-        if (searchQuery) {
-            filtered = housesData.filter(function(house) {
-                return house.address.toLowerCase().includes(searchQuery);
-            });
-        }
+        let filtered = housesData.filter(function(house) {
+            let match = true;
+            if (searchQuery) {
+                match = match && house.address.toLowerCase().includes(searchQuery);
+            }
+            if (selectedDistrict !== 'all') {
+                match = match && house.district === selectedDistrict;
+            }
+            return match;
+        });
         
         filtered.sort(function(a, b) {
-            return a.address.localeCompare(b.address);
+            let valA, valB;
+            switch (currentSort.column) {
+                case 'address':
+                    valA = a.address;
+                    valB = b.address;
+                    return currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                case 'district':
+                    valA = a.district || '';
+                    valB = b.district || '';
+                    return currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                case 'buildYear':
+                    valA = a.buildYear || 0;
+                    valB = b.buildYear || 0;
+                    return currentSort.direction === 'asc' ? valA - valB : valB - valA;
+                case 'floors':
+                    valA = a.floors || 0;
+                    valB = b.floors || 0;
+                    return currentSort.direction === 'asc' ? valA - valB : valB - valA;
+                case 'liftsCount':
+                    valA = getLiftsCount(a);
+                    valB = getLiftsCount(b);
+                    return currentSort.direction === 'asc' ? valA - valB : valB - valA;
+                default:
+                    return 0;
+            }
         });
         
         housesList.innerHTML = '';
@@ -79,13 +138,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         if (filtered.length === 0) {
-            housesList.innerHTML = '<tr><td colspan="6">Ничего не найдено</td></tr>';
+            housesList.innerHTML = '<tr><td colspan="6">Ничего не найдено</td><\/tr>';
+        }
+        
+        updateSortArrows();
+    }
+    
+    function updateSortArrows() {
+        document.querySelectorAll('#housesTable th .sort-arrow').forEach(function(arrow) {
+            arrow.textContent = '';
+        });
+        const activeHeader = document.querySelector('#housesTable th[data-sort="' + currentSort.column + '"] .sort-arrow');
+        if (activeHeader) {
+            activeHeader.textContent = currentSort.direction === 'asc' ? ' ↑' : ' ↓';
         }
     }
     
-    searchInput.addEventListener('input', function() {
-        renderList();
-    });
+    function initSorting() {
+        document.querySelectorAll('#housesTable th').forEach(function(th) {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', function() {
+                const column = th.dataset.sort;
+                if (currentSort.column === column) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.column = column;
+                    currentSort.direction = 'asc';
+                }
+                renderList();
+            });
+        });
+    }
+    
+    function loadData() {
+        fetch('data.json?t=' + Date.now())
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                housesData = data;
+                updateDistrictFilter();
+                updateHeaderStats();
+                renderList();
+                initSorting();
+            })
+            .catch(function(error) {
+                console.error('Ошибка:', error);
+                housesList.innerHTML = '<tr><td colspan="6">Ошибка загрузки данных<\/td><\/tr>';
+            });
+    }
+    
+    searchInput.addEventListener('input', function() { renderList(); });
+    districtFilter.addEventListener('change', function() { renderList(); });
     
     loadData();
 });

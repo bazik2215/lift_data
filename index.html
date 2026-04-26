@@ -16,6 +16,10 @@
                     <a href="houses.html" class="nav-link">📋 Список домов</a>
                 </div>
                 <div class="header-title">Информация о замене лифтов</div>
+                <div class="header-stats" id="headerStats">
+                    <span class="stat-badge">🏘️ Загрузка...</span>
+                    <span class="stat-badge">🛗 ...</span>
+                </div>
                 <button id="themeToggle" class="theme-toggle" title="Сменить тему">🌙</button>
             </div>
         </div>
@@ -30,7 +34,6 @@
                 <div id="suggestions" class="suggestions hidden"></div>
             </div>
 
-            <!-- Блок фильтров -->
             <div class="filters-block">
                 <div class="filter-group">
                     <label for="planType" class="filter-label">Тип плана:</label>
@@ -47,10 +50,12 @@
                 </div>
             </div>
 
-            <!-- Контейнер для карты -->
             <div id="map" class="map-container"></div>
         </div>
     </div>
+
+    <!-- Кнопка Наверх -->
+    <button id="scrollToTop" class="scroll-to-top" title="Наверх">↑</button>
 
     <script src="map.js"></script>
 </body>
