@@ -668,26 +668,29 @@
                         <button class="action-icon" onclick="removeLift(${entranceIdx}, ${liftIdx})" style="color: red;">🗑️</button>
                     </div>
                     <div class="form-row">
+                        <div class="form-group"><label>Рег. номер лифта</label><input type="text" id="lift_regNumber_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.registrationNumber || '')}" placeholder="Например: 7740"></div>
                         <div class="form-group"><label>Название</label><input type="text" id="lift_name_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.name || '')}"></div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group"><label>Модель</label><input type="text" id="lift_model_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.model || '')}"></div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group"><label>Год изготовления</label><input type="number" id="lift_yearMade_${entranceIdx}_${liftIdx}" value="${lift.yearMade || ''}"></div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group"><label>Год ввода</label><input type="number" id="lift_yearOper_${entranceIdx}_${liftIdx}" value="${lift.yearOper || ''}"></div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group"><label>Скорость</label><input type="text" id="lift_speed_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.speed || '')}"></div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group"><label>Грузоподъемность</label><input type="text" id="lift_loadCapacity_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.loadCapacity || '')}"></div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group"><label>Тип лифта</label><input type="text" id="lift_type_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.type || '')}"></div>
-                        <div class="form-group"><label>Остановок</label><input type="number" id="lift_stops_${entranceIdx}_${liftIdx}" value="${lift.stops || ''}"></div>
                     </div>
                     <div class="form-row">
+                        <div class="form-group"><label>Остановок</label><input type="number" id="lift_stops_${entranceIdx}_${liftIdx}" value="${lift.stops || ''}"></div>
                         <div class="form-group"><label>Двигатель</label><input type="text" id="lift_engine_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.engine || '')}"></div>
-                        <div class="form-group"><label>Состояние</label><input type="text" id="lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.condition || '')}"></div>
                     </div>
-                    <div class="form-group"><label>Примечание</label><textarea id="lift_note_${entranceIdx}_${liftIdx}">${escapeHtml(lift.note || '')}</textarea></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Состояние</label><input type="text" id="lift_condition_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.condition || '')}"></div>
+                        <div class="form-group"><label>Примечание</label><input type="text" id="lift_note_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.note || '')}"></div>
+                    </div>
                     
                     <div style="margin-top: 10px;">
                         <details><summary>📜 Предыдущий лифт (до замены)</summary>
@@ -723,7 +726,7 @@
         
         window.addLift = function(entranceIdx) {
             if (!window[`liftsData_${entranceIdx}`]) window[`liftsData_${entranceIdx}`] = [];
-            window[`liftsData_${entranceIdx}`].push({ model: '', yearMade: '', yearOper: '', speed: '', type: '', stops: '', condition: '', engine: '', loadCapacity: '', note: '' });
+            window[`liftsData_${entranceIdx}`].push({ registrationNumber: '', name: '', model: '', yearMade: '', yearOper: '', speed: '', loadCapacity: '', type: '', stops: '', engine: '', condition: '', note: '' });
             renderLifts(entranceIdx);
         };
         
@@ -802,6 +805,7 @@
                 const liftsData = window[`liftsData_${i}`] || [];
                 for (let j = 0; j < liftsData.length; j++) {
                     const lift = {
+                        registrationNumber: document.getElementById(`lift_regNumber_${i}_${j}`)?.value || '',
                         name: document.getElementById(`lift_name_${i}_${j}`)?.value || '',
                         model: document.getElementById(`lift_model_${i}_${j}`)?.value || '',
                         yearMade: document.getElementById(`lift_yearMade_${i}_${j}`)?.value || '',
@@ -823,4 +827,104 @@
                             yearOper: document.getElementById(`prev_lift_yearOper_${i}_${j}`)?.value || '',
                             yearRemoved: document.getElementById(`prev_lift_yearRemoved_${i}_${j}`)?.value || '',
                             loadCapacity: document.getElementById(`prev_lift_loadCapacity_${i}_${j}`)?.value || '',
-                            speed: document.getElementById(`prev_lift_speed_${i}_${j}`)?.value
+                            speed: document.getElementById(`prev_lift_speed_${i}_${j}`)?.value || '',
+                            note: document.getElementById(`prev_lift_note_${i}_${j}`)?.value || ''
+                        };
+                    }
+                    lifts.push(lift);
+                }
+                entrances.push({ name: entranceName, lifts: lifts });
+            }
+            
+            // Собираем программы
+            const programWorks = [];
+            for (let i = 0; i < window.programsData.length; i++) {
+                programWorks.push({
+                    year: document.getElementById(`prog_year_${i}`)?.value || '',
+                    description: document.getElementById(`prog_desc_${i}`)?.value || ''
+                });
+            }
+            
+            // Собираем краткосрочные планы
+            const shortTermWorks = [];
+            for (let i = 0; i < window.shortTermData.length; i++) {
+                shortTermWorks.push({
+                    type: document.getElementById(`term_type_${i}`)?.value || '',
+                    contractor: document.getElementById(`term_contractor_${i}`)?.value || '',
+                    period: document.getElementById(`term_period_${i}`)?.value || ''
+                });
+            }
+            
+            const coordsStr = document.getElementById('houseCoords')?.value || '';
+            let coords = null;
+            if (coordsStr) {
+                const parts = coordsStr.split(',').map(function(s) { return parseFloat(s.trim()); });
+                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                    coords = parts;
+                }
+            }
+            
+            const houseData = {
+                id: newId,
+                address: document.getElementById('houseAddress')?.value || '',
+                district: document.getElementById('houseDistrict')?.value || '',
+                buildingType: document.getElementById('houseBuildingType')?.value || 'Многоквартирный дом',
+                buildYear: parseInt(document.getElementById('houseBuildYear')?.value) || 0,
+                constructionYear: parseInt(document.getElementById('houseConstructionYear')?.value) || 0,
+                floors: parseInt(document.getElementById('houseFloors')?.value) || 0,
+                series: document.getElementById('houseSeries')?.value || '',
+                coords: coords,
+                entrances: entrances,
+                programWorks: programWorks,
+                shortTermWorks: shortTermWorks
+            };
+            
+            if (houseId === null) {
+                housesData.push(houseData);
+            } else {
+                const index = housesData.findIndex(function(h) { return h.id === houseId; });
+                if (index !== -1) housesData[index] = houseData;
+            }
+            
+            closeModal();
+            renderHousesTable();
+            updateStats();
+        };
+        
+        window.closeModal = function() {
+            document.getElementById('houseModal').style.display = 'none';
+        };
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // ========== СОХРАНЕНИЕ JSON ==========
+        document.getElementById('saveJsonBtn').addEventListener('click', function() {
+            const jsonStr = JSON.stringify(housesData, null, 2);
+            const blob = new Blob([jsonStr], {type: 'application/json'});
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = 'data.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            alert('JSON сохранён! Загрузите файл data.json в ваш репозиторий на GitHub.');
+        });
+        
+        // Тёмная тема для админки
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    </script>
+</body>
+</html>

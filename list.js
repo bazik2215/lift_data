@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         if (filtered.length === 0) {
-            housesList.innerHTML = '<tr><td colspan="6">Ничего не найдено</td><\/tr>';
+            housesList.innerHTML = '<tr><td colspan="6">Ничего не найдено<\/td><\/tr>';
         }
         
         updateSortArrows();
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(function(error) {
                 console.error('Ошибка:', error);
-                housesList.innerHTML = '<tr><td colspan="6">Ошибка загрузки данных</td><\/tr>';
+                housesList.innerHTML = '<td><td colspan="6">Ошибка загрузки данных<\/td><\/tr>';
             });
     }
     

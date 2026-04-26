@@ -132,21 +132,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Функция получения списка лифтов для балуна (с поддержкой registrationNumber)
     function getLiftsListForProgram(house, selectedYear) {
         let liftsWithYears = [];
         if (!house.entrances) return [];
+        
         house.entrances.forEach(function(entrance) {
+            // Новый формат (lifts)
             if (entrance.lifts && entrance.lifts.length > 0) {
                 entrance.lifts.forEach(function(lift) {
                     let liftNumber = '?';
-                    if (entrance.name) {
+                    // Приоритет: registrationNumber > номер из названия
+                    if (lift.registrationNumber && lift.registrationNumber !== '') {
+                        liftNumber = lift.registrationNumber;
+                    } else if (entrance.name) {
                         const match = entrance.name.match(/№(\d+)/);
                         if (match) liftNumber = match[1];
                     }
                     let liftYear = house.programWorks && house.programWorks.length > 0 ? house.programWorks[0].year : null;
                     liftsWithYears.push({ number: liftNumber, year: liftYear });
                 });
-            } else if (entrance.lift) {
+            } 
+            // Старый формат (lift)
+            else if (entrance.lift) {
                 let liftNumber = '?';
                 if (entrance.name) {
                     const match = entrance.name.match(/№(\d+)/);
@@ -156,10 +164,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 liftsWithYears.push({ number: liftNumber, year: liftYear });
             }
         });
+        
         if (selectedYear !== 'all') {
             liftsWithYears = liftsWithYears.filter(function(lift) { return lift.year === selectedYear; });
         }
+        
         if (liftsWithYears.length === 0) return '<i>Нет данных</i>';
+        
         let html = '<ul style="margin: 5px 0 0 20px; padding: 0; list-style-type: disc;">';
         liftsWithYears.forEach(function(lift) {
             const yearText = lift.year ? ' (' + lift.year + ')' : '';

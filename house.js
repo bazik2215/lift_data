@@ -259,17 +259,35 @@ document.addEventListener('DOMContentLoaded', function() {
             house.entrances.forEach(function(entrance, entranceIdx) {
                 if (entrance.lifts && entrance.lifts.length > 0) {
                     entrance.lifts.forEach(function(lift, liftIdx) {
+                        // Формируем название кнопки: если есть regNumber — показываем его, иначе название лифта или подъезда
+                        let buttonName = '';
+                        if (lift.registrationNumber && lift.registrationNumber !== '') {
+                            buttonName = 'Лифт №' + lift.registrationNumber;
+                        } else if (lift.name && lift.name !== '') {
+                            buttonName = lift.name;
+                        } else if (entrance.name) {
+                            buttonName = entrance.name;
+                        } else {
+                            buttonName = 'Лифт ' + (liftIdx + 1);
+                        }
+                        
                         allLifts.push({
                             id: entranceIdx + '_' + liftIdx,
-                            name: lift.name || (entrance.name ? entrance.name + ' - ' + (liftIdx + 1) : 'Лифт ' + (liftIdx + 1)),
+                            name: buttonName,
                             liftData: lift,
                             isNewFormat: true
                         });
                     });
                 } else if (entrance.lift) {
+                    let buttonName = '';
+                    if (entrance.name) {
+                        buttonName = entrance.name;
+                    } else {
+                        buttonName = 'Подъезд ' + (entranceIdx + 1);
+                    }
                     allLifts.push({
                         id: entranceIdx + '_0',
-                        name: entrance.name || 'Подъезд ' + (entranceIdx + 1),
+                        name: buttonName,
                         liftData: entrance.lift,
                         isNewFormat: false
                     });
