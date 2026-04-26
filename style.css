@@ -209,7 +209,7 @@ body {
 
 .filter-label {
     font-weight: 600;
-    color: #0b3b5f;
+    color: #2c3e4e;
     font-size: 0.9rem;
     transition: color 0.3s ease;
 }
@@ -418,6 +418,10 @@ body.dark-theme #searchInput::placeholder {
     color: #8a8e9d;
 }
 
+body.dark-theme .filter-label {
+    color: #c0c4d0 !important;
+}
+
 body.dark-theme .suggestions {
     background: #2a2e3d;
 }
@@ -452,7 +456,7 @@ body.dark-theme .card-title {
 }
 
 body.dark-theme .info-label {
-    color: #8a8e9d;
+    color: #b0b4c0;
 }
 
 body.dark-theme .info-value {
