@@ -4,6 +4,7 @@ let itemsPerPage = 20;
 let currentSort = { column: 'id', direction: 'asc' };
 let currentSearchQuery = '';
 let filteredData = [];
+let selectedHouses = new Set(); // Множество для хранения ID выбранных домов
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 document.addEventListener('DOMContentLoaded', async function() {
@@ -13,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Инициализация темы
     initAdminTheme();
     
-    // Настройка обработчиков событий
+    // Настройка обработчиков
     setupEventListeners();
     
     // Загрузка данных
@@ -34,6 +35,7 @@ function setupEventListeners() {
         searchInput.addEventListener('input', (e) => {
             currentSearchQuery = e.target.value;
             currentPage = 1;
+            selectedHouses.clear();
             applyFiltersAndRender();
         });
     }
@@ -48,6 +50,7 @@ function setupEventListeners() {
                 currentSort.column = column;
                 currentSort.direction = 'asc';
             }
+            selectedHouses.clear();
             applyFiltersAndRender();
         });
     });
@@ -78,6 +81,78 @@ function setupEventListeners() {
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
         themeToggle.addEventListener('click', toggleAdminTheme);
+    }
+    
+    // Кнопка массового удаления
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', () => deleteSelectedHouses());
+    }
+    
+    // Чекбокс "Выбрать все"
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', (e) => {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = filteredData.slice(start, end);
+            
+            if (e.target.checked) {
+                pageData.forEach(house => selectedHouses.add(house.id));
+            } else {
+                pageData.forEach(house => selectedHouses.delete(house.id));
+            }
+            renderTable();
+            updateDeleteButtonVisibility();
+        });
+    }
+}
+
+// ========== ОБНОВЛЕНИЕ КНОПКИ УДАЛЕНИЯ ==========
+function updateDeleteButtonVisibility() {
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    if (deleteSelectedBtn) {
+        if (selectedHouses.size > 0) {
+            deleteSelectedBtn.style.display = 'inline-block';
+            deleteSelectedBtn.textContent = `🗑️ Удалить выбранные (${selectedHouses.size})`;
+        } else {
+            deleteSelectedBtn.style.display = 'none';
+        }
+    }
+    
+    // Обновление состояния чекбокса "Выбрать все"
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    if (selectAllCheckbox && filteredData.length > 0) {
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageData = filteredData.slice(start, end);
+        const allSelected = pageData.length > 0 && pageData.every(house => selectedHouses.has(house.id));
+        selectAllCheckbox.checked = allSelected;
+        selectAllCheckbox.indeterminate = !allSelected && pageData.some(house => selectedHouses.has(house.id));
+    }
+}
+
+// ========== МАССОВОЕ УДАЛЕНИЕ ==========
+function deleteSelectedHouses() {
+    if (selectedHouses.size === 0) return;
+    
+    const count = selectedHouses.size;
+    if (confirm(`🗑️ Удалить ${count} дом(ов)? Это действие нельзя отменить.`)) {
+        housesData = housesData.filter(house => !selectedHouses.has(house.id));
+        selectedHouses.clear();
+        
+        // Обновление отображения
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        if (filteredData.length === count && currentPage > 1) {
+            currentPage--;
+        }
+        applyFiltersAndRender();
+        updateStatsCards();
+        showToast(`✅ Удалено ${count} дом(ов)`);
+        
+        // Скрыть кнопку массового удаления
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+        if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
     }
 }
 
@@ -112,6 +187,9 @@ function applyFiltersAndRender() {
     
     // Рендеринг пагинации
     renderPagination();
+    
+    // Обновление кнопки массового удаления
+    updateDeleteButtonVisibility();
 }
 
 // ========== ОБНОВЛЕНИЕ ИНФОРМАЦИИ О СОРТИРОВКЕ ==========
@@ -151,7 +229,7 @@ function renderTable() {
     
     if (pageData.length === 0) {
         const row = tbody.insertRow();
-        row.insertCell(0).colSpan = 7;
+        row.insertCell(0).colSpan = 8;
         row.insertCell(0).textContent = 'Нет данных';
         row.insertCell(0).style.textAlign = 'center';
         row.insertCell(0).style.padding = '40px';
@@ -160,14 +238,40 @@ function renderTable() {
     
     pageData.forEach(house => {
         const row = tbody.insertRow();
-        row.insertCell(0).textContent = house.id;
-        row.insertCell(1).innerHTML = `<strong>${escapeHtml(house.address)}</strong>`;
-        row.insertCell(2).textContent = house.district || '—';
-        row.insertCell(3).textContent = house.buildYear || '—';
-        row.insertCell(4).textContent = getLiftsCount(house);
-        row.insertCell(5).textContent = house.programWorks?.length || 0;
         
-        const actionsCell = row.insertCell(6);
+        // Чекбокс
+        const checkboxCell = row.insertCell(0);
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = selectedHouses.has(house.id);
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                selectedHouses.add(house.id);
+            } else {
+                selectedHouses.delete(house.id);
+            }
+            updateDeleteButtonVisibility();
+            // Обновляем чекбокс "Выбрать все"
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            if (selectAllCheckbox) {
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const pageData = filteredData.slice(start, end);
+                const allSelected = pageData.length > 0 && pageData.every(h => selectedHouses.has(h.id));
+                selectAllCheckbox.checked = allSelected;
+                selectAllCheckbox.indeterminate = !allSelected && pageData.some(h => selectedHouses.has(h.id));
+            }
+        });
+        checkboxCell.appendChild(checkbox);
+        
+        row.insertCell(1).textContent = house.id;
+        row.insertCell(2).innerHTML = `<strong>${escapeHtml(house.address)}</strong>`;
+        row.insertCell(3).textContent = house.district || '—';
+        row.insertCell(4).textContent = house.buildYear || '—';
+        row.insertCell(5).textContent = getLiftsCount(house);
+        row.insertCell(6).textContent = house.programWorks?.length || 0;
+        
+        const actionsCell = row.insertCell(7);
         actionsCell.innerHTML = `
             <div class="action-icons">
                 <button class="action-icon" onclick="editHouse(${house.id})" title="Редактировать">✏️</button>
@@ -192,10 +296,8 @@ function renderPagination() {
     
     let html = '';
     
-    // Кнопка "Назад"
     html += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
     
-    // Номера страниц
     const startPage = Math.max(1, currentPage - 2);
     const endPage = Math.min(totalPages, currentPage + 2);
     
@@ -213,7 +315,6 @@ function renderPagination() {
         html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
     }
     
-    // Кнопка "Вперёд"
     html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
     
     paginationContainer.innerHTML = html;
@@ -226,6 +327,7 @@ window.goToPage = function(page) {
     currentPage = page;
     renderTable();
     renderPagination();
+    updateDeleteButtonVisibility();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -242,7 +344,6 @@ window.duplicateHouseHandler = function(id) {
     const newHouse = duplicateHouse(originalHouse);
     housesData.push(newHouse);
     
-    // Пересортировка и обновление
     applyFiltersAndRender();
     updateStatsCards();
     showToast(`✅ Дом "${newHouse.address}" скопирован`);
@@ -256,7 +357,9 @@ window.deleteHouseHandler = function(id) {
     if (confirm(`🗑️ Удалить дом "${house.address}"? Это действие нельзя отменить.`)) {
         housesData = housesData.filter(h => h.id !== id);
         
-        // Обновление отображения
+        // Удаляем ID из выбранных
+        selectedHouses.delete(id);
+        
         if (filteredData.length === 1 && currentPage > 1) {
             currentPage--;
         }

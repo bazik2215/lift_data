@@ -45,6 +45,7 @@
                 <div class="action-buttons">
                     <button id="addHouseBtn" class="btn btn-primary">➕ Добавить дом</button>
                     <button id="saveJsonBtn" class="btn btn-success">💾 Сохранить JSON</button>
+                    <button id="deleteSelectedBtn" class="btn btn-danger" style="display: none;">🗑️ Удалить выбранные</button>
                 </div>
             </div>
 
@@ -59,6 +60,7 @@
                 <table class="houses-table">
                     <thead>
                         <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" title="Выбрать все"></th>
                             <th data-sort="id" class="sortable">ID <span class="sort-arrow"></span></th>
                             <th data-sort="address" class="sortable">🏠 Адрес <span class="sort-arrow"></span></th>
                             <th data-sort="district" class="sortable">📍 Район <span class="sort-arrow"></span></th>
