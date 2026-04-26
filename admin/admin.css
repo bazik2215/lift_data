@@ -488,6 +488,170 @@ body {
     opacity: 0.7;
 }
 
+/* ========== СТИЛИ ДЛЯ СТРАНИЦЫ ИСТОРИИ ========== */
+.history-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.filters-bar {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4a627a;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #cbdbe0;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    background: white;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: #0b5e7e;
+    outline: none;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.history-table th {
+    background: #eef2f6;
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #0b3b5f;
+    font-size: 0.85rem;
+}
+
+.history-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e9edf2;
+    vertical-align: top;
+    font-size: 0.85rem;
+}
+
+.record-action {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.action-add {
+    background: #d4edda;
+    color: #155724;
+}
+
+.action-update {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.action-delete {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.action-duplicate {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.record-details {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e9edf2;
+    font-size: 0.8rem;
+    color: #4a627a;
+}
+
+.record-details ul {
+    margin: 4px 0 0 20px;
+    padding: 0;
+}
+
+.record-details li {
+    margin: 2px 0;
+}
+
+.restore-btn {
+    background: #0b5e7e;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    margin-top: 8px;
+}
+
+.restore-btn:hover {
+    background: #0b3b5f;
+}
+
+.delete-record-btn {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.delete-record-btn:hover {
+    background: #fee2e2;
+}
+
+.stats-summary {
+    background: #eef2f6;
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.85rem;
+}
+
 /* ========== ТЁМНАЯ ТЕМА ========== */
 body.dark-theme {
     background: #1a1e2c;
@@ -593,6 +757,44 @@ body.dark-theme .last-save-indicator {
     color: #e0e0e0;
 }
 
+/* Тёмная тема для страницы истории */
+body.dark-theme .filters-bar {
+    background: #2a2e3d;
+}
+
+body.dark-theme .filter-group label {
+    color: #8a8e9d;
+}
+
+body.dark-theme .filter-group input,
+body.dark-theme .filter-group select {
+    background: #2a2e3d;
+    border-color: #4a4e5d;
+    color: #e0e0e0;
+}
+
+body.dark-theme .history-table {
+    background: #252a38;
+}
+
+body.dark-theme .history-table th {
+    background: #3a3e4d;
+    color: #a0c4e8;
+}
+
+body.dark-theme .history-table td {
+    border-bottom-color: #3a3e4d;
+}
+
+body.dark-theme .record-details {
+    border-top-color: #3a3e4d;
+    color: #b0b4c0;
+}
+
+body.dark-theme .stats-summary {
+    background: #2a2e3d;
+}
+
 /* ========== АДАПТИВ ========== */
 @media (max-width: 768px) {
     .admin-header {
@@ -640,5 +842,29 @@ body.dark-theme .last-save-indicator {
     
     #lastSaveRelative {
         font-size: 0.65rem;
+    }
+    
+    /* Адаптив для страницы истории */
+    .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .filter-actions {
+        justify-content: flex-end;
+    }
+    
+    .history-table {
+        font-size: 0.75rem;
+        min-width: 600px;
+    }
+    
+    .history-table th,
+    .history-table td {
+        padding: 8px 6px;
     }
 }

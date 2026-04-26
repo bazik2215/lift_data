@@ -133,11 +133,14 @@ function updateDeleteButtonVisibility() {
 }
 
 // ========== МАССОВОЕ УДАЛЕНИЕ ==========
-function deleteSelectedHouses() {
+async function deleteSelectedHouses() {
     if (selectedHouses.size === 0) return;
     
     const count = selectedHouses.size;
     if (confirm(`🗑️ Удалить ${count} дом(ов)? Это действие нельзя отменить.`)) {
+        // Сохраняем копии удаляемых домов для истории
+        const deletedHouses = housesData.filter(house => selectedHouses.has(house.id));
+        
         housesData = housesData.filter(house => !selectedHouses.has(house.id));
         selectedHouses.clear();
         
@@ -149,6 +152,13 @@ function deleteSelectedHouses() {
         applyFiltersAndRender();
         updateStatsCards();
         showToast(`✅ Удалено ${count} дом(ов)`);
+        
+        // Логируем каждое удаление
+        for (const house of deletedHouses) {
+            await addHistoryRecord('delete', house.id, house.address, {
+                deletedData: JSON.parse(JSON.stringify(house))
+            });
+        }
         
         // Скрыть кнопку массового удаления
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
@@ -337,7 +347,7 @@ window.editHouse = function(id) {
 };
 
 // ========== ДУБЛИРОВАНИЕ ДОМА ==========
-window.duplicateHouseHandler = function(id) {
+window.duplicateHouseHandler = async function(id) {
     const originalHouse = housesData.find(h => h.id === id);
     if (!originalHouse) return;
     
@@ -347,14 +357,23 @@ window.duplicateHouseHandler = function(id) {
     applyFiltersAndRender();
     updateStatsCards();
     showToast(`✅ Дом "${newHouse.address}" скопирован`);
+    
+    // Логируем дублирование
+    await addHistoryRecord('duplicate', newHouse.id, newHouse.address, {
+        sourceHouseId: originalHouse.id,
+        sourceHouseAddress: originalHouse.address
+    });
 };
 
 // ========== УДАЛЕНИЕ ДОМА ==========
-window.deleteHouseHandler = function(id) {
+window.deleteHouseHandler = async function(id) {
     const house = housesData.find(h => h.id === id);
     if (!house) return;
     
     if (confirm(`🗑️ Удалить дом "${house.address}"? Это действие нельзя отменить.`)) {
+        // Сохраняем копию для истории
+        const deletedHouse = JSON.parse(JSON.stringify(house));
+        
         housesData = housesData.filter(h => h.id !== id);
         
         // Удаляем ID из выбранных
@@ -366,5 +385,10 @@ window.deleteHouseHandler = function(id) {
         applyFiltersAndRender();
         updateStatsCards();
         showToast(`✅ Дом "${house.address}" удалён`);
+        
+        // Логируем удаление
+        await addHistoryRecord('delete', id, house.address, {
+            deletedData: deletedHouse
+        });
     }
 };

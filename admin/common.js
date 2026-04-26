@@ -254,6 +254,127 @@ function saveLastSaveTimestamp() {
     updateLastSaveIndicator();
 }
 
+// ========== ИСТОРИЯ ИЗМЕНЕНИЙ (НОВЫЕ ФУНКЦИИ) ==========
+// Загрузка истории из history.json
+async function loadHistory() {
+    try {
+        const response = await fetch('../history.json?t=' + Date.now());
+        if (response.ok) {
+            return await response.json();
+        }
+        return { records: [] };
+    } catch (error) {
+        console.error('Ошибка загрузки истории:', error);
+        return { records: [] };
+    }
+}
+
+// Сохранение истории в history.json (скачивание файла)
+async function saveHistory(history) {
+    const jsonStr = JSON.stringify(history, null, 2);
+    const blob = new Blob([jsonStr], {type: 'application/json'});
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = 'history.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('✅ История изменений сохранена! Загрузите history.json на GitHub.');
+}
+
+// Добавление записи в историю
+async function addHistoryRecord(action, houseId, houseAddress, details) {
+    try {
+        let history = await loadHistory();
+        
+        const newRecord = {
+            id: Date.now() + '_' + Math.random().toString(36).substr(2, 8),
+            timestamp: new Date().toISOString(),
+            action: action, // 'add', 'update', 'delete', 'duplicate'
+            houseId: houseId,
+            houseAddress: houseAddress,
+            user: sessionStorage.getItem('adminUser') || 'admin',
+            role: 'admin',
+            details: details || {}
+        };
+        
+        history.records.unshift(newRecord);
+        
+        // Ограничиваем размер истории (последние 2000 записей)
+        if (history.records.length > 2000) {
+            history.records = history.records.slice(0, 2000);
+        }
+        
+        await saveHistory(history);
+        console.log('📜 Запись в историю добавлена:', newRecord);
+        return newRecord;
+    } catch (error) {
+        console.error('Ошибка записи в историю:', error);
+        return null;
+    }
+}
+
+// Сравнение двух домов для выявления изменений
+function compareHouses(oldHouse, newHouse) {
+    const changes = [];
+    
+    // Сравнение простых полей
+    const simpleFields = ['address', 'district', 'buildingType', 'buildYear', 'constructionYear', 'floors', 'series'];
+    simpleFields.forEach(field => {
+        const oldVal = oldHouse[field];
+        const newVal = newHouse[field];
+        if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+            changes.push({
+                field: field,
+                oldValue: oldVal !== undefined && oldVal !== '' ? oldVal : '—',
+                newValue: newVal !== undefined && newVal !== '' ? newVal : '—'
+            });
+        }
+    });
+    
+    // Сравнение координат
+    if (JSON.stringify(oldHouse.coords) !== JSON.stringify(newHouse.coords)) {
+        changes.push({
+            field: 'coords',
+            oldValue: oldHouse.coords ? oldHouse.coords.join(', ') : '—',
+            newValue: newHouse.coords ? newHouse.coords.join(', ') : '—'
+        });
+    }
+    
+    // Сравнение количества лифтов
+    const oldLiftsCount = getLiftsCount(oldHouse);
+    const newLiftsCount = getLiftsCount(newHouse);
+    if (oldLiftsCount !== newLiftsCount) {
+        changes.push({
+            field: 'liftsCount',
+            oldValue: oldLiftsCount,
+            newValue: newLiftsCount
+        });
+    }
+    
+    // Сравнение программ
+    if (JSON.stringify(oldHouse.programWorks) !== JSON.stringify(newHouse.programWorks)) {
+        changes.push({
+            field: 'programWorks',
+            oldValue: `${oldHouse.programWorks?.length || 0} программ`,
+            newValue: `${newHouse.programWorks?.length || 0} программ`
+        });
+    }
+    
+    // Сравнение краткосрочных планов
+    if (JSON.stringify(oldHouse.shortTermWorks) !== JSON.stringify(newHouse.shortTermWorks)) {
+        changes.push({
+            field: 'shortTermWorks',
+            oldValue: `${oldHouse.shortTermWorks?.length || 0} планов`,
+            newValue: `${newHouse.shortTermWorks?.length || 0} планов`
+        });
+    }
+    
+    return changes;
+}
+
 // ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ (с поддержкой тёмной темы) ==========
 function showConfirmModal(options) {
     return new Promise((resolve) => {

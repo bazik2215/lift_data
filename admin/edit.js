@@ -1,6 +1,7 @@
 // ========== ПЕРЕМЕННЫЕ ==========
 let houseId = null;
 let isNewHouse = true;
+let oldHouseData = null; // Для сохранения старого состояния при редактировании
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 document.addEventListener('DOMContentLoaded', async function() {
@@ -34,6 +35,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     } else {
         const house = housesData.find(h => h.id === houseId);
         if (house) {
+            // Сохраняем копию старого дома для сравнения
+            oldHouseData = JSON.parse(JSON.stringify(house));
             fillForm(house);
         } else {
             showToast('❌ Дом не найден');
@@ -173,7 +176,6 @@ function previewCoordinates() {
     }
     
     if (miniMapDiv.style.display === 'none' || !isMapVisible) {
-        // Показываем карту
         miniMapDiv.style.display = 'block';
         previewBtn.textContent = '🗺️ Скрыть карту';
         isMapVisible = true;
@@ -184,7 +186,6 @@ function previewCoordinates() {
             miniMap.setCenter(parts);
         }
     } else {
-        // Скрываем карту
         miniMapDiv.style.display = 'none';
         previewBtn.textContent = '🗺️ Показать на карте';
         isMapVisible = false;
@@ -390,7 +391,7 @@ window.removeShortTerm = function(idx) {
 };
 
 // ========== СОХРАНЕНИЕ ДОМА ==========
-function saveHouse() {
+async function saveHouse() {
     // Сохраняем все текущие данные из форм
     saveCurrentEntranceData();
     saveCurrentProgramsData();
@@ -441,15 +442,28 @@ function saveHouse() {
         shortTermWorks: window.shortTermData
     };
     
-    // Сохранение в общий массив
+    // Сохранение в общий массив и логирование
     if (isNewHouse) {
         housesData.push(houseData);
         showToast(`✅ Дом "${address}" добавлен`);
+        
+        // Логируем добавление
+        await addHistoryRecord('add', houseData.id, houseData.address, {
+            summary: `${houseData.entrances?.length || 0} подъездов, ${getLiftsCount(houseData)} лифтов, ${houseData.programWorks?.length || 0} программ`
+        });
     } else {
         const index = housesData.findIndex(h => h.id === houseId);
         if (index !== -1) {
             housesData[index] = houseData;
             showToast(`✅ Дом "${address}" сохранён`);
+            
+            // Логируем изменения (сравниваем со старым домом)
+            if (oldHouseData) {
+                const changes = compareHouses(oldHouseData, houseData);
+                if (changes.length > 0) {
+                    await addHistoryRecord('update', houseData.id, houseData.address, { changes });
+                }
+            }
         }
     }
     
@@ -458,10 +472,21 @@ function saveHouse() {
 }
 
 // ========== УДАЛЕНИЕ ДОМА ==========
-function deleteHouse() {
+async function deleteHouse() {
     if (confirm('🗑️ Удалить дом? Это действие нельзя отменить.')) {
+        // Сохраняем копию для истории
+        const deletedHouse = housesData.find(h => h.id === houseId);
+        
         housesData = housesData.filter(h => h.id !== houseId);
         showToast('✅ Дом удалён');
+        
+        // Логируем удаление
+        if (deletedHouse) {
+            await addHistoryRecord('delete', deletedHouse.id, deletedHouse.address, {
+                deletedData: JSON.parse(JSON.stringify(deletedHouse))
+            });
+        }
+        
         window.location.href = 'index.html';
     }
 }

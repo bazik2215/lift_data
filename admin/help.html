@@ -135,6 +135,7 @@
                 <div class="admin-nav">
                     <a href="index.html" class="nav-link">📋 Список</a>
                     <a href="stats.html" class="nav-link">📊 Статистика</a>
+                    <a href="history.html" class="nav-link">📜 История</a>
                     <a href="help.html" class="nav-link active">❓ Справка</a>
                 </div>
             </div>
@@ -293,6 +294,62 @@
                 </div>
             </div>
 
+            <!-- Раздел: История изменений (НОВЫЙ) -->
+            <div class="help-section">
+                <div class="help-section-title">
+                    <span>📜</span> Раздел «История»
+                </div>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <div class="help-card-title">📋 Что такое история?</div>
+                        <div class="help-card-content">
+                            Страница «История» хранит полный журнал всех действий в админ-панели: 
+                            добавление, редактирование, удаление и копирование домов.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">🔍 Фильтрация</div>
+                        <div class="help-card-content">
+                            Вы можете фильтровать записи по:<br>
+                            • 📅 Периоду (дата с/по)<br>
+                            • 🏷️ Типу действия (добавление, изменение, удаление, копирование)<br>
+                            • 🔎 Поиску по адресу дома
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">📄 Что видно в записи</div>
+                        <div class="help-card-content">
+                            • Точная дата и время действия<br>
+                            • Тип действия (цветной бейдж)<br>
+                            • Кто выполнил (пока admin)<br>
+                            • Детали изменений (какие поля менялись)<br>
+                            • Удалённые дома можно восстановить
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">🗑️ Управление историей</div>
+                        <div class="help-card-content">
+                            • 🗑️ Очистить всё — удалить все записи<br>
+                            • 🗑️ Удалить запись — удалить конкретную запись<br>
+                            • ♻️ Восстановить — вернуть удалённый дом
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">💾 Сохранение истории</div>
+                        <div class="help-card-content">
+                            История хранится в файле <code>history.json</code> в корне репозитория. 
+                            При изменении истории этот файл нужно загружать на GitHub так же, как и <code>data.json</code>.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">📊 Статистика</div>
+                        <div class="help-card-content">
+                            В верхней части страницы отображается сводка: общее количество записей и сколько каждого типа.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Раздел: Сохранение и GitHub -->
             <div class="help-section">
                 <div class="help-section-title">
@@ -310,31 +367,38 @@
                         </div>
                     </div>
                     <div class="help-card">
-                        <div class="help-card-title">2. Зайдите на GitHub</div>
+                        <div class="help-card-title">2. Сохраните историю</div>
+                        <div class="help-card-content">
+                            На странице <strong>«История»</strong> после изменений нажмите кнопку сохранения (или она сохраняется автоматически при каждом действии).
+                            Браузер скачает файл <code>history.json</code>.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">3. Зайдите на GitHub</div>
                         <div class="help-card-content">
                             Откройте ваш репозиторий на GitHub.
                         </div>
                     </div>
                     <div class="help-card">
-                        <div class="help-card-title">3. Откройте data.json</div>
+                        <div class="help-card-title">4. Откройте data.json и history.json</div>
                         <div class="help-card-content">
-                            Нажмите на файл <code>data.json</code>, затем на значок карандаша ✏️ (Edit).
+                            Нажмите на файл, затем на значок карандаша ✏️ (Edit).
                         </div>
                     </div>
                     <div class="help-card">
-                        <div class="help-card-title">4. Вставьте новые данные</div>
+                        <div class="help-card-title">5. Вставьте новые данные</div>
                         <div class="help-card-content">
-                            Скопируйте содержимое скачанного <code>data.json</code> и вставьте вместо старого.
+                            Скопируйте содержимое скачанных файлов и вставьте вместо старых.
                         </div>
                     </div>
                     <div class="help-card">
-                        <div class="help-card-title">5. Сохраните</div>
+                        <div class="help-card-title">6. Сохраните</div>
                         <div class="help-card-content">
                             Нажмите <strong>«Commit changes»</strong> (зелёная кнопка).
                         </div>
                     </div>
                     <div class="help-card">
-                        <div class="help-card-title">6. Подождите</div>
+                        <div class="help-card-title">7. Подождите</div>
                         <div class="help-card-content">
                             Через 1-2 минуты сайт обновится с новыми данными.
                         </div>
@@ -380,6 +444,12 @@
                         <div class="help-card-title">❌ Не загружается data.json</div>
                         <div class="help-card-content">
                             Убедитесь, что файл <code>data.json</code> лежит в корне репозитория, а не в папке <code>admin</code>.
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">❌ Не загружается history.json</div>
+                        <div class="help-card-content">
+                            Создайте файл <code>history.json</code> в корне репозитория с содержимым <code>{"records": []}</code>.
                         </div>
                     </div>
                     <div class="help-card">
