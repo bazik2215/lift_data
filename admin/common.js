@@ -26,11 +26,13 @@ async function loadHistory() {
         const response = await fetch('../history.json?t=' + Date.now());
         if (response.ok) {
             const data = await response.json();
+            console.log('✅ История загружена, записей:', data.records?.length || 0);
             return data;
         }
+        console.log('⚠️ history.json не найден, создаём пустой');
         return { records: [] };
     } catch (error) {
-        console.error('Ошибка загрузки истории:', error);
+        console.error('❌ Ошибка загрузки истории:', error);
         return { records: [] };
     }
 }
@@ -157,8 +159,8 @@ function sortHouses(houses, sortBy, sortDirection) {
 // ========== ДУБЛИРОВАНИЕ ДОМА ==========
 function duplicateHouse(house) {
     const newHouse = JSON.parse(JSON.stringify(house));
-    const maxId = Math.max(...housesData.map(h => h.id), 0);
-    newHouse.id = maxId + 1;
+    const maxId = getNextId();
+    newHouse.id = maxId;
     newHouse.address = `${newHouse.address} (копия)`;
     return newHouse;
 }
@@ -170,6 +172,12 @@ function deleteHouseById(id) {
         return true;
     }
     return false;
+}
+
+// ========== ПОЛУЧЕНИЕ СЛЕДУЮЩЕГО ID ==========
+function getNextId() {
+    const maxId = Math.max(...housesData.map(h => h.id), 0);
+    return maxId + 1;
 }
 
 // ========== УВЕДОМЛЕНИЯ ==========
@@ -210,7 +218,6 @@ function showToast(message, duration = 3000) {
     setTimeout(() => toast.remove(), duration);
 }
 
-// ========== ЭСКЕЙПИНГ HTML ==========
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => {
@@ -225,7 +232,6 @@ function escapeHtml(str) {
 function getRelativeTime(timestamp) {
     const now = Date.now();
     const diffSeconds = Math.floor((now - timestamp) / 1000);
-    
     if (diffSeconds < 60) return 'только что';
     if (diffSeconds < 3600) {
         const minutes = Math.floor(diffSeconds / 60);
@@ -242,7 +248,6 @@ function getRelativeTime(timestamp) {
 function updateLastSaveIndicator() {
     const lastSaveDateSpan = document.getElementById('lastSaveDate');
     const lastSaveRelativeSpan = document.getElementById('lastSaveRelative');
-    
     if (!lastSaveDateSpan) return;
     
     const savedTimestamp = localStorage.getItem('adminLastSave');
@@ -251,10 +256,7 @@ function updateLastSaveIndicator() {
         const formattedDate = date.toLocaleDateString('ru-RU');
         const formattedTime = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         lastSaveDateSpan.textContent = `${formattedDate}, ${formattedTime}`;
-        
-        if (lastSaveRelativeSpan) {
-            lastSaveRelativeSpan.textContent = `(${getRelativeTime(parseInt(savedTimestamp))})`;
-        }
+        if (lastSaveRelativeSpan) lastSaveRelativeSpan.textContent = `(${getRelativeTime(parseInt(savedTimestamp))})`;
     } else {
         lastSaveDateSpan.textContent = 'Нет данных';
         if (lastSaveRelativeSpan) lastSaveRelativeSpan.textContent = '';
@@ -262,132 +264,8 @@ function updateLastSaveIndicator() {
 }
 
 function saveLastSaveTimestamp() {
-    const now = Date.now();
-    localStorage.setItem('adminLastSave', now);
+    localStorage.setItem('adminLastSave', Date.now());
     updateLastSaveIndicator();
-}
-
-// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ==========
-function showConfirmModal(options) {
-    return new Promise((resolve) => {
-        const existingModal = document.querySelector('.custom-confirm-modal');
-        if (existingModal) existingModal.remove();
-        
-        const isDarkTheme = document.body.classList.contains('dark-theme');
-        
-        const colors = isDarkTheme ? {
-            background: '#252a38',
-            textColor: '#e0e0e0',
-            titleColor: '#a0c4e8',
-            messageColor: '#b0b4c0',
-            cancelBg: '#3a3e4d',
-            cancelHover: '#4a4e5d',
-            cancelText: '#e0e0e0'
-        } : {
-            background: '#ffffff',
-            textColor: '#1a2a3a',
-            titleColor: '#0b3b5f',
-            messageColor: '#4a627a',
-            cancelBg: '#eef2f6',
-            cancelHover: '#dce5ec',
-            cancelText: '#1a2a3a'
-        };
-        
-        const modal = document.createElement('div');
-        modal.className = 'custom-confirm-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10001;
-            animation: fadeIn 0.2s ease-out;
-        `;
-        
-        const content = document.createElement('div');
-        content.style.cssText = `
-            background: ${colors.background};
-            border-radius: 20px;
-            padding: 28px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            animation: slideIn 0.2s ease-out;
-        `;
-        
-        const icon = options.icon || '⚠️';
-        const title = options.title || 'Подтверждение';
-        const message = options.message || 'Вы уверены?';
-        const confirmText = options.confirmText || 'Да';
-        const cancelText = options.cancelText || 'Отмена';
-        const confirmColor = options.confirmColor || '#dc2626';
-        
-        content.innerHTML = `
-            <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
-            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: ${colors.titleColor};">${title}</div>
-            <div style="margin-bottom: 24px; color: ${colors.messageColor}; line-height: 1.5;">${message}</div>
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <button id="confirmYes" class="confirm-btn-yes" style="background: ${confirmColor}; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${confirmText}</button>
-                <button id="confirmNo" class="confirm-btn-no" style="background: ${colors.cancelBg}; color: ${colors.cancelText}; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${cancelText}</button>
-            </div>
-        `;
-        
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-        
-        if (!document.querySelector('#confirm-modal-styles')) {
-            const style = document.createElement('style');
-            style.id = 'confirm-modal-styles';
-            style.textContent = `
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-                .confirm-btn-yes:hover, .confirm-btn-no:hover { transform: scale(0.98); }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        const confirmBtn = document.getElementById('confirmYes');
-        const cancelBtn = document.getElementById('confirmNo');
-        
-        const cleanup = () => { modal.remove(); };
-        
-        confirmBtn.addEventListener('click', () => { cleanup(); resolve(true); });
-        cancelBtn.addEventListener('click', () => { cleanup(); resolve(false); });
-        
-        modal.addEventListener('click', (e) => { if (e.target === modal) { cleanup(); resolve(false); } });
-        
-        const handleEsc = (e) => {
-            if (e.key === 'Escape') {
-                cleanup();
-                resolve(false);
-                document.removeEventListener('keydown', handleEsc);
-            }
-        };
-        document.addEventListener('keydown', handleEsc);
-    });
-}
-
-// ========== ВЫХОД С КАСТОМНЫМ ОКНОМ ==========
-async function logout() {
-    const confirmed = await showConfirmModal({
-        icon: '🚪',
-        title: 'Выход из админ-панели',
-        message: 'Точно выйти? Все несохранённые изменения будут потеряны.',
-        confirmText: 'Да, выйти',
-        cancelText: 'Отмена',
-        confirmColor: '#dc2626'
-    });
-    
-    if (confirmed) {
-        sessionStorage.removeItem('adminLoggedIn');
-        window.location.href = 'login.html';
-    }
 }
 
 // ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
@@ -427,8 +305,16 @@ function toggleAdminTheme() {
     }
 }
 
-// ========== СОХРАНЕНИЕ ТЕКУЩИХ ДАННЫХ ПОДЪЕЗДОВ (для edit.js) ==========
+async function logout() {
+    if (confirm('Точно выйти из админ-панели?')) {
+        sessionStorage.removeItem('adminLoggedIn');
+        window.location.href = 'login.html';
+    }
+}
+
+// ========== СОХРАНЕНИЕ ДАННЫХ ИЗ ФОРМ (ДЛЯ EDIT.JS) ==========
 window.saveCurrentEntranceData = function() {
+    if (!window.entrancesData) return;
     for (let i = 0; i < window.entrancesData.length; i++) {
         window.entrancesData[i].name = document.getElementById(`entrance_name_${i}`)?.value || '';
         const lifts = window[`liftsData_${i}`] || [];
@@ -470,16 +356,16 @@ window.saveCurrentEntranceData = function() {
     }
 };
 
-// ========== СОХРАНЕНИЕ ПРОГРАММ (для edit.js) ==========
 window.saveCurrentProgramsData = function() {
+    if (!window.programsData) return;
     for (let i = 0; i < window.programsData.length; i++) {
         window.programsData[i].year = document.getElementById(`prog_year_${i}`)?.value || '';
         window.programsData[i].description = document.getElementById(`prog_desc_${i}`)?.value || '';
     }
 };
 
-// ========== СОХРАНЕНИЕ КРАТКОСРОЧНЫХ ПЛАНОВ (для edit.js) ==========
 window.saveCurrentShortTermData = function() {
+    if (!window.shortTermData) return;
     for (let i = 0; i < window.shortTermData.length; i++) {
         window.shortTermData[i].type = document.getElementById(`term_type_${i}`)?.value || '';
         window.shortTermData[i].contractor = document.getElementById(`term_contractor_${i}`)?.value || '';
