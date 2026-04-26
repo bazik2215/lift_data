@@ -176,14 +176,14 @@ function renderEntrances() {
         div.innerHTML = `
             <div class="subgroup-header">
                 <strong>🚪 Подъезд ${idx + 1}</strong>
-                <button class="action-icon" onclick="removeEntrance(${idx})">🗑️</button>
+                <button class="action-icon" onclick="window.removeEntrance(${idx})">🗑️</button>
             </div>
             <div class="form-field">
                 <label>Название подъезда</label>
                 <input type="text" id="entrance_name_${idx}" value="${escapeHtml(entrance.name || '')}">
             </div>
             <div id="lifts_${idx}_container"></div>
-            <button class="btn-add" onclick="addLift(${idx})">➕ Добавить лифт</button>
+            <button class="btn-add" onclick="window.addLift(${idx})">➕ Добавить лифт</button>
         `;
         container.appendChild(div);
         
@@ -205,7 +205,7 @@ function renderLifts(entranceIdx) {
         liftDiv.innerHTML = `
             <div class="lift-header">
                 <strong>🛗 Лифт ${liftIdx + 1}</strong>
-                <button class="action-icon" onclick="removeLift(${entranceIdx}, ${liftIdx})">🗑️</button>
+                <button class="action-icon" onclick="window.removeLift(${entranceIdx}, ${liftIdx})">🗑️</button>
             </div>
             <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px;">
                 <div class="form-field"><label>Рег. номер</label><input type="text" id="lift_regNumber_${entranceIdx}_${liftIdx}" value="${escapeHtml(lift.registrationNumber || '')}"></div>
@@ -302,7 +302,7 @@ function renderPrograms() {
         div.innerHTML = `
             <div class="subgroup-header">
                 <strong>📅 Программа ${idx + 1}</strong>
-                <button class="action-icon" onclick="removeProgram(${idx})">🗑️</button>
+                <button class="action-icon" onclick="window.removeProgram(${idx})">🗑️</button>
             </div>
             <div class="form-field"><label>Год</label><input type="text" id="prog_year_${idx}" value="${escapeHtml(prog.year || '')}"></div>
             <div class="form-field"><label>Описание</label><textarea id="prog_desc_${idx}" rows="2">${escapeHtml(prog.description || '')}</textarea></div>
@@ -322,7 +322,7 @@ function renderShortTerm() {
         div.innerHTML = `
             <div class="subgroup-header">
                 <strong>⚡ План ${idx + 1}</strong>
-                <button class="action-icon" onclick="removeShortTerm(${idx})">🗑️</button>
+                <button class="action-icon" onclick="window.removeShortTerm(${idx})">🗑️</button>
             </div>
             <div class="form-field"><label>Тип ремонта</label><textarea id="term_type_${idx}" rows="2">${escapeHtml(term.type || '')}</textarea></div>
             <div class="form-field"><label>Подрядчик</label><textarea id="term_contractor_${idx}" rows="2">${escapeHtml(term.contractor || '')}</textarea></div>
@@ -401,9 +401,12 @@ async function deleteHouse() {
     }
 }
 
+// ========== ПРИВЯЗКА ВСЕХ ФУНКЦИЙ К WINDOW ==========
 window.addEntrance = addEntrance;
 window.removeEntrance = removeEntrance;
 window.addLift = addLift;
 window.removeLift = removeLift;
+window.addProgram = addProgram;
 window.removeProgram = removeProgram;
+window.addShortTerm = addShortTerm;
 window.removeShortTerm = removeShortTerm;
