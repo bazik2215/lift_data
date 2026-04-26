@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('deleteHouseBtn').style.display = 'none';
     }
     
-    // Загрузка данных
+    // Загрузка данных (из data.json на GitHub)
     await loadData();
     
     // Заполнение формы
@@ -155,8 +155,8 @@ function fillForm(house) {
 
 // ========== ПОЛУЧЕНИЕ СЛЕДУЮЩЕГО ID ==========
 function getNextId() {
-    const maxId = Math.max(...housesData.map(h => h.id), 0);
-    return maxId + 1;
+    // getNextId теперь в common.js с учётом localStorage
+    return window.getNextId ? window.getNextId() : (Math.max(...housesData.map(h => h.id), 0) + 1);
 }
 
 // ========== ПРЕДПРОСМОТР КООРДИНАТ ==========
@@ -450,7 +450,7 @@ async function saveHouse() {
         shortTermWorks: window.shortTermData
     };
     
-    // Сохранение в общий массив и логирование
+    // Сохранение в общий массив
     if (isNewHouse) {
         housesData.push(houseData);
         showToast(`✅ Дом "${address}" добавлен в память`);
@@ -465,7 +465,7 @@ async function saveHouse() {
             housesData[index] = houseData;
             showToast(`✅ Дом "${address}" сохранён в памяти`);
             
-            // Логируем изменения (сравниваем со старым домом)
+            // Логируем изменения
             if (oldHouseData) {
                 const changes = compareHouses(oldHouseData, houseData);
                 if (changes.length > 0) {
@@ -475,9 +475,11 @@ async function saveHouse() {
         }
     }
     
-    // НЕ ПЕРЕХОДИМ НА СТРАНИЦУ СПИСКА АВТОМАТИЧЕСКИ
-    // Пользователь должен сам нажать «Сохранить JSON» и затем загрузить файл
-    showToast('🔔 Не забудьте нажать «Сохранить JSON» и загрузить файл на GitHub!');
+    // Сохраняем в localStorage
+    saveToLocalStorage();
+    
+    // Переходим на страницу списка
+    window.location.href = 'index.html';
 }
 
 // ========== УДАЛЕНИЕ ДОМА ==========
@@ -496,7 +498,10 @@ async function deleteHouse() {
             });
         }
         
-        // НЕ ПЕРЕХОДИМ АВТОМАТИЧЕСКИ
-        showToast('🔔 Нажмите «Сохранить JSON» и загрузите файл на GitHub!');
+        // Сохраняем в localStorage
+        saveToLocalStorage();
+        
+        // Переходим на страницу списка
+        window.location.href = 'index.html';
     }
 }

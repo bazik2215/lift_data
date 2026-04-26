@@ -2,6 +2,63 @@
 let housesData = [];
 let currentEditingHouseId = null;
 
+// ========== РАБОТА С ЛОКАЛЬНЫМ ХРАНИЛИЩЕМ ==========
+const STORAGE_KEY = 'lift_data_houses';
+
+// Сохранить дома в localStorage
+function saveToLocalStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(housesData));
+    console.log('💾 Данные сохранены в localStorage');
+}
+
+// Загрузить дома из localStorage
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        housesData = JSON.parse(saved);
+        console.log('📦 Данные загружены из localStorage, домов:', housesData.length);
+        return true;
+    }
+    console.log('📦 Данных в localStorage нет');
+    return false;
+}
+
+// Очистить localStorage
+function clearLocalStorage() {
+    localStorage.removeItem(STORAGE_KEY);
+    console.log('🗑️ localStorage очищен');
+}
+
+// Получить количество временных домов (в localStorage)
+function getTempHousesCount() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        return JSON.parse(saved).length;
+    }
+    return 0;
+}
+
+// Смержить данные из localStorage с основными (для показа в таблице)
+function mergeWithLocalStorage(mainData) {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return mainData;
+    
+    const tempData = JSON.parse(saved);
+    // Объединяем, удаляя возможные дубликаты по id
+    const allIds = new Set(mainData.map(h => h.id));
+    const newHouses = [...mainData];
+    
+    tempData.forEach(house => {
+        if (!allIds.has(house.id)) {
+            newHouses.push(house);
+        }
+    });
+    
+    // Сортируем по id
+    newHouses.sort((a, b) => a.id - b.id);
+    return newHouses;
+}
+
 // ========== ЗАГРУЗКА ДАННЫХ ==========
 function loadData() {
     return fetch('../data.json?t=' + Date.now())
@@ -254,7 +311,7 @@ function saveLastSaveTimestamp() {
     updateLastSaveIndicator();
 }
 
-// ========== ИСТОРИЯ ИЗМЕНЕНИЙ (НОВЫЕ ФУНКЦИИ) ==========
+// ========== ИСТОРИЯ ИЗМЕНЕНИЙ ==========
 // Загрузка истории из history.json
 async function loadHistory() {
     try {
@@ -292,7 +349,7 @@ async function addHistoryRecord(action, houseId, houseAddress, details) {
         const newRecord = {
             id: Date.now() + '_' + Math.random().toString(36).substr(2, 8),
             timestamp: new Date().toISOString(),
-            action: action, // 'add', 'update', 'delete', 'duplicate'
+            action: action,
             houseId: houseId,
             houseAddress: houseAddress,
             user: sessionStorage.getItem('adminUser') || 'admin',
@@ -302,7 +359,6 @@ async function addHistoryRecord(action, houseId, houseAddress, details) {
         
         history.records.unshift(newRecord);
         
-        // Ограничиваем размер истории (последние 2000 записей)
         if (history.records.length > 2000) {
             history.records = history.records.slice(0, 2000);
         }
@@ -320,7 +376,6 @@ async function addHistoryRecord(action, houseId, houseAddress, details) {
 function compareHouses(oldHouse, newHouse) {
     const changes = [];
     
-    // Сравнение простых полей
     const simpleFields = ['address', 'district', 'buildingType', 'buildYear', 'constructionYear', 'floors', 'series'];
     simpleFields.forEach(field => {
         const oldVal = oldHouse[field];
@@ -334,7 +389,6 @@ function compareHouses(oldHouse, newHouse) {
         }
     });
     
-    // Сравнение координат
     if (JSON.stringify(oldHouse.coords) !== JSON.stringify(newHouse.coords)) {
         changes.push({
             field: 'coords',
@@ -343,7 +397,6 @@ function compareHouses(oldHouse, newHouse) {
         });
     }
     
-    // Сравнение количества лифтов
     const oldLiftsCount = getLiftsCount(oldHouse);
     const newLiftsCount = getLiftsCount(newHouse);
     if (oldLiftsCount !== newLiftsCount) {
@@ -354,7 +407,6 @@ function compareHouses(oldHouse, newHouse) {
         });
     }
     
-    // Сравнение программ
     if (JSON.stringify(oldHouse.programWorks) !== JSON.stringify(newHouse.programWorks)) {
         changes.push({
             field: 'programWorks',
@@ -363,7 +415,6 @@ function compareHouses(oldHouse, newHouse) {
         });
     }
     
-    // Сравнение краткосрочных планов
     if (JSON.stringify(oldHouse.shortTermWorks) !== JSON.stringify(newHouse.shortTermWorks)) {
         changes.push({
             field: 'shortTermWorks',
@@ -375,17 +426,35 @@ function compareHouses(oldHouse, newHouse) {
     return changes;
 }
 
-// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ (с поддержкой тёмной темы) ==========
+// ========== ПОЛУЧЕНИЕ СЛЕДУЮЩЕГО ID (с учётом localStorage) ==========
+function getNextId() {
+    let maxId = 0;
+    
+    // Проверяем данные из localStorage
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        const tempData = JSON.parse(saved);
+        const tempMax = Math.max(...tempData.map(h => h.id), 0);
+        if (tempMax > maxId) maxId = tempMax;
+    }
+    
+    // Проверяем основные данные
+    if (housesData && housesData.length > 0) {
+        const mainMax = Math.max(...housesData.map(h => h.id), 0);
+        if (mainMax > maxId) maxId = mainMax;
+    }
+    
+    return maxId + 1;
+}
+
+// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ==========
 function showConfirmModal(options) {
     return new Promise((resolve) => {
-        // Удаляем существующее окно, если есть
         const existingModal = document.querySelector('.custom-confirm-modal');
         if (existingModal) existingModal.remove();
         
-        // Определяем, тёмная ли тема сейчас
         const isDarkTheme = document.body.classList.contains('dark-theme');
         
-        // Цвета для тёмной и светлой темы
         const colors = isDarkTheme ? {
             background: '#252a38',
             textColor: '#e0e0e0',
@@ -404,7 +473,6 @@ function showConfirmModal(options) {
             cancelText: '#1a2a3a'
         };
         
-        // Создаём контейнер
         const modal = document.createElement('div');
         modal.className = 'custom-confirm-modal';
         modal.style.cssText = `
@@ -421,7 +489,6 @@ function showConfirmModal(options) {
             animation: fadeIn 0.2s ease-out;
         `;
         
-        // Создаём контент
         const content = document.createElement('div');
         content.style.cssText = `
             background: ${colors.background};
@@ -434,16 +501,11 @@ function showConfirmModal(options) {
             animation: slideIn 0.2s ease-out;
         `;
         
-        // Иконка
         const icon = options.icon || '⚠️';
-        // Заголовок
         const title = options.title || 'Подтверждение';
-        // Сообщение
         const message = options.message || 'Вы уверены?';
-        // Текст кнопок
         const confirmText = options.confirmText || 'Да';
         const cancelText = options.cancelText || 'Отмена';
-        // Цвет кнопки подтверждения
         const confirmColor = options.confirmColor || '#dc2626';
         
         content.innerHTML = `
@@ -459,53 +521,27 @@ function showConfirmModal(options) {
         modal.appendChild(content);
         document.body.appendChild(modal);
         
-        // Добавляем стили для анимации, если их ещё нет
         if (!document.querySelector('#confirm-modal-styles')) {
             const style = document.createElement('style');
             style.id = 'confirm-modal-styles';
             style.textContent = `
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                @keyframes slideIn {
-                    from { opacity: 0; transform: translateY(-20px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .confirm-btn-yes:hover, .confirm-btn-no:hover {
-                    transform: scale(0.98);
-                }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+                .confirm-btn-yes:hover, .confirm-btn-no:hover { transform: scale(0.98); }
             `;
             document.head.appendChild(style);
         }
         
-        // Обработчики
         const confirmBtn = document.getElementById('confirmYes');
         const cancelBtn = document.getElementById('confirmNo');
         
-        const cleanup = () => {
-            modal.remove();
-        };
+        const cleanup = () => { modal.remove(); };
         
-        confirmBtn.addEventListener('click', () => {
-            cleanup();
-            resolve(true);
-        });
+        confirmBtn.addEventListener('click', () => { cleanup(); resolve(true); });
+        cancelBtn.addEventListener('click', () => { cleanup(); resolve(false); });
         
-        cancelBtn.addEventListener('click', () => {
-            cleanup();
-            resolve(false);
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) { cleanup(); resolve(false); } });
         
-        // Закрытие по клику на фон
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                cleanup();
-                resolve(false);
-            }
-        });
-        
-        // Закрытие по Escape
         const handleEsc = (e) => {
             if (e.key === 'Escape') {
                 cleanup();
@@ -517,7 +553,7 @@ function showConfirmModal(options) {
     });
 }
 
-// ========== ВЫХОД С КАСТОМНЫМ ОКНОМ ==========
+// ========== ВЫХОД ==========
 async function logout() {
     const confirmed = await showConfirmModal({
         icon: '🚪',
@@ -577,7 +613,7 @@ window.saveCurrentEntranceData = function() {
     }
 };
 
-// ========== СОХРАНЕНИЕ ПРОГРАММ (для edit.js) ==========
+// ========== СОХРАНЕНИЕ ПРОГРАММ ==========
 window.saveCurrentProgramsData = function() {
     for (let i = 0; i < window.programsData.length; i++) {
         window.programsData[i].year = document.getElementById(`prog_year_${i}`)?.value || '';
@@ -585,7 +621,7 @@ window.saveCurrentProgramsData = function() {
     }
 };
 
-// ========== СОХРАНЕНИЕ КРАТКОСРОЧНЫХ ПЛАНОВ (для edit.js) ==========
+// ========== СОХРАНЕНИЕ КРАТКОСРОЧНЫХ ПЛАНОВ ==========
 window.saveCurrentShortTermData = function() {
     for (let i = 0; i < window.shortTermData.length; i++) {
         window.shortTermData[i].type = document.getElementById(`term_type_${i}`)?.value || '';
@@ -631,7 +667,7 @@ function toggleAdminTheme() {
     }
 }
 
-// ========== ИНИЦИАЛИЗАЦИЯ ИНДИКАТОРА ПРИ ЗАГРУЗКЕ ==========
+// ========== ИНИЦИАЛИЗАЦИЯ ИНДИКАТОРА ==========
 document.addEventListener('DOMContentLoaded', function() {
     updateLastSaveIndicator();
 });
