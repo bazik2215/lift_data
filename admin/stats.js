@@ -42,11 +42,28 @@ function calculateAllStats() {
     statsData.totalLifts = getTotalLiftsCount();
     statsData.totalPrograms = getTotalProgramsCount();
     
-    // Распределение по районам
+    // Распределение по районам (дома)
     statsData.districts = {};
     housesData.forEach(house => {
         const district = house.district || 'Не указан';
         statsData.districts[district] = (statsData.districts[district] || 0) + 1;
+    });
+    
+    // Текущие лифты по районам
+    statsData.currentLiftsByDistrict = {};
+    // Заменённые лифты по районам
+    statsData.replacedLiftsByDistrict = {};
+    
+    housesData.forEach(house => {
+        const district = house.district || 'Не указан';
+        
+        // Текущие лифты
+        const lifts = getAllLifts(house);
+        statsData.currentLiftsByDistrict[district] = (statsData.currentLiftsByDistrict[district] || 0) + lifts.length;
+        
+        // Заменённые лифты
+        const previousLifts = getAllPreviousLifts(house);
+        statsData.replacedLiftsByDistrict[district] = (statsData.replacedLiftsByDistrict[district] || 0) + previousLifts.length;
     });
     
     // Распределение по годам программы
@@ -124,8 +141,14 @@ function renderAllStats() {
     document.getElementById('totalLifts').textContent = statsData.totalLifts;
     document.getElementById('totalPrograms').textContent = statsData.totalPrograms;
     
-    // Распределение по районам
+    // Распределение по районам (дома)
     renderDistrictsStats();
+    
+    // Текущие лифты по районам
+    renderCurrentLiftsByDistrict();
+    
+    // Заменённые лифты по районам
+    renderReplacedLiftsByDistrict();
     
     // Распределение по годам
     renderYearsStats();
@@ -149,7 +172,18 @@ function renderAllStats() {
     renderContractorsStats();
 }
 
-// ========== РАСПРЕДЕЛЕНИЕ ПО РАЙОНАМ ==========
+// ========== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ПОЛЗУНКОВ ==========
+function renderProgressBar(percent, showPercentInside = true) {
+    if (percent >= 20 && showPercentInside) {
+        // Если процент больше 20, показываем внутри
+        return `<div class="progress-bar"><div class="progress-fill" style="width: ${percent}%">${percent}%</div></div>`;
+    } else {
+        // Если меньше 20, показываем ползунок без процента, а процент справа
+        return `<div class="progress-bar" style="display: inline-block; width: 120px;"><div class="progress-fill" style="width: ${percent}%; min-width: 4px;"></div></div><span style="margin-left: 8px;">${percent}%</span>`;
+    }
+}
+
+// ========== РАСПРЕДЕЛЕНИЕ ПО РАЙОНАМ (ДОМА) ==========
 function renderDistrictsStats() {
     const container = document.getElementById('districtsStats');
     if (!container) return;
@@ -166,11 +200,71 @@ function renderDistrictsStats() {
             <tr>
                 <td>${escapeHtml(district)}</td>
                 <td>${count}</td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
-                    </div>
-                </td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+// ========== ТЕКУЩИЕ ЛИФТЫ ПО РАЙОНАМ ==========
+function renderCurrentLiftsByDistrict() {
+    const container = document.getElementById('currentLiftsByDistrict');
+    if (!container) {
+        // Если контейнера нет, создадим его в HTML позже, но для безопасности проверим
+        console.warn('Контейнер currentLiftsByDistrict не найден');
+        return;
+    }
+    
+    const sorted = Object.entries(statsData.currentLiftsByDistrict).sort((a, b) => b[1] - a[1]);
+    const total = Object.values(statsData.currentLiftsByDistrict).reduce((a, b) => a + b, 0);
+    
+    let html = '<table class="stats-table">';
+    html += '<thead><tr><th>Район</th><th>Лифтов</th><th>Доля</th></tr></thead><tbody>';
+    
+    sorted.forEach(([district, count]) => {
+        const percent = Math.round((count / total) * 100);
+        html += `
+            <tr>
+                <td>${escapeHtml(district)}</td>
+                <td>${count}</td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></td>';
+    container.innerHTML = html;
+}
+
+// ========== ЗАМЕНЁННЫЕ ЛИФТЫ ПО РАЙОНАМ ==========
+function renderReplacedLiftsByDistrict() {
+    const container = document.getElementById('replacedLiftsByDistrict');
+    if (!container) {
+        console.warn('Контейнер replacedLiftsByDistrict не найден');
+        return;
+    }
+    
+    const sorted = Object.entries(statsData.replacedLiftsByDistrict).sort((a, b) => b[1] - a[1]);
+    const total = Object.values(statsData.replacedLiftsByDistrict).reduce((a, b) => a + b, 0);
+    
+    if (total === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 20px;">Нет данных о заменённых лифтах</p>';
+        return;
+    }
+    
+    let html = '<table class="stats-table">';
+    html += '<thead><tr><th>Район</th><th>Лифтов</th><th>Доля</th></tr></thead><tbody>';
+    
+    sorted.forEach(([district, count]) => {
+        const percent = Math.round((count / total) * 100);
+        html += `
+            <tr>
+                <td>${escapeHtml(district)}</td>
+                <td>${count}</td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
             </tr>
         `;
     });
@@ -190,7 +284,6 @@ function renderYearsStats() {
         return yearA.localeCompare(yearB);
     });
     const total = Object.values(statsData.programYears).reduce((a, b) => a + b, 0);
-    const maxCount = Math.max(...Object.values(statsData.programYears), 1);
     
     let html = '<table class="stats-table">';
     html += '<thead><tr><th>Год</th><th>Программ</th><th>Доля</th></tr></thead><tbody>';
@@ -201,11 +294,7 @@ function renderYearsStats() {
             <tr>
                 <td>${escapeHtml(year)}</td>
                 <td>${count}</td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
-                    </div>
-                </td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
             </tr>
         `;
     });
@@ -236,11 +325,7 @@ function renderCurrentModelsStats() {
             <tr>
                 <td>${escapeHtml(model)}</td>
                 <td>${count}</td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
-                    </div>
-                </td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
             </tr>
         `;
     });
@@ -271,11 +356,7 @@ function renderReplacedModelsStats() {
             <tr>
                 <td>${escapeHtml(model)}</td>
                 <td>${count}</td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
-                    </div>
-                </td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
             </tr>
         `;
     });
@@ -306,11 +387,7 @@ function renderTypesStats() {
             <tr>
                 <td>${escapeHtml(type)}</td>
                 <td>${count}</td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
-                    </div>
-                </td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
             </tr>
         `;
     });
@@ -345,11 +422,7 @@ function renderCapacityStats() {
             <tr>
                 <td>${escapeHtml(capacity)}</td>
                 <td>${count}</td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
-                    </div>
-                </td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
             </tr>
         `;
     });
@@ -380,11 +453,7 @@ function renderSpeedStats() {
             <tr>
                 <td>${escapeHtml(speed)}</td>
                 <td>${count}</td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
-                    </div>
-                </td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
             </tr>
         `;
     });
@@ -415,11 +484,7 @@ function renderContractorsStats() {
             <tr>
                 <td>${escapeHtml(contractor)}</td>
                 <td>${count}</td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
-                    </div>
-                </td>
+                <td>${renderProgressBar(percent, percent >= 20)}</td>
             </tr>
         `;
     });

@@ -15,7 +15,7 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
         }
         
@@ -84,6 +84,9 @@
             border-radius: 10px;
             height: 20px;
             overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            min-width: 80px;
         }
         
         .progress-fill {
@@ -96,6 +99,19 @@
             padding-right: 6px;
             color: white;
             font-size: 0.7rem;
+            white-space: nowrap;
+        }
+        
+        .percent-text {
+            margin-left: 8px;
+            font-size: 0.7rem;
+            color: #4a627a;
+        }
+        
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         body.dark-theme .stats-card {
@@ -130,6 +146,10 @@
         
         body.dark-theme .progress-bar {
             background: #3a3e4d;
+        }
+        
+        body.dark-theme .percent-text {
+            color: #8a8e9d;
         }
     </style>
 </head>
@@ -173,14 +193,25 @@
                     </div>
                 </div>
 
-                <!-- Распределение по районам -->
+                <!-- Распределение по районам (дома) -->
                 <div class="stats-grid">
                     <div class="stats-card">
-                        <div class="stats-card-title">📍 Распределение по районам</div>
+                        <div class="stats-card-title">📍 Распределение по районам (дома)</div>
                         <div id="districtsStats"></div>
                     </div>
 
-                    <!-- Замена лифтов по годам -->
+                    <div class="stats-card">
+                        <div class="stats-card-title">🛗 Текущие лифты по районам</div>
+                        <div id="currentLiftsByDistrict"></div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-card-title">📜 Заменённые лифты по районам</div>
+                        <div id="replacedLiftsByDistrict"></div>
+                    </div>
+
                     <div class="stats-card">
                         <div class="stats-card-title">📅 Замена лифтов по годам</div>
                         <div id="yearsStats"></div>
