@@ -169,6 +169,7 @@ body.dark-theme .stat-badge {
     padding: 12px 18px;
     cursor: pointer;
     border-bottom: 1px solid #eef2f6;
+    transition: background 0.15s ease;
 }
 
 .suggestions div:hover {
@@ -630,7 +631,8 @@ body.dark-theme .suggestions div {
 }
 
 body.dark-theme .suggestions div:hover {
-    background: #3a3e4d;
+    background: #0b5e7e;
+    color: white;
 }
 
 body.dark-theme .address-block,
