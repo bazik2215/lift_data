@@ -204,6 +204,159 @@ function escapeHtml(str) {
     });
 }
 
+// ========== КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ==========
+function showConfirmModal(options) {
+    return new Promise((resolve) => {
+        // Удаляем существующее окно, если есть
+        const existingModal = document.querySelector('.custom-confirm-modal');
+        if (existingModal) existingModal.remove();
+        
+        // Создаём контейнер
+        const modal = document.createElement('div');
+        modal.className = 'custom-confirm-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            animation: fadeIn 0.2s ease-out;
+        `;
+        
+        // Создаём контент
+        const content = document.createElement('div');
+        content.style.cssText = `
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            animation: slideIn 0.2s ease-out;
+        `;
+        
+        // Иконка
+        const icon = options.icon || '⚠️';
+        // Заголовок
+        const title = options.title || 'Подтверждение';
+        // Сообщение
+        const message = options.message || 'Вы уверены?';
+        // Текст кнопок
+        const confirmText = options.confirmText || 'Да';
+        const cancelText = options.cancelText || 'Отмена';
+        // Цвет кнопки подтверждения
+        const confirmColor = options.confirmColor || '#dc2626';
+        
+        content.innerHTML = `
+            <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
+            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #0b3b5f;">${title}</div>
+            <div style="margin-bottom: 24px; color: #4a627a; line-height: 1.5;">${message}</div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="confirmYes" class="confirm-btn-yes" style="background: ${confirmColor}; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${confirmText}</button>
+                <button id="confirmNo" class="confirm-btn-no" style="background: #eef2f6; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">${cancelText}</button>
+            </div>
+        `;
+        
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+        
+        // Добавляем стили для анимации, если их ещё нет
+        if (!document.querySelector('#confirm-modal-styles')) {
+            const style = document.createElement('style');
+            style.id = 'confirm-modal-styles';
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from { opacity: 0; transform: translateY(-20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .confirm-btn-yes:hover, .confirm-btn-no:hover {
+                    transform: scale(0.98);
+                }
+                body.dark-theme .custom-confirm-modal > div {
+                    background: #252a38;
+                }
+                body.dark-theme .custom-confirm-modal .confirm-btn-yes {
+                    background: #dc2626 !important;
+                }
+                body.dark-theme .custom-confirm-modal .confirm-btn-no {
+                    background: #3a3e4d !important;
+                    color: #e0e0e0 !important;
+                }
+                body.dark-theme .custom-confirm-modal div[style*="color: #0b3b5f"] {
+                    color: #a0c4e8 !important;
+                }
+                body.dark-theme .custom-confirm-modal div[style*="color: #4a627a"] {
+                    color: #b0b4c0 !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Обработчики
+        const confirmBtn = document.getElementById('confirmYes');
+        const cancelBtn = document.getElementById('confirmNo');
+        
+        const cleanup = () => {
+            modal.remove();
+        };
+        
+        confirmBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(true);
+        });
+        
+        cancelBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        });
+        
+        // Закрытие по клику на фон
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                cleanup();
+                resolve(false);
+            }
+        });
+        
+        // Закрытие по Escape
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(false);
+                document.removeEventListener('keydown', handleEsc);
+            }
+        };
+        document.addEventListener('keydown', handleEsc);
+    });
+}
+
+// ========== ВЫХОД С КАСТОМНЫМ ОКНОМ ==========
+async function logout() {
+    const confirmed = await showConfirmModal({
+        icon: '🚪',
+        title: 'Выход из админ-панели',
+        message: 'Точно выйти? Все несохранённые изменения будут потеряны.',
+        confirmText: 'Да, выйти',
+        cancelText: 'Отмена',
+        confirmColor: '#dc2626'
+    });
+    
+    if (confirmed) {
+        sessionStorage.removeItem('adminLoggedIn');
+        window.location.href = 'login.html';
+    }
+}
+
 // ========== СОХРАНЕНИЕ ТЕКУЩИХ ДАННЫХ ПОДЪЕЗДОВ (для edit.js) ==========
 window.saveCurrentEntranceData = function() {
     for (let i = 0; i < window.entrancesData.length; i++) {
@@ -299,10 +452,4 @@ function toggleAdminTheme() {
         const themeBtn = document.getElementById('themeToggle');
         if (themeBtn) themeBtn.textContent = '☀️';
     }
-}
-
-// ========== ВЫХОД ==========
-function logout() {
-    sessionStorage.removeItem('adminLoggedIn');
-    window.location.href = 'login.html';
 }

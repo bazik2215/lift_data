@@ -180,6 +180,12 @@
                         </div>
                     </div>
                     <div class="help-card">
+                        <div class="help-card-title">✅ Выделение домов</div>
+                        <div class="help-card-content">
+                            Отметьте чекбоксы у нужных домов, затем нажмите «🗑️ Удалить выбранные» — удалятся все отмеченные дома (с подтверждением).
+                        </div>
+                    </div>
+                    <div class="help-card">
                         <div class="help-card-title">✏️ Редактировать</div>
                         <div class="help-card-content">
                             Нажмите <strong>✏️</strong> — откроется страница редактирования дома.
@@ -222,7 +228,7 @@
                         <div class="help-card-title">🗺️ Координаты</div>
                         <div class="help-card-content">
                             Формат: <code>48.560115, 39.310170</code> (широта, долгота). Нажмите <strong>«🗺️ Показать на карте»</strong> 
-                            для проверки правильности координат.
+                            для проверки правильности координат. Карта появляется/скрывается по нажатию.
                         </div>
                     </div>
                     <div class="help-card">
@@ -269,7 +275,7 @@
                     <div class="help-card">
                         <div class="help-card-title">📍 Распределение по районам</div>
                         <div class="help-card-content">
-                            Сколько домов в каждом районе.
+                            Сколько домов, текущих и заменённых лифтов в каждом районе.
                         </div>
                     </div>
                     <div class="help-card">
@@ -343,16 +349,22 @@
                 </div>
                 <div class="help-grid">
                     <div class="help-card">
-                        <div class="help-card-title">Везде</div>
+                        <div class="help-card-title">На странице редактирования</div>
                         <div class="help-card-content">
-                            <span class="keyboard-shortcut">Ctrl + S</span> — сохранение формы (на странице редактирования)<br>
-                            <span class="keyboard-shortcut">Esc</span> — закрыть модальное окно (если есть)
+                            <span class="keyboard-shortcut">Ctrl + S</span> — сохранить дом<br>
+                            <span class="keyboard-shortcut">Esc</span> — закрыть мини-карту
                         </div>
                     </div>
                     <div class="help-card">
                         <div class="help-card-title">На странице входа</div>
                         <div class="help-card-content">
                             <span class="keyboard-shortcut">Enter</span> — войти
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-card-title">Везде</div>
+                        <div class="help-card-content">
+                            <span class="keyboard-shortcut">Ctrl + /</span> — открыть справку
                         </div>
                     </div>
                 </div>
@@ -436,8 +448,7 @@
         
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            sessionStorage.removeItem('adminLoggedIn');
-            window.location.href = 'login.html';
+            logout(); // Используем функцию logout из common.js
         });
         
         initTheme();
