@@ -355,7 +355,7 @@ function renderShortTerm() {
     });
 }
 
-// ========== ГЛАВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ (ИСПРАВЛЕНА) ==========
+// ========== ГЛАВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ ==========
 async function saveHouse() {
     console.log('🔵 Сохранение дома начато');
     
@@ -405,34 +405,27 @@ async function saveHouse() {
     
     console.log('🏠 Сохраняемый дом:', houseData);
     
-    // Проверяем housesData
     if (!housesData || !Array.isArray(housesData)) {
         console.error('❌ Ошибка: housesData не является массивом!');
         housesData = [];
     }
     
-    // ========== ГЛАВНОЕ ИСПРАВЛЕНИЕ ==========
     if (isNewHouse) {
-        // Новый дом — добавляем в конец
         housesData.push(houseData);
         console.log('✅ Новый дом ДОБАВЛЕН. Всего домов:', housesData.length);
     } else {
-        // Редактирование существующего — заменяем по ID
         const index = housesData.findIndex(h => h.id === houseId);
         if (index !== -1) {
             housesData[index] = houseData;
             console.log('✅ Дом ОБНОВЛЁН (ID ' + houseId + '). Всего домов:', housesData.length);
         } else {
-            // На всякий случай, если не нашли — добавляем
             housesData.push(houseData);
             console.log('⚠️ Дом с ID ' + houseId + ' не найден, добавлен как новый');
         }
     }
     
-    // Сохраняем в localStorage
     localStorage.setItem('housesDataBackup', JSON.stringify(housesData));
     
-    // Сохраняем в history.json
     try {
         if (isNewHouse) {
             await addHistoryRecord('add', houseData.id, houseData.address, {
@@ -460,9 +453,11 @@ async function saveHouse() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
+    // ========== ОБНОВЛЯЕМ ИНДИКАТОР ПОСЛЕДНЕГО СОХРАНЕНИЯ ==========
+    saveLastSaveTimestamp();
+    
     alert(`✅ Дом "${address}" сохранён! JSON скачан. Всего домов: ${housesData.length}`);
     
-    // Перенаправление на список
     console.log('🔄 Перенаправление на страницу списка...');
     window.location.href = 'index.html';
 }

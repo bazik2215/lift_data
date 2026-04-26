@@ -11,6 +11,7 @@ function loadData() {
         })
         .then(data => {
             housesData = data;
+            console.log('📦 Загружено домов в housesData:', housesData.length);
             return data;
         })
         .catch(error => {
@@ -264,8 +265,10 @@ function updateLastSaveIndicator() {
 }
 
 function saveLastSaveTimestamp() {
-    localStorage.setItem('adminLastSave', Date.now());
+    const timestamp = Date.now();
+    localStorage.setItem('adminLastSave', timestamp);
     updateLastSaveIndicator();
+    console.log('💾 Время сохранения обновлено:', new Date(timestamp).toLocaleString());
 }
 
 // ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
