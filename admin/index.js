@@ -46,12 +46,10 @@ function setupEventListeners() {
         });
     }
     
-    // ========== ГЛАВНАЯ КНОПКА: СОХРАНИТЬ ВСЁ ==========
-    const saveAllBtn = document.getElementById('saveAllBtn');
-    if (saveAllBtn) {
-        saveAllBtn.addEventListener('click', async () => {
-            await saveBothJSON();
-            showToast('✅ data.json и history.json скачаны! Загрузите оба файла на GitHub.');
+    const saveJsonBtn = document.getElementById('saveJsonBtn');
+    if (saveJsonBtn) {
+        saveJsonBtn.addEventListener('click', () => {
+            saveJSON();
         });
     }
     
@@ -271,7 +269,6 @@ window.editHouse = function(id) {
     window.location.href = `edit.html?id=${id}`;
 };
 
-// ========== ДУБЛИРОВАНИЕ (БЕЗ АВТО-СКАЧИВАНИЯ) ==========
 window.duplicateHouseHandler = async function(id) {
     const originalHouse = housesData.find(h => h.id === id);
     if (!originalHouse) return;
@@ -279,30 +276,16 @@ window.duplicateHouseHandler = async function(id) {
     const newHouse = duplicateHouse(originalHouse);
     housesData.push(newHouse);
     
-    // Сохраняем в историю (только в память)
-    await addHistoryRecord('duplicate', newHouse.id, newHouse.address, {
-        sourceHouseId: id,
-        sourceHouseAddress: originalHouse.address
-    });
-    
-    // Обновляем таблицу
     applyFiltersAndRender();
     updateStatsCards();
-    
-    showToast(`✅ Дом "${newHouse.address}" скопирован. Не забудьте нажать «Сохранить всё»!`);
+    showToast(`✅ Дом "${newHouse.address}" скопирован`);
 };
 
-// ========== УДАЛЕНИЕ (БЕЗ АВТО-СКАЧИВАНИЯ) ==========
 window.deleteHouseHandler = async function(id) {
     const house = housesData.find(h => h.id === id);
     if (!house) return;
     
-    if (confirm(`🗑️ Удалить дом "${house.address}"?`)) {
-        // Сохраняем в историю ДО удаления
-        await addHistoryRecord('delete', id, house.address, {
-            deletedData: JSON.parse(JSON.stringify(house))
-        });
-        
+    if (confirm(`🗑️ Удалить дом "${house.address}"? Это действие нельзя отменить.`)) {
         housesData = housesData.filter(h => h.id !== id);
         selectedHouses.delete(id);
         
@@ -311,25 +294,15 @@ window.deleteHouseHandler = async function(id) {
         }
         applyFiltersAndRender();
         updateStatsCards();
-        
-        showToast(`✅ Дом "${house.address}" удалён. Не забудьте нажать «Сохранить всё»!`);
+        showToast(`✅ Дом "${house.address}" удалён`);
     }
 };
 
-// ========== МАССОВОЕ УДАЛЕНИЕ (БЕЗ АВТО-СКАЧИВАНИЯ) ==========
 async function deleteSelectedHouses() {
     if (selectedHouses.size === 0) return;
     
     const count = selectedHouses.size;
-    if (confirm(`🗑️ Удалить ${count} дом(ов)?`)) {
-        // Сохраняем удаляемые дома в историю
-        const deletedHouses = housesData.filter(house => selectedHouses.has(house.id));
-        for (const house of deletedHouses) {
-            await addHistoryRecord('delete', house.id, house.address, {
-                deletedData: JSON.parse(JSON.stringify(house))
-            });
-        }
-        
+    if (confirm(`🗑️ Удалить ${count} дом(ов)? Это действие нельзя отменить.`)) {
         housesData = housesData.filter(house => !selectedHouses.has(house.id));
         selectedHouses.clear();
         
@@ -338,8 +311,7 @@ async function deleteSelectedHouses() {
         }
         applyFiltersAndRender();
         updateStatsCards();
-        
-        showToast(`✅ Удалено ${count} дом(ов). Не забудьте нажать «Сохранить всё»!`);
+        showToast(`✅ Удалено ${count} дом(ов)`);
         
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
         if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';

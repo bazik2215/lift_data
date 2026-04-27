@@ -355,7 +355,7 @@ function renderShortTerm() {
     });
 }
 
-// ========== ГЛАВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ (БЕЗ АВТО-СКАЧИВАНИЯ) ==========
+// ========== ГЛАВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ ==========
 async function saveHouse() {
     console.log('🔵 Сохранение дома начато');
     
@@ -413,33 +413,51 @@ async function saveHouse() {
     if (isNewHouse) {
         housesData.push(houseData);
         console.log('✅ Новый дом ДОБАВЛЕН. Всего домов:', housesData.length);
-        
-        // Запись в историю
-        await addHistoryRecord('add', houseData.id, houseData.address, {
-            summary: `${houseData.entrances.length} подъездов, ${houseData.entrances.reduce((sum, e) => sum + (e.lifts?.length || 0), 0)} лифтов, ${houseData.programWorks?.length || 0} программ`
-        });
     } else {
         const index = housesData.findIndex(h => h.id === houseId);
         if (index !== -1) {
-            const oldHouse = JSON.parse(JSON.stringify(housesData[index]));
             housesData[index] = houseData;
-            console.log('✅ Дом ОБНОВЛЁН (ID ' + houseId + ')');
-            
-            // Запись в историю об изменении
-            const changes = compareHouses(oldHouse, houseData);
-            await addHistoryRecord('update', houseData.id, houseData.address, { changes: changes });
+            console.log('✅ Дом ОБНОВЛЁН (ID ' + houseId + '). Всего домов:', housesData.length);
         } else {
             housesData.push(houseData);
             console.log('⚠️ Дом с ID ' + houseId + ' не найден, добавлен как новый');
         }
     }
     
-    // Сохраняем в localStorage как резервную копию (НО НЕ СКАЧИВАЕМ JSON)
     localStorage.setItem('housesDataBackup', JSON.stringify(housesData));
     
-    showToast(`✅ Дом "${address}" сохранён в память (всего: ${housesData.length}). Не забудьте нажать «Сохранить всё» на главной!`);
+    try {
+        if (isNewHouse) {
+            await addHistoryRecord('add', houseData.id, houseData.address, {
+                summary: `${houseData.entrances.length} подъездов, ${houseData.entrances.reduce((sum, e) => sum + (e.lifts?.length || 0), 0)} лифтов, ${houseData.programWorks?.length || 0} программ`
+            });
+            console.log('📜 Запись о добавлении в историю');
+        } else {
+            const changes = compareHouses(oldHouseData, houseData);
+            await addHistoryRecord('update', houseData.id, houseData.address, { changes: changes });
+            console.log('📜 Запись об изменении в историю');
+        }
+    } catch(e) {
+        console.error('Ошибка записи в историю:', e);
+    }
     
-    // Перенаправление на список
+    // Автоматически скачиваем JSON
+    const jsonStr = JSON.stringify(housesData, null, 2);
+    const blob = new Blob([jsonStr], {type: 'application/json'});
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = 'data.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    // ========== ОБНОВЛЯЕМ ИНДИКАТОР ПОСЛЕДНЕГО СОХРАНЕНИЯ ==========
+    saveLastSaveTimestamp();
+    
+    alert(`✅ Дом "${address}" сохранён! JSON скачан. Всего домов: ${housesData.length}`);
+    
     console.log('🔄 Перенаправление на страницу списка...');
     window.location.href = 'index.html';
 }
@@ -451,16 +469,17 @@ async function deleteHouse() {
         housesData = housesData.filter(h => h.id !== houseId);
         
         if (deletedHouse) {
-            await addHistoryRecord('delete', houseId, deletedHouse.address, {
-                deletedData: deletedHouse
-            });
-            console.log('📜 Запись об удалении добавлена');
+            try {
+                await addHistoryRecord('delete', houseId, deletedHouse.address, {
+                    deletedData: deletedHouse
+                });
+                console.log('📜 Запись об удалении добавлена');
+            } catch(e) {
+                console.error('Ошибка записи в историю:', e);
+            }
         }
         
-        // Сохраняем в localStorage
-        localStorage.setItem('housesDataBackup', JSON.stringify(housesData));
-        
-        showToast('✅ Дом удалён из памяти. Не забудьте нажать «Сохранить всё»!');
+        alert('✅ Дом удалён');
         window.location.href = 'index.html';
     }
 }
