@@ -727,7 +727,7 @@
         "lifts": [
           {
             "registrationNumber": "",
-            "name": "Лифт №1 (пассажирский)",
+            "name": "Подъезд 1 (Лифт № 1)",
             "model": "ЩЛЗ",
             "yearMade": "2025",
             "yearOper": "2025",
@@ -754,7 +754,7 @@
           },
           {
             "registrationNumber": "",
-            "name": "Лифт №2 (пассажирский)",
+            "name": "Подъезд 1 (Лифт № 2)",
             "model": "ЩЛЗ",
             "yearMade": "2025",
             "yearOper": "2025",
@@ -786,7 +786,7 @@
         "lifts": [
           {
             "registrationNumber": "",
-            "name": "Лифт №1 (пассажирский)",
+            "name": "Подъезд 2 (Лифт № 1)",
             "model": "ЩЛЗ",
             "yearMade": "2025",
             "yearOper": "2025",
@@ -813,7 +813,7 @@
           },
           {
             "registrationNumber": "",
-            "name": "Лифт №2 (пассажирский)",
+            "name": "Подъезд 2 (Лифт № 2)",
             "model": "ЩЛЗ",
             "yearMade": "2025",
             "yearOper": "2025",
@@ -845,7 +845,7 @@
         "lifts": [
           {
             "registrationNumber": "",
-            "name": "Лифт №1 (пассажирский)",
+            "name": "Подъезд 3 (Лифт № 1)",
             "model": "ЩЛЗ",
             "yearMade": "2025",
             "yearOper": "2025",
@@ -872,7 +872,7 @@
           },
           {
             "registrationNumber": "",
-            "name": "Лифт №2 (пассажирский)",
+            "name": "Подъезд 3 (Лифт № 2)",
             "model": "ЩЛЗ",
             "yearMade": "2025",
             "yearOper": "2025",
@@ -904,7 +904,7 @@
         "lifts": [
           {
             "registrationNumber": "",
-            "name": "Лифт №1 (пассажирский)",
+            "name": "Подъезд 4 (Лифт № 1)",
             "model": "ЩЛЗ",
             "yearMade": "2025",
             "yearOper": "2025",
@@ -931,7 +931,7 @@
           },
           {
             "registrationNumber": "",
-            "name": "Лифт №2 (пассажирский)",
+            "name": "Подъезд 4 (Лифт № 2)",
             "model": "ЩЛЗ",
             "yearMade": "2025",
             "yearOper": "2025",
